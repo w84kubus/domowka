@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  /* --- Kolory (SPEC §6.2) --- */
+  --color-tlo: #0b0a12; /* prawie czerń z fioletowym podkładem */
+  --color-powierzchnia: #141122; /* karty */
+  --color-uniesione: #1e1a30; /* modale, aktywne */
+  --color-obramowanie: #3a3453;
+  --color-tekst: #f5f3ff;
+  --color-tekst-drugi: #a5a0bd;
+
+  /* akcenty gier (SPEC §1) */
+  --color-cyjan: #22d3ee; /* Państwa-miasta */
+  --color-limonka: #ccff00; /* Stoper */
+  --color-bursztyn: #ffb627; /* Wisielec */
+  --color-czerwien: #e4002b; /* Mafia */
+  --color-magenta: #ff2d95; /* Impostor */
+  --color-stal: #94a3b8; /* Kółko i krzyżyk */
+
+  /* --- Typografia (SPEC §6.2) — wszystkie z latin-ext --- */
+  --font-display: var(--font-chakra-petch); /* nagłówki, kod pokoju, nazwy gier */
+  --font-body: var(--font-inter); /* tekst */
+  --font-mono: var(--font-jetbrains-mono); /* liczby, timery, kod pokoju */
+}
+
+/* Reset i higiena mobilna (SPEC §6.5) */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* zero opóźnienia 300 ms, zero zoomu przy dwukliku */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh; /* nie 100vh — iOS Safari ucina pasek adresu */
+  margin: 0;
+  background: var(--color-tlo);
+  color: var(--color-tekst);
+  font-family: var(--font-body), system-ui, sans-serif;
+  /* pull-to-refresh nie może wywalić gry w połowie rundy */
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Liczby: tabularne, żeby cyfry nie skakały (stoper, timery, wyniki) */
+.tabular {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}

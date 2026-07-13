@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    match /rooms/{code} {
+      // Czytać pokój może tylko ktoś, kto już w nim siedzi.
+      // Dołączanie idzie przez API (Admin SDK), więc to nie blokuje wejścia.
+      allow read: if signedIn() && request.auth.uid in resource.data.players;
+      allow write: if false;
+
+      match /private/{uid} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow write: if false;
+      }
+
+      match /secret/{doc} {
+        allow read, write: if false;   // WYŁĄCZNIE Admin SDK
+      }
+
+      match /events/{id} {
+        allow read: if signedIn();
+        allow write: if false;
+      }
+    }
+  }
+}
