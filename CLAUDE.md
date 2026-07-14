@@ -55,7 +55,7 @@ firebase deploy --only firestore:rules
 - [x] Faza 2 — silnik gier + registry (walidacja na Stoperze; kółko i krzyżyk pominięte na życzenie Jakuba)
 - [~] Faza 3 — Stoper: tryb A „CEL" gotowy i zweryfikowany na produkcji; tryb B „ZGADNIJ CZAS" do zrobienia
 - [x] Faza 4 — Państwa-miasta (zweryfikowane na produkcji: tajność pisania, kwestionowanie, dedup, punktacja)
-- [ ] Faza 5 — Wisielec
+- [x] Faza 5 — Wisielec: 3 tryby (wyścig/kooperacja/zadający) w silniku + UI (klawiatura PL, SVG szubienicy); kooperacja zweryfikowana na produkcji (tajność hasła)
 - [ ] Faza 6 — Impostor
 - [ ] Faza 7 — Mafia
 - [ ] Faza 8 — polish (dźwięki, animacje, PWA)
