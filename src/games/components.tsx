@@ -13,6 +13,9 @@ import { WisielecHostView } from "./wisielec/HostView";
 import { ImpostorSettingsPanel } from "./impostor/Settings";
 import { ImpostorPlayerView } from "./impostor/PlayerView";
 import { ImpostorHostView } from "./impostor/HostView";
+import { MafiaSettingsPanel } from "./mafia/Settings";
+import { MafiaPlayerView } from "./mafia/PlayerView";
+import { MafiaHostView } from "./mafia/HostView";
 
 // Komponenty gier (klient). Dodanie gry = jeden wpis. Rozdzielone od registry.ts (silniki),
 // żeby serwerowy runner nie ciągnął Reacta.
@@ -28,4 +31,5 @@ export const GAME_COMPONENTS: Record<string, GameComponents> = {
   "panstwa-miasta": { Settings: PmSettingsPanel, PlayerView: PmPlayerView, HostView: PmHostView },
   wisielec: { Settings: WisielecSettingsPanel, PlayerView: WisielecPlayerView, HostView: WisielecHostView },
   impostor: { Settings: ImpostorSettingsPanel, PlayerView: ImpostorPlayerView, HostView: ImpostorHostView },
+  mafia: { Settings: MafiaSettingsPanel, PlayerView: MafiaPlayerView, HostView: MafiaHostView },
 };
