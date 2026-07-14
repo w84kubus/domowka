@@ -1,0 +1,92 @@
+"use client";
+import type { GameHostViewProps } from "@/games/view";
+
+interface Pub {
+  round: number;
+  totalRounds: number;
+  phase: "losowanie" | "pisanie" | "weryfikacja" | "wyniki" | "koniec";
+  letter: string;
+  categories: string[];
+  players: { uid: string; nick: string; avatar: string; score: number; roundDelta: number }[];
+  stoppedBy?: string | null;
+  progress?: { uid: string; filled: number }[];
+  verifyCat?: number;
+  categoryName?: string;
+  entries?: { uid: string; answer: string; autoZero: boolean; rejected: boolean }[];
+  active?: { targetUid: string; justification: string; tally: { uznaje: number; odrzucam: number } } | null;
+  breakdown?: { category: string; answers: { uid: string; answer: string; points: number }[] }[] | null;
+}
+
+export function PmHostView({ publicState, accent }: GameHostViewProps) {
+  const pub = publicState as Pub;
+  const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
+
+  return (
+    <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
+      <div className="flex items-center gap-6">
+        <div className="flex h-28 w-28 items-center justify-center rounded-3xl text-6xl font-bold"
+             style={{ background: accent, color: "#0b0a12", boxShadow: `0 0 40px ${accent}88`, fontFamily: "var(--font-display)" }}>
+          {pub.letter}
+        </div>
+        <div className="text-left">
+          <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}</p>
+          <p className="text-2xl font-bold">{phaseLabel(pub.phase)}</p>
+        </div>
+      </div>
+
+      {pub.phase === "pisanie" && (
+        <div className="flex flex-wrap justify-center gap-3">
+          {pub.progress?.map((pr) => (
+            <div key={pr.uid} className="card px-4 py-2">
+              {nickOf(pr.uid)} <span className="tabular" style={{ color: accent }}>{pr.filled}/{pub.categories.length}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pub.phase === "weryfikacja" && (
+        <div className="w-full max-w-2xl">
+          <h3 className="mb-2 text-center text-2xl font-bold" style={{ color: accent }}>{pub.categoryName}</h3>
+          {pub.active ? (
+            <div className="card p-4 text-center" style={{ borderColor: accent }}>
+              <p className="text-lg">Kwestia: „{pub.entries?.find((e) => e.uid === pub.active!.targetUid)?.answer}” ({nickOf(pub.active.targetUid)})</p>
+              {pub.active.justification && <p className="italic text-[var(--color-tekst-drugi)]">— {pub.active.justification}</p>}
+              <p className="mt-2 text-xl">UZNAJĘ {pub.active.tally.uznaje} · ODRZUCAM {pub.active.tally.odrzucam}</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-1 text-lg">
+              {pub.entries?.map((e) => (
+                <li key={e.uid} className="flex justify-between border-b border-[var(--color-obramowanie)] py-1">
+                  <span className="text-[var(--color-tekst-drugi)]">{nickOf(e.uid)}</span>
+                  <span className={e.autoZero || e.rejected ? "text-[var(--color-tekst-drugi)] line-through" : ""}>{e.answer || "—"}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {(pub.phase === "wyniki" || pub.phase === "koniec") && (
+        <div className="w-full max-w-md">
+          <h3 className="mb-3 text-center text-2xl font-bold">{pub.phase === "koniec" ? "Wyniki końcowe" : "Tabela"}</h3>
+          <ol className="flex flex-col gap-2">
+            {[...pub.players].sort((a, b) => b.score - a.score).map((p, i) => (
+              <li key={p.uid} className="card flex items-center gap-3 px-4 py-2 text-lg">
+                <span className="tabular w-6 text-center font-bold text-[var(--color-tekst-drugi)]">{i + 1}</span>
+                <span className="flex-1">{p.avatar} {p.nick}</span>
+                <span className="tabular font-bold">{p.score}</span>
+                {p.roundDelta > 0 && <span className="tabular text-sm" style={{ color: accent }}>+{p.roundDelta}</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {(pub.phase === "losowanie") && <p className="text-xl text-[var(--color-tekst-drugi)]">{pub.categories.join(" · ")}</p>}
+    </div>
+  );
+}
+
+function phaseLabel(p: Pub["phase"]): string {
+  return { losowanie: "Losowanie litery", pisanie: "Piszcie!", weryfikacja: "Weryfikacja", wyniki: "Wyniki rundy", koniec: "Koniec" }[p];
+}

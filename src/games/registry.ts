@@ -4,6 +4,8 @@
 import type { GameEngine, GameManifest } from "./types";
 import { stoperManifest } from "./stoper/manifest";
 import { stoperEngine } from "./stoper/engine";
+import { pmManifest } from "./panstwa-miasta/manifest";
+import { pmEngine } from "./panstwa-miasta/engine";
 
 export interface GameEntry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,6 +16,7 @@ export interface GameEntry {
 
 export const GAMES: Record<string, GameEntry> = {
   [stoperManifest.id]: { manifest: stoperManifest, engine: stoperEngine },
+  [pmManifest.id]: { manifest: pmManifest, engine: pmEngine },
 };
 
 /** Manifesty do wyboru gry w lobby (kolejność jak w SPEC §1). */
