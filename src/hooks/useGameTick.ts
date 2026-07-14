@@ -3,36 +3,34 @@ import { useEffect, useRef } from "react";
 import { apiPost } from "@/lib/client/api";
 
 // Fazy czasowe bez crona (SPEC §3.5): gdy klient lokalnie zauważy, że phaseEndsAt minął,
-// po losowym opóźnieniu 200–800 ms strzela /tick. Host dodatkowo tika co 3 s jako bezpiecznik.
-// Serwer i tak weryfikuje swoim zegarem, a transakcja daje idempotencję.
+// PONAGLA serwer /tickiem — i robi to dalej co ~1,2 s, DOPÓKI faza faktycznie nie przejdzie.
+// Kluczowe: żadnego „raz i koniec". Przy rozjeździe zegarów pierwszy tick może dostać 204
+// („jeszcze nie czas") — wtedy trzeba spróbować ponownie, inaczej faza wisi. Serwer weryfikuje
+// swoim zegarem, a transakcja daje idempotencję, więc powtarzanie jest bezpieczne.
 export function useGameTick(
   code: string | null,
   phaseEndsAt: number | null,
-  isHost: boolean,
   playing: boolean,
   serverNow: () => number,
 ) {
-  const firedFor = useRef<number | null>(null);
+  const lastTick = useRef(0);
 
   useEffect(() => {
     if (!code || !playing) return;
 
-    const tick = () => apiPost(`/api/rooms/${code}/tick`).catch(() => {});
-
-    // Sprawdzaj lokalnie co 250 ms, czy faza wygasła.
-    const check = setInterval(() => {
-      if (phaseEndsAt != null && serverNow() >= phaseEndsAt && firedFor.current !== phaseEndsAt) {
-        firedFor.current = phaseEndsAt;
-        setTimeout(tick, 200 + Math.random() * 600);
-      }
-    }, 250);
-
-    // Host: bezpiecznik co 3 s.
-    const safety = isHost ? setInterval(tick, 3000) : null;
-
-    return () => {
-      clearInterval(check);
-      if (safety) clearInterval(safety);
+    const tick = () => {
+      lastTick.current = Date.now();
+      apiPost(`/api/rooms/${code}/tick`).catch(() => {});
     };
-  }, [code, phaseEndsAt, isHost, playing, serverNow]);
+
+    const id = setInterval(() => {
+      if (phaseEndsAt == null) return;
+      // Faza przeterminowana wg naszego (skorygowanego) zegara → ponaglaj, aż serwer przejdzie dalej.
+      if (serverNow() >= phaseEndsAt && Date.now() - lastTick.current > 1000 + Math.random() * 500) {
+        tick();
+      }
+    }, 400);
+
+    return () => clearInterval(id);
+  }, [code, phaseEndsAt, playing, serverNow]);
 }

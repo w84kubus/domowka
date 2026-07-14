@@ -47,7 +47,7 @@ export function GameShell({
     }
   }, [room.status, accent]);
 
-  useGameTick(room.code, room.phaseEndsAt, isHost, room.status === "playing", serverNow);
+  useGameTick(room.code, room.phaseEndsAt, room.status === "playing", serverNow);
 
   if (!entry || !comps) {
     return <p className="p-6 text-center text-[var(--color-tekst-drugi)]">Nieznana gra: {gameId}</p>;
