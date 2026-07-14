@@ -8,6 +8,8 @@ import { pmManifest } from "./panstwa-miasta/manifest";
 import { pmEngine } from "./panstwa-miasta/engine";
 import { wisielecManifest } from "./wisielec/manifest";
 import { wisielecEngine } from "./wisielec/engine";
+import { impostorManifest } from "./impostor/manifest";
+import { impostorEngine } from "./impostor/engine";
 
 export interface GameEntry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,6 +22,7 @@ export const GAMES: Record<string, GameEntry> = {
   [stoperManifest.id]: { manifest: stoperManifest, engine: stoperEngine },
   [pmManifest.id]: { manifest: pmManifest, engine: pmEngine },
   [wisielecManifest.id]: { manifest: wisielecManifest, engine: wisielecEngine },
+  [impostorManifest.id]: { manifest: impostorManifest, engine: impostorEngine },
 };
 
 /** Manifesty do wyboru gry w lobby (kolejność jak w SPEC §1). */
