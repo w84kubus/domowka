@@ -54,7 +54,7 @@ firebase deploy --only firestore:rules
 - [x] Faza 1 — pokoje, lobby, presence, reconnect, QR, ekran hosta
 - [x] Faza 2 — silnik gier + registry (walidacja na Stoperze; kółko i krzyżyk pominięte na życzenie Jakuba)
 - [~] Faza 3 — Stoper: tryb A „CEL" gotowy i zweryfikowany na produkcji; tryb B „ZGADNIJ CZAS" do zrobienia
-- [ ] Faza 4 — Państwa-miasta
+- [x] Faza 4 — Państwa-miasta (zweryfikowane na produkcji: tajność pisania, kwestionowanie, dedup, punktacja)
 - [ ] Faza 5 — Wisielec
 - [ ] Faza 6 — Impostor
 - [ ] Faza 7 — Mafia
