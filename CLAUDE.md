@@ -52,8 +52,8 @@ firebase deploy --only firestore:rules
 
 - [x] Faza 0 — setup, Firebase, auth, deploy hello-world na Vercel
 - [x] Faza 1 — pokoje, lobby, presence, reconnect, QR, ekran hosta
-- [ ] Faza 2 — silnik gier + registry + kółko i krzyżyk
-- [ ] Faza 3 — Stoper
+- [x] Faza 2 — silnik gier + registry (walidacja na Stoperze; kółko i krzyżyk pominięte na życzenie Jakuba)
+- [~] Faza 3 — Stoper: tryb A „CEL" gotowy i zweryfikowany na produkcji; tryb B „ZGADNIJ CZAS" do zrobienia
 - [ ] Faza 4 — Państwa-miasta
 - [ ] Faza 5 — Wisielec
 - [ ] Faza 6 — Impostor
