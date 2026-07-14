@@ -6,6 +6,7 @@ import { RoomQr } from "@/components/RoomQr";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useServerClock } from "@/hooks/useServerClock";
 import { useRoom } from "@/hooks/useRoom";
+import { useWakeLock } from "@/hooks/useWakeLock";
 import { apiPost } from "@/lib/client/api";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { DISCONNECT_AFTER_MS } from "@/lib/types/room";
@@ -20,6 +21,7 @@ export default function EkranPage() {
   const code = normalizeRoomCode(params.code ?? "");
   const { uid, loading: authLoading } = useAnonAuth();
   const { serverNow } = useServerClock();
+  useWakeLock(true); // ekran hosta (TV) nie gaśnie
 
   const [observing, setObserving] = useState(false);
   useEffect(() => {

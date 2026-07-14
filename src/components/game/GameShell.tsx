@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GAME_COMPONENTS } from "@/games/components";
 import { GAMES } from "@/games/registry";
 import { usePrivate } from "@/hooks/usePrivate";
 import { useGameTick } from "@/hooks/useGameTick";
+import { useWakeLock } from "@/hooks/useWakeLock";
 import { apiPost } from "@/lib/client/api";
-import { isMuted, setMuted, unlockAudio } from "@/lib/sound";
+import { isMuted, setMuted, unlockAudio, sfx } from "@/lib/sound";
+import { celebrate } from "@/lib/confetti";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
 import type { Room } from "@/lib/types/room";
 
@@ -27,12 +29,23 @@ export function GameShell({
   const accent = entry?.manifest.accentColor ?? "#f5f3ff";
 
   const privateState = usePrivate(room.code, meUid, true);
+  const { supported: wakeSupported } = useWakeLock(true); // ekran nie gaśnie w grze
   const [muted, setMutedState] = useState(false);
 
   useEffect(() => {
     unlockAudio();
     setMutedState(isMuted());
   }, []);
+
+  // Konfetti + fanfara na koniec gry (SPEC §6.4).
+  const celebrated = useRef(false);
+  useEffect(() => {
+    if (room.status === "finished" && !celebrated.current) {
+      celebrated.current = true;
+      celebrate([accent, "#F5F3FF", "#FFB627"]);
+      sfx.fanfara();
+    }
+  }, [room.status, accent]);
 
   useGameTick(room.code, room.phaseEndsAt, isHost, room.status === "playing", serverNow);
 
@@ -79,6 +92,12 @@ export function GameShell({
           accent={accent}
         />
       </div>
+
+      {!wakeSupported && (
+        <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
+          Ustaw wygaszanie ekranu na dłużej — Twoja przeglądarka nie utrzyma go sama.
+        </p>
+      )}
 
       {finished && isHost && (
         <button className="btn" onClick={() => apiPost(`/api/rooms/${room.code}/reset`).catch(() => {})}>

@@ -1,0 +1,14 @@
+{
+  "name": "Domówka",
+  "short_name": "Domówka",
+  "description": "Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.",
+  "lang": "pl",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0A12",
+  "theme_color": "#0B0A12",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "192x192 512x512 any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

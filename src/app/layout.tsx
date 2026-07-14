@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 // Wszystkie trzy fonty mają subset latin-ext (Ą Ć Ę Ł Ń Ó Ś Ź Ż) — SPEC §6.2.
 const chakraPetch = Chakra_Petch({
@@ -25,6 +26,13 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Domówka",
   description: "Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "Domówka",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Domówka" },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -47,6 +55,7 @@ export default function RootLayout({
         className={`${chakraPetch.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       >
         {children}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
