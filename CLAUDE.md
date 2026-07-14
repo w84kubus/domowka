@@ -51,7 +51,7 @@ firebase deploy --only firestore:rules
 <!-- odhaczaj po każdej fazie -->
 
 - [x] Faza 0 — setup, Firebase, auth, deploy hello-world na Vercel
-- [ ] Faza 1 — pokoje, lobby, presence, reconnect, QR, ekran hosta
+- [x] Faza 1 — pokoje, lobby, presence, reconnect, QR, ekran hosta
 - [ ] Faza 2 — silnik gier + registry + kółko i krzyżyk
 - [ ] Faza 3 — Stoper
 - [ ] Faza 4 — Państwa-miasta
