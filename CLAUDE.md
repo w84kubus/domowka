@@ -56,6 +56,6 @@ firebase deploy --only firestore:rules
 - [~] Faza 3 — Stoper: tryb A „CEL" gotowy i zweryfikowany na produkcji; tryb B „ZGADNIJ CZAS" do zrobienia
 - [x] Faza 4 — Państwa-miasta (zweryfikowane na produkcji: tajność pisania, kwestionowanie, dedup, punktacja)
 - [x] Faza 5 — Wisielec: 3 tryby (wyścig/kooperacja/zadający) w silniku + UI (klawiatura PL, SVG szubienicy); kooperacja zweryfikowana na produkcji (tajność hasła)
-- [ ] Faza 6 — Impostor
+- [x] Faza 6 — Impostor: role/hasło tajne, 5 wariantów podpowiedzi (+ „nie wie, że jest impostorem"), głosowanie, zgadywanie po wylocie; zweryfikowane na produkcji (brak wycieku w publicState)
 - [ ] Faza 7 — Mafia
 - [ ] Faza 8 — polish (dźwięki, animacje, PWA)
