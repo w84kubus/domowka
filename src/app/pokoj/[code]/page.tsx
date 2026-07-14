@@ -5,6 +5,8 @@ import Link from "next/link";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
 import { RoomQr } from "@/components/RoomQr";
 import { PlayerList } from "@/components/PlayerList";
+import { GameShell } from "@/components/game/GameShell";
+import { LobbyGames } from "@/components/game/LobbyGames";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useServerClock } from "@/hooks/useServerClock";
 import { useRoom } from "@/hooks/useRoom";
@@ -77,6 +79,11 @@ export default function LobbyPage() {
     );
   }
 
+  // Gra w toku (lub zakończona) → oddajemy ekran harnessowi gry.
+  if (room.status !== "lobby" && uid) {
+    return <GameShell room={room} meUid={uid} serverNow={serverNow} />;
+  }
+
   const isHost = uid === room.hostUid;
   const playerCount = Object.keys(room.players).length;
 
@@ -116,22 +123,12 @@ export default function LobbyPage() {
         />
       </section>
 
-      <section className="mt-auto flex flex-col gap-3">
-        {isHost ? (
-          <>
-            <button type="button" className="btn btn-accent" disabled title="Gry pojawią się w Fazie 2">
-              Zaczynamy (gry w Fazie 2)
-            </button>
-            <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
-              Jesteś hostem. Wybór gry i ustawienia dojdą w kolejnej fazie.
-            </p>
-          </>
-        ) : (
-          <p className="text-center text-sm text-[var(--color-tekst-drugi)]">
-            Czekamy, aż host rozpocznie grę.
-          </p>
-        )}
-        <button type="button" onClick={leave} className="btn">
+      <section className="flex flex-col gap-3">
+        <LobbyGames code={room.code} isHost={isHost} playerCount={playerCount} />
+      </section>
+
+      <section className="mt-auto pt-2">
+        <button type="button" onClick={leave} className="btn w-full">
           Wyjdź z pokoju
         </button>
       </section>

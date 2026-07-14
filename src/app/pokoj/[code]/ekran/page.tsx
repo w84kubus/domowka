@@ -9,6 +9,8 @@ import { useRoom } from "@/hooks/useRoom";
 import { apiPost } from "@/lib/client/api";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { DISCONNECT_AFTER_MS } from "@/lib/types/room";
+import { GAMES } from "@/games/registry";
+import { GAME_COMPONENTS } from "@/games/components";
 
 // Ekran hosta (SPEC §3.9): wspólny ekran na TV. „Co widzą wszyscy" — wielki kod + QR + gracze.
 // Ekran udaje stary telewizor (CRT §6.1). Nie jest graczem: rejestruje się jako obserwator,
@@ -43,6 +45,23 @@ export default function EkranPage() {
 
   const now = serverNow();
   const players = room ? Object.values(room.players).sort((a, b) => a.joinedAt - b.joinedAt) : [];
+
+  // Gra w toku → ekran hosta pokazuje HostView danej gry (dramaturgia, SPEC §3.9).
+  if (room && room.status !== "lobby" && room.gameId) {
+    const entry = GAMES[room.gameId];
+    const HostView = GAME_COMPONENTS[room.gameId]?.HostView;
+    const accent = entry?.manifest.accentColor ?? "#22d3ee";
+    return (
+      <main className="crt screen items-center justify-center gap-6 pt-8 text-center">
+        <div className="crt-scanlines" aria-hidden />
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{entry?.manifest.emoji}</span>
+          <RoomCodeNeon code={code} size="2rem" accent={accent} />
+        </div>
+        {HostView && <HostView room={room} publicState={room.publicState} serverNow={serverNow} accent={accent} />}
+      </main>
+    );
+  }
 
   return (
     <main className="crt screen items-center gap-10 pt-10 text-center">
