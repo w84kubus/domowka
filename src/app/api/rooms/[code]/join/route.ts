@@ -1,0 +1,70 @@
+import { NextResponse } from "next/server";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { ApiError, requireUid } from "@/lib/server/auth";
+import { handleApiError } from "@/lib/server/http";
+import { newPlayer } from "@/lib/server/rooms";
+import { codeParamSchema, dedupeNick, joinRoomSchema } from "@/lib/schemas/room";
+import type { Player, Room } from "@/lib/types/room";
+
+export const runtime = "nodejs";
+
+// POST /api/rooms/[code]/join — dołącza gracza. Idempotentne: powrót tego samego uid = update.
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ code: string }> },
+) {
+  try {
+    const uid = await requireUid(req);
+    const code = codeParamSchema.parse((await ctx.params).code);
+    const body = await req.json().catch(() => ({}));
+    const { nick, avatar } = joinRoomSchema.parse(body);
+
+    const db = getAdminDb();
+    const ref = db.doc(`rooms/${code}`);
+    const now = Date.now();
+
+    await db.runTransaction(async (t) => {
+      const snap = await t.get(ref);
+      if (!snap.exists) throw new ApiError(404, "Nie ma pokoju o tym kodzie.");
+      const room = snap.data() as Room;
+
+      const existing = room.players[uid];
+      if (existing) {
+        // Powrót gracza (np. odświeżenie): odśwież obecność, zostaw nick/awatar z powrotu.
+        const updated: Player = {
+          ...existing,
+          nick: dedupeNick(nick, nicksExcept(room, uid)),
+          avatar,
+          connected: true,
+          lastSeenAt: now,
+        };
+        t.update(ref, {
+          [`players.${uid}`]: updated,
+          version: room.version + 1,
+        });
+        return;
+      }
+
+      if (room.status !== "lobby") {
+        throw new ApiError(409, "Gra już trwa — poczekaj na koniec rundy.");
+      }
+
+      const finalNick = dedupeNick(nick, nicksExcept(room, uid));
+      const player = newPlayer(uid, finalNick, avatar, now, false);
+      t.update(ref, {
+        [`players.${uid}`]: player,
+        version: room.version + 1,
+      });
+    });
+
+    return NextResponse.json({ code });
+  } catch (err) {
+    return handleApiError(err);
+  }
+}
+
+function nicksExcept(room: Room, uid: string): string[] {
+  return Object.values(room.players)
+    .filter((p) => p.uid !== uid)
+    .map((p) => p.nick);
+}

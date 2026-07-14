@@ -1,0 +1,44 @@
+// Model danych pokoju (SPEC §3.2). players i observers to MAPY (nie tablice) —
+// łatwiejsze reguły Firestore i bezpieczne równoległe update'y (SPEC §8, pkt 4).
+
+export type RoomStatus = "lobby" | "playing" | "finished";
+
+export interface Player {
+  uid: string;
+  nick: string;
+  avatar: string; // emoji
+  joinedAt: number; // ms epoch (czas serwera)
+  isHost: boolean;
+  connected: boolean; // wyliczane lokalnie z lastSeenAt; w dokumencie trzymamy ostatnią znaną wartość
+  lastSeenAt: number; // ms epoch, aktualizowane pingiem co 5 s (SPEC §3.7)
+  totalScore: number;
+}
+
+export type PlayerMap = Record<string, Player>;
+
+export interface Room {
+  code: string;
+  createdAt: number;
+  expiresAt: number; // TTL 8h (SPEC §3.7)
+  hostUid: string;
+  narratorUid: string | null;
+  status: RoomStatus;
+  gameId: string | null;
+  settings: Record<string, unknown>;
+  players: PlayerMap;
+  observers: Record<string, true>; // ekrany hosta (SPEC §3.9) — mają prawo czytać pokój
+  seatOrder: string[]; // losowana raz przy starcie gry
+  round: number;
+  phase: string;
+  phaseStartedAt: number | null;
+  phaseEndsAt: number | null;
+  publicState: Record<string, unknown>;
+  version: number; // optimistic lock (SPEC §8, pkt 11)
+}
+
+// Ile ms bez pinga oznacza „rozłączony" (SPEC §3.7).
+export const DISCONNECT_AFTER_MS = 20_000;
+// Jak często klient pinguje (SPEC §3.7).
+export const PING_INTERVAL_MS = 5_000;
+// Żywotność pokoju (SPEC §3.7).
+export const ROOM_TTL_MS = 8 * 60 * 60 * 1000;

@@ -13,8 +13,11 @@
     "firebase": "^12.16.0",
     "firebase-admin": "^14.1.0",
     "next": "15.5.20",
+    "qrcode.react": "^4.2.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

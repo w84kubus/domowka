@@ -5,9 +5,12 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
 
     match /rooms/{code} {
-      // Czytać pokój może tylko ktoś, kto już w nim siedzi.
-      // Dołączanie idzie przez API (Admin SDK), więc to nie blokuje wejścia.
-      allow read: if signedIn() && request.auth.uid in resource.data.players;
+      // Czytać pokój może gracz (w players) albo ekran hosta (w observers, SPEC §3.9).
+      // Dołączanie i rejestracja obserwatora idą przez API (Admin SDK), więc to nie blokuje wejścia.
+      allow read: if signedIn() && (
+        request.auth.uid in resource.data.players ||
+        (resource.data.observers != null && request.auth.uid in resource.data.observers)
+      );
       allow write: if false;
 
       match /private/{uid} {
