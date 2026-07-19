@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import type { Role } from "./engine";
+import { useSent } from "@/games/useOptimistic";
 
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; confirmed: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
@@ -29,6 +30,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
   const left = secLeft(room.phaseEndsAt, serverNow());
   const me = pub.players.find((p) => p.uid === meUid);
   const iAmAlive = me?.alive ?? true;
+  const [sent, markSent] = useSent(room.version); // natychmiastowy feedback na akcję/głos
 
   const narrator = <p className="text-center text-sm italic text-[var(--color-tekst-drugi)]">{pub.narrator}</p>;
 
@@ -38,9 +40,9 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
       <div className="flex flex-col items-center gap-5" style={{ ["--accent" as string]: accent }}>
         {narrator}
         <RoleCard priv={priv} nickOf={nickOf} accent={accent} />
-        {me?.confirmed
+        {me?.confirmed || sent
           ? <p className="text-[var(--color-tekst-drugi)]">Czekamy… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
-          : <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "CONFIRM" })}>Zapamiętałem</button>}
+          : <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>Zapamiętałem</button>}
       </div>
     );
   }
@@ -84,7 +86,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
         {narrator}
         {role === "mieszkaniec" && <p className="text-center text-[var(--color-tekst-drugi)]">Śpisz spokojnie. Miasto działa bez Ciebie.</p>}
         {role && role !== "mieszkaniec" && (
-          acted ? (
+          acted || sent ? (
             <p className="text-center" style={{ color: accent }}>
               Wybór zapisany. Czekaj na świt… {left != null ? `(${left}s)` : ""}
               {role === "detektyw" && priv?.checks && priv.checks.length > 0 && (
@@ -106,7 +108,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
                   const type = role === "mafia" ? "MAFIA_KILL" : role === "detektyw" ? "INVESTIGATE" : "PROTECT";
                   const mafiaVoteCount = role === "mafia" && priv?.mafiaVotes ? Object.values(priv.mafiaVotes).filter((t) => t === p.uid).length : 0;
                   return (
-                    <button key={p.uid} className="btn" onClick={() => dispatch({ type, target: p.uid })}>
+                    <button key={p.uid} className="btn" onClick={() => { markSent(); dispatch({ type, target: p.uid }); }}>
                       {p.avatar} {p.nick}{mafiaVoteCount > 0 ? ` (${mafiaVoteCount})` : ""}
                     </button>
                   );
@@ -140,16 +142,16 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
     <div className="flex flex-col gap-3" style={{ ["--accent" as string]: accent }}>
       <p className="text-center text-xl">🗳️ Głosowanie {left != null ? `· ${left}s` : ""}</p>
       {narrator}
-      {!iAmAlive ? <p className="text-center text-[var(--color-tekst-drugi)]">Martwi nie głosują.</p> : me?.voted ? (
+      {!iAmAlive ? <p className="text-center text-[var(--color-tekst-drugi)]">Martwi nie głosują.</p> : me?.voted || sent ? (
         <p className="text-center text-[var(--color-tekst-drugi)]">Zagłosowano. Czekamy…</p>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {pub.players.filter((p) => p.alive && p.uid !== meUid).map((p) => (
-            <button key={p.uid} className="btn" onClick={() => dispatch({ type: "VOTE", target: p.uid })}>
+            <button key={p.uid} className="btn" onClick={() => { markSent(); dispatch({ type: "VOTE", target: p.uid }); }}>
               {p.avatar} {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}
             </button>
           ))}
-          <button className="btn col-span-2" onClick={() => dispatch({ type: "VOTE", target: "nikt" })}>Nikt</button>
+          <button className="btn col-span-2" onClick={() => { markSent(); dispatch({ type: "VOTE", target: "nikt" }); }}>Nikt</button>
         </div>
       )}
     </div>

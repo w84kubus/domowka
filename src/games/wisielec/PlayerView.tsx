@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { sfx, vibrate } from "@/lib/sound";
 import { Hangman, MaskedWord, PolishKeyboard } from "./ui";
+import { usePendingSet } from "@/games/useOptimistic";
 
 type Cell = { ch: string | null; kind: "letter" | "space" | "punct" };
 interface Pub {
@@ -106,7 +107,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
           </p>
         ) : (
           <>
-            <GuessControls hits={priv?.hits ?? []} misses={priv?.misses ?? []} dispatch={dispatch} disabled={false} extraLetters={pub.extraLetters} accent={accent} />
+            <GuessControls hits={priv?.hits ?? []} misses={priv?.misses ?? []} dispatch={dispatch} disabled={false} extraLetters={pub.extraLetters} accent={accent} resetKey={room.version} />
           </>
         )}
         <ProgressBars pub={pub} nickOf={nickOf} accent={accent} />
@@ -128,7 +129,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
       ) : myTurn ? (
         <>
           <p className="text-sm font-semibold" style={{ color: accent }}>Twoja tura {left != null ? `· ${left}s` : ""}</p>
-          <GuessControls hits={pub.hits ?? []} misses={pub.misses ?? []} dispatch={dispatch} disabled={false} extraLetters={pub.extraLetters} accent={accent} />
+          <GuessControls hits={pub.hits ?? []} misses={pub.misses ?? []} dispatch={dispatch} disabled={false} extraLetters={pub.extraLetters} accent={accent} resetKey={room.version} />
         </>
       ) : (
         <p className="text-center text-[var(--color-tekst-drugi)]">Tura: <b>{nickOf(pub.turnUid ?? "")}</b> {left != null ? `· ${left}s` : ""}</p>
@@ -137,17 +138,19 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
   );
 }
 
-function GuessControls({ hits, misses, dispatch, disabled, extraLetters, accent }: {
-  hits: string[]; misses: string[]; dispatch: (a: unknown) => Promise<void>; disabled: boolean; extraLetters: boolean; accent: string;
+function GuessControls({ hits, misses, dispatch, disabled, extraLetters, accent, resetKey }: {
+  hits: string[]; misses: string[]; dispatch: (a: unknown) => Promise<void>; disabled: boolean; extraLetters: boolean; accent: string; resetKey: unknown;
 }) {
+  const [pending, addPending] = usePendingSet(resetKey);
   const guess = (l: string) => {
+    addPending(l); // natychmiastowy feedback — klawisz „wciska się" od razu
     dispatch({ type: "GUESS", letter: l }).catch(() => {});
     vibrate(15);
     sfx.tick();
   };
   return (
     <div className="flex w-full flex-col gap-3">
-      <PolishKeyboard hits={hits} misses={misses} onLetter={guess} disabled={disabled} extraLetters={extraLetters} />
+      <PolishKeyboard hits={hits} misses={misses} onLetter={guess} disabled={disabled} extraLetters={extraLetters} pending={pending} />
       <SolveBox dispatch={dispatch} accent={accent} />
     </div>
   );

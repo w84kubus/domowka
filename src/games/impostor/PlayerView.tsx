@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
+import { useSent } from "@/games/useOptimistic";
 
 interface Pub {
   round: number; totalRounds: number;
@@ -28,6 +29,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
   const now = serverNow();
   const left = secLeft(room.phaseEndsAt, now);
   const me = pub.players.find((p) => p.uid === meUid);
+  const [sent, markSent] = useSent(room.version); // natychmiastowy feedback (potwierdzenie/głos)
 
   const header = (
     <p className="text-center text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
@@ -41,10 +43,10 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
       <div className="flex flex-col items-center gap-5" style={{ ["--accent" as string]: accent }}>
         {header}
         <RoleCard priv={priv} accent={accent} />
-        {me?.confirmed ? (
+        {me?.confirmed || sent ? (
           <p className="text-[var(--color-tekst-drugi)]">Czekamy na resztę… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
         ) : (
-          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "CONFIRM" })}>Zapamiętałem</button>
+          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>Zapamiętałem</button>
         )}
       </div>
     );
@@ -93,12 +95,16 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
       <div className="flex flex-col gap-3" style={{ ["--accent" as string]: accent }}>
         {header}
         <p className="text-center font-semibold" style={{ color: accent }}>Kto jest impostorem? {left != null ? `· ${left}s` : ""}</p>
-        <div className="grid grid-cols-2 gap-2">
-          {pub.players.filter((p) => p.uid !== meUid).map((p) => (
-            <button key={p.uid} disabled={me?.voted} onClick={() => dispatch({ type: "VOTE", targetUid: p.uid })}
-              className="btn disabled:opacity-50">{p.avatar} {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}</button>
-          ))}
-        </div>
+        {me?.voted || sent ? (
+          <p className="text-center text-[var(--color-tekst-drugi)]">Zagłosowano — czekamy…</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {pub.players.filter((p) => p.uid !== meUid).map((p) => (
+              <button key={p.uid} onClick={() => { markSent(); dispatch({ type: "VOTE", targetUid: p.uid }); }}
+                className="btn disabled:opacity-50">{p.avatar} {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}</button>
+            ))}
+          </div>
+        )}
         {me?.voted && <p className="text-center text-sm text-[var(--color-tekst-drugi)]">Zagłosowano. Czekamy…</p>}
       </div>
     );

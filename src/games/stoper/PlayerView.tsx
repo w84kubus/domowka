@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { sfx, vibrate } from "@/lib/sound";
+import { useSent } from "@/games/useOptimistic";
 
 interface PublicState {
   mode: string;
@@ -32,8 +33,9 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
   const [measuring, setMeasuring] = useState(false);
   const [invalidated, setInvalidated] = useState(false);
   const t0 = useRef(0);
+  const [sentStop, markStop] = useSent(pub.round); // natychmiast pokaż „Zatrzymano" po STOP
 
-  const submitted = priv?.submitted || pub.submitted.includes(meUid);
+  const submitted = priv?.submitted || pub.submitted.includes(meUid) || sentStop;
 
   // Zmiana karty w trakcie pomiaru unieważnia próbę (SPEC §5.2).
   useEffect(() => {
@@ -64,6 +66,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
   const stop = () => {
     const elapsed = performance.now() - t0.current;
     setMeasuring(false);
+    markStop(); // od razu pokaż „Zatrzymano", nie czekaj na snapshot
     sfx.stop();
     vibrate(30);
     dispatch({ type: "SUBMIT", valueMs: Math.round(elapsed) }).catch(() => {});

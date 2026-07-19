@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { sfx } from "@/lib/sound";
+import { useSent } from "@/games/useOptimistic";
 
 interface Common {
   round: number;
@@ -35,6 +36,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
   useTicker();
   const now = serverNow();
+  const [sent, markSent] = useSent(room.version); // natychmiastowy feedback (kwestia/głos)
 
   // ---- FAZA: LOSOWANIE ----
   if (pub.phase === "losowanie") {
@@ -78,12 +80,12 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
             {active.justification && <p className="text-center text-sm italic text-[var(--color-tekst-drugi)]">— {active.justification}</p>}
             {priv?.amTarget ? (
               <JustifyBox dispatch={dispatch} />
-            ) : priv?.myVote ? (
-              <p className="text-center text-sm text-[var(--color-tekst-drugi)]">Zagłosowano: {priv.myVote === "uznaje" ? "UZNAJĘ" : "ODRZUCAM"}</p>
+            ) : priv?.myVote || sent ? (
+              <p className="text-center text-sm text-[var(--color-tekst-drugi)]">Zagłosowano — czekamy…</p>
             ) : (
               <div className="flex gap-2">
-                <button className="btn flex-1" onClick={() => dispatch({ type: "VOTE", verdict: "uznaje" })}>UZNAJĘ</button>
-                <button className="btn flex-1" onClick={() => dispatch({ type: "VOTE", verdict: "odrzucam" })} style={{ color: "var(--color-magenta)" }}>ODRZUCAM</button>
+                <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "uznaje" }); }}>UZNAJĘ</button>
+                <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "odrzucam" }); }} style={{ color: "var(--color-magenta)" }}>ODRZUCAM</button>
               </div>
             )}
             <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
@@ -104,9 +106,9 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
                   </span>
                   {e.autoZero && <span title="zła litera" className="text-xs text-[var(--color-magenta)]">zła litera</span>}
                   {e.rejected && <span className="text-xs text-[var(--color-magenta)]">odrzucona</span>}
-                  {!active && !e.autoZero && !e.rejected && e.answer && e.uid !== meUid && (
+                  {!active && !sent && !e.autoZero && !e.rejected && e.answer && e.uid !== meUid && (
                     <button
-                      onClick={() => dispatch({ type: "CHALLENGE", targetUid: e.uid, cat: c.cat })}
+                      onClick={() => { markSent(); dispatch({ type: "CHALLENGE", targetUid: e.uid, cat: c.cat }); }}
                       className="rounded-md border border-[var(--color-obramowanie)] px-2 py-1 text-xs"
                       aria-label="Kwestionuję"
                     >

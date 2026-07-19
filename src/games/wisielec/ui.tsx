@@ -5,13 +5,14 @@ const BASE = "A Ą B C Ć D E Ę F G H I J K L Ł M N Ń O Ó P R S Ś T U W Y Z
 const EXTRA = ["Q", "V", "X"];
 
 export function PolishKeyboard({
-  hits, misses, onLetter, disabled, extraLetters,
+  hits, misses, onLetter, disabled, extraLetters, pending,
 }: {
   hits: string[];
   misses: string[];
   onLetter: (l: string) => void;
   disabled: boolean;
   extraLetters: boolean;
+  pending?: Set<string>;
 }) {
   const letters = extraLetters ? [...BASE, ...EXTRA] : BASE;
   return (
@@ -19,7 +20,8 @@ export function PolishKeyboard({
       {letters.map((l) => {
         const hit = hits.includes(l);
         const miss = misses.includes(l);
-        const used = hit || miss;
+        const isPending = pending?.has(l) && !hit && !miss; // wciśnięte, czekamy na serwer
+        const used = hit || miss || !!isPending;
         return (
           <button
             key={l}
@@ -30,10 +32,11 @@ export function PolishKeyboard({
             className="flex h-11 items-center justify-center rounded-lg border text-lg font-bold transition-transform active:scale-90 disabled:active:scale-100"
             style={{
               fontFamily: "var(--font-display)",
-              borderColor: hit ? "#4ade80" : miss ? "var(--color-czerwien)" : "var(--color-obramowanie)",
-              background: hit ? "rgba(74,222,128,0.18)" : miss ? "rgba(228,0,43,0.18)" : "var(--color-powierzchnia)",
+              borderColor: hit ? "#4ade80" : miss ? "var(--color-czerwien)" : isPending ? "var(--color-bursztyn)" : "var(--color-obramowanie)",
+              background: hit ? "rgba(74,222,128,0.18)" : miss ? "rgba(228,0,43,0.18)" : isPending ? "var(--color-uniesione)" : "var(--color-powierzchnia)",
               color: used ? "var(--color-tekst-drugi)" : "var(--color-tekst)",
-              opacity: disabled && !used ? 0.4 : 1,
+              opacity: (disabled && !used) || isPending ? 0.6 : 1,
+              transform: isPending ? "scale(0.92)" : undefined,
             }}
           >
             {l}
