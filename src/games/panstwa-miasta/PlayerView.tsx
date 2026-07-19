@@ -11,12 +11,11 @@ interface Common {
   categories: string[];
   players: { uid: string; nick: string; avatar: string; score: number; roundDelta: number }[];
 }
+type Entry = { uid: string; answer: string; autoZero: boolean; rejected: boolean };
 type Pub = Common & {
   stoppedBy?: string | null;
   progress?: { uid: string; filled: number }[];
-  verifyCat?: number;
-  categoryName?: string;
-  entries?: { uid: string; answer: string; autoZero: boolean; rejected: boolean }[];
+  board?: { cat: number; category: string; entries: Entry[] }[];
   active?: { targetUid: string; by: string; justification: string; voted: string[]; tally: { uznaje: number; odrzucam: number } } | null;
   breakdown?: { category: string; answers: { uid: string; answer: string; points: number; status: string }[] }[] | null;
 };
@@ -60,28 +59,23 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
     return <WritingPhase pub={pub} room={room} priv={privateState} isHost={isHost} dispatch={dispatch} now={now} accent={accent} nickOf={nickOf} />;
   }
 
-  // ---- FAZA: WERYFIKACJA ----
+  // ---- FAZA: WERYFIKACJA (cała plansza na raz) ----
   if (pub.phase === "weryfikacja") {
     const priv = privateState as { myVote: string | null; amTarget: boolean } | null;
-    const cat = pub.categoryName ?? "";
     const active = pub.active ?? null;
     return (
       <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
         <div className="text-center">
           <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
-            Weryfikacja · litera {pub.letter} · {(pub.verifyCat ?? 0) + 1}/{pub.categories.length}
+            Weryfikacja · litera {pub.letter}
           </p>
-          <h2 className="text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: accent }}>{cat}</h2>
+          <p className="text-xs text-[var(--color-tekst-drugi)]">Przejrzyjcie odpowiedzi i zgłoście wątpliwe 🚩</p>
         </div>
 
-        {active ? (
-          <div className="card flex flex-col gap-3 p-4" style={{ borderColor: accent }}>
+        {active && (
+          <div className="card sticky top-2 z-10 flex flex-col gap-3 p-4" style={{ borderColor: accent }}>
             <p className="text-sm text-[var(--color-tekst-drugi)]">Kwestia: odpowiedź <b>{nickOf(active.targetUid)}</b></p>
-            <p className="text-center text-lg font-semibold">
-              „{pub.entries?.find((e) => e.uid === active.targetUid)?.answer}”
-            </p>
             {active.justification && <p className="text-center text-sm italic text-[var(--color-tekst-drugi)]">— {active.justification}</p>}
-
             {priv?.amTarget ? (
               <JustifyBox dispatch={dispatch} />
             ) : priv?.myVote ? (
@@ -96,33 +90,38 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
               UZNAJĘ {active.tally.uznaje} · ODRZUCAM {active.tally.odrzucam} (remis = uznana)
             </p>
           </div>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {pub.entries?.map((e) => (
-              <li key={e.uid} className="card flex items-center gap-3 px-4 py-2">
-                <span className="text-sm text-[var(--color-tekst-drugi)]">{nickOf(e.uid)}</span>
-                <span className={`flex-1 truncate font-semibold ${e.rejected || e.autoZero ? "text-[var(--color-tekst-drugi)] line-through" : ""}`}>
-                  {e.answer || <span className="italic text-[var(--color-tekst-drugi)]">—</span>}
-                </span>
-                {e.autoZero && <span title="zła litera" className="text-xs text-[var(--color-magenta)]">zła litera</span>}
-                {e.rejected && <span className="text-xs text-[var(--color-magenta)]">odrzucona</span>}
-                {!e.autoZero && !e.rejected && e.answer && e.uid !== meUid && (
-                  <button
-                    onClick={() => dispatch({ type: "CHALLENGE", targetUid: e.uid, cat: pub.verifyCat })}
-                    className="rounded-md border border-[var(--color-obramowanie)] px-2 py-1 text-xs"
-                    aria-label="Kwestionuję"
-                  >
-                    🚩
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
         )}
 
+        {pub.board?.map((c) => (
+          <div key={c.cat} className="flex flex-col gap-1">
+            <p className="text-sm font-semibold" style={{ color: accent }}>{c.category}</p>
+            <ul className="flex flex-col gap-1.5">
+              {c.entries.map((e) => (
+                <li key={e.uid} className="card flex items-center gap-3 px-4 py-2">
+                  <span className="w-20 shrink-0 truncate text-sm text-[var(--color-tekst-drugi)]">{nickOf(e.uid)}</span>
+                  <span className={`flex-1 truncate font-semibold ${e.rejected || e.autoZero ? "text-[var(--color-tekst-drugi)] line-through" : ""}`}>
+                    {e.answer || <span className="italic text-[var(--color-tekst-drugi)]">—</span>}
+                  </span>
+                  {e.autoZero && <span title="zła litera" className="text-xs text-[var(--color-magenta)]">zła litera</span>}
+                  {e.rejected && <span className="text-xs text-[var(--color-magenta)]">odrzucona</span>}
+                  {!active && !e.autoZero && !e.rejected && e.answer && e.uid !== meUid && (
+                    <button
+                      onClick={() => dispatch({ type: "CHALLENGE", targetUid: e.uid, cat: c.cat })}
+                      className="rounded-md border border-[var(--color-obramowanie)] px-2 py-1 text-xs"
+                      aria-label="Kwestionuję"
+                    >
+                      🚩
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
         {isHost && (
-          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>
-            {active ? "Zamknij głosowanie" : (pub.verifyCat ?? 0) + 1 >= pub.categories.length ? "Podlicz wyniki →" : "Następna kategoria →"}
+          <button className="btn btn-accent mt-2" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>
+            {active ? "Zamknij głosowanie" : "Podlicz wyniki →"}
           </button>
         )}
       </div>

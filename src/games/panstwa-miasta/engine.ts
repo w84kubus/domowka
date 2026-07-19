@@ -275,9 +275,7 @@ export const pmEngine: GameEngine<PmState, PmAction, PmSettings> = {
       if (state.phase === "wyniki") return advance(state, ctx.now, ctx.rng);
       if (state.phase === "weryfikacja") {
         if (state.active) return resolveChallenge(state); // domknij trwające głosowanie
-        const nextCat = state.verifyCat + 1;
-        if (nextCat >= state.categories.length) return toResults(state, ctx.now);
-        return { ...state, verifyCat: nextCat, pendingEvents: [] };
+        return toResults(state, ctx.now); // wszystkie odpowiedzi widoczne od razu → host podlicza
       }
       return state;
     }
@@ -310,7 +308,7 @@ export const pmEngine: GameEngine<PmState, PmAction, PmSettings> = {
     if (action.type === "CHALLENGE") {
       if (state.phase !== "weryfikacja") throw new GameError("Nie ta faza.");
       if (state.active) throw new GameError("Trwa już głosowanie.");
-      if (action.cat !== state.verifyCat) throw new GameError("Nie ta kategoria.");
+      if (action.cat < 0 || action.cat >= state.categories.length) throw new GameError("Nie ma takiej kategorii.");
       if (action.targetUid === ctx.uid) throw new GameError("Nie kwestionujesz własnej odpowiedzi.");
       if (!state.playerUids.includes(action.targetUid)) throw new GameError("Nie ma takiego gracza.");
       const ans = (state.answers[action.targetUid]?.[action.cat] ?? "").trim();
@@ -373,18 +371,23 @@ export const pmEngine: GameEngine<PmState, PmAction, PmSettings> = {
     }
 
     if (state.phase === "weryfikacja") {
-      const c = state.verifyCat;
+      // Cała plansza jawna od razu — każdy przegląda wszystkie kategorie i flaguje w swoim tempie.
+      const board = state.categories.map((category, c) => ({
+        cat: c,
+        category,
+        entries: state.playerUids.map((uid) => {
+          const answer = (state.answers[uid]?.[c] ?? "").trim();
+          return {
+            uid,
+            answer,
+            autoZero: answer !== "" && !firstLetterOk(answer, state.letter),
+            rejected: !!state.rejected[uid]?.[c],
+          };
+        }),
+      }));
       return {
         ...base,
-        verifyCat: c,
-        categoryName: state.categories[c],
-        // Odpowiedzi bieżącej kategorii są teraz jawne (to przegląd).
-        entries: state.playerUids.map((uid) => ({
-          uid,
-          answer: (state.answers[uid]?.[c] ?? "").trim(),
-          autoZero: (state.answers[uid]?.[c] ?? "").trim() !== "" && !firstLetterOk(state.answers[uid]?.[c] ?? "", state.letter),
-          rejected: !!state.rejected[uid]?.[c],
-        })),
+        board,
         active: state.active
           ? {
               targetUid: state.active.targetUid,

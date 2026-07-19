@@ -25,21 +25,13 @@ function signed(ms: number) {
   return "±0,00 s";
 }
 
-export function StoperPlayerView({ room, publicState, privateState, meUid, isHost, dispatch, serverNow, accent }: GameViewProps) {
+export function StoperPlayerView({ publicState, privateState, meUid, isHost, dispatch, accent }: GameViewProps) {
   const pub = publicState as PublicState;
   const priv = privateState as { submitted: boolean; myValueMs: number | null } | null;
 
   const [measuring, setMeasuring] = useState(false);
   const [invalidated, setInvalidated] = useState(false);
   const t0 = useRef(0);
-
-  // Lekki ticker do odliczania (nie wpływa na pomiar — ten liczy performance.now na ref).
-  const [, tick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => tick((n) => n + 1), 500);
-    return () => clearInterval(id);
-  }, []);
-  const secLeft = room.phaseEndsAt != null ? Math.max(0, Math.ceil((room.phaseEndsAt - serverNow()) / 1000)) : null;
 
   const submitted = priv?.submitted || pub.submitted.includes(meUid);
 
@@ -144,9 +136,6 @@ export function StoperPlayerView({ room, publicState, privateState, meUid, isHos
           Runda {pub.round}{pub.totalRounds ? ` / ${pub.totalRounds}` : ""} · Cel
         </p>
         <p className="tabular text-5xl font-bold" style={{ color: accent }}>{fmt(pub.target)}</p>
-        {secLeft != null && !submitted && (
-          <p className="tabular mt-1 text-sm text-[var(--color-tekst-drugi)]">Runda zamknie się za {secLeft}s</p>
-        )}
       </div>
 
       {submitted ? (
@@ -154,7 +143,7 @@ export function StoperPlayerView({ room, publicState, privateState, meUid, isHos
           <p className="tabular text-3xl text-[var(--color-tekst-drugi)]">●●:●●.●●</p>
           <p className="text-[var(--color-tekst-drugi)]">Zatrzymano. Czekamy na resztę…</p>
           <p className="text-sm text-[var(--color-tekst-drugi)]">
-            {pub.submitted.length} / {pub.players.length} gotowych{secLeft != null ? ` · ${secLeft}s` : ""}
+            {pub.submitted.length} / {pub.players.length} gotowych
           </p>
         </div>
       ) : (
@@ -182,6 +171,12 @@ export function StoperPlayerView({ room, publicState, privateState, meUid, isHos
             Zatrzymaj jak najbliżej celu. Cyfry są ukryte — licz w głowie.
           </p>
         </>
+      )}
+
+      {isHost && (
+        <button className="btn mt-2 text-sm" onClick={() => dispatch({ type: "NEXT" })}>
+          Zamknij rundę i pokaż wyniki
+        </button>
       )}
     </div>
   );

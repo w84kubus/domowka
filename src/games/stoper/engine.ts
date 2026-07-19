@@ -66,7 +66,7 @@ function beginRound(state: StoperState, round: number, now: number, rng: () => n
     phase: "pomiar",
     target,
     roundStartedAt: now,
-    phaseEndsAt: now + roundLimitMs(target),
+    phaseEndsAt: null, // bez licznika na START — runda trwa aż wszyscy klikną STOP albo host ją zamknie
     results: {},
     perfectHits: [],
     pendingEvents: [{ type: "runda", text: `Runda ${round}: cel ${fmt(target)}` }],

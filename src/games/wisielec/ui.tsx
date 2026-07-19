@@ -80,7 +80,8 @@ export function MaskedWord({ mask, accent, big }: { mask: MaskCell[]; accent: st
 // Ułamek pokazanych elementów = wrong / maxWrong (działa dla 6/8/10 żyć).
 const PARTS = 10;
 export function Hangman({ wrong, maxWrong, size = 180 }: { wrong: number; maxWrong: number; size?: number }) {
-  const shown = Math.min(PARTS, Math.ceil((wrong / Math.max(1, maxWrong)) * PARTS));
+  // 1 utracone życie = 1 element (a nie ułamek); przy mniejszej liczbie żyć ludzik bywa niepełny.
+  const shown = Math.min(PARTS, wrong);
   const on = (i: number) => (i < shown ? 1 : 0);
   const stroke = { stroke: "var(--color-tekst)", strokeWidth: 4, fill: "none", strokeLinecap: "round" as const };
   const T = "opacity 0.4s ease";

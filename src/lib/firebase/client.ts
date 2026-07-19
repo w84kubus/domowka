@@ -32,18 +32,29 @@ export function getDb(): Firestore {
   return getFirestore(getClientApp());
 }
 
+// Cache zalogowanego użytkownika — każde apiPost woła ensureAnonAuth, więc nie chcemy
+// zakładać nowego nasłuchu onAuthStateChanged za każdym razem (to dodawało opóźnienie na klik).
+let cachedUser: User | null = null;
+
 /**
  * Gwarantuje anonimową sesję i zwraca zalogowanego użytkownika.
  * Anonymous Auth persystuje uid w IndexedDB → refresh strony nie wyrzuca gracza (SPEC §3.7).
+ * Po pierwszym zalogowaniu zwraca z cache'a (synchronicznie), bez round-tripa.
  */
 export function ensureAnonAuth(): Promise<User> {
   const auth = getClientAuth();
+  if (auth.currentUser) {
+    cachedUser = auth.currentUser;
+    return Promise.resolve(auth.currentUser);
+  }
+  if (cachedUser) return Promise.resolve(cachedUser);
   return new Promise((resolve, reject) => {
     const unsub = onAuthStateChanged(
       auth,
       (user) => {
         if (user) {
           unsub();
+          cachedUser = user;
           resolve(user);
           return;
         }

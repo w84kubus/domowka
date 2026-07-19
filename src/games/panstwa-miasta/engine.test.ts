@@ -22,11 +22,8 @@ const fill = (s: PmState, uid: string, answers: string[]) =>
 
 // pisanie → weryfikacja (host zamyka rundę)
 const enterVerify = (s: PmState) => pmEngine.reduce(s, { type: "NEXT" }, ctx("host"));
-// przejdź wszystkie kategorie w weryfikacji → wyniki
-function passAllCats(s: PmState): PmState {
-  for (let i = 0; i < s.categories.length; i++) s = pmEngine.reduce(s, { type: "NEXT" }, ctx("host"));
-  return s;
-}
+// weryfikacja → wyniki (cała plansza na raz, host podlicza jednym kliknięciem)
+const passAllCats = (s: PmState): PmState => pmEngine.reduce(s, { type: "NEXT" }, ctx("host"));
 
 describe("panstwa-miasta engine", () => {
   it("init: runda 1, faza losowanie, litera z puli, 6 kategorii (klasyk)", () => {
