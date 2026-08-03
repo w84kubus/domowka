@@ -72,6 +72,24 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     dispatch({ type: "SUBMIT", valueMs: Math.round(elapsed) }).catch(() => {});
   };
 
+  // Gra na laptopie: spacja = START, a potem STOP (SPEC §5.2 — duży przycisk, tu też klawisz).
+  useEffect(() => {
+    if (pub.phase !== "pomiar" || submitted) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "Space" && e.key !== " ") return;
+      if (e.repeat) return; // trzymanie spacji nie liczy się wielokrotnie
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      e.preventDefault(); // blokuje przewijanie strony i podwójne wyzwolenie z fokusa przycisku
+      if (measuring) stop();
+      else start();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // start/stop pochodzą z bieżącego renderu; re-bind przy zmianie measuring/submitted/fazy
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pub.phase, submitted, measuring]);
+
   // ODSŁONIĘCIE / KONIEC
   if (pub.phase !== "pomiar") {
     const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
@@ -172,6 +190,10 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
           )}
           <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
             Zatrzymaj jak najbliżej celu. Cyfry są ukryte — licz w głowie.
+          </p>
+          {/* Podpowiedź o spacji tylko na urządzeniach z fizyczną klawiaturą (laptop). */}
+          <p className="hidden text-center text-xs text-[var(--color-tekst-drugi)] [@media(pointer:fine)]:block">
+            Na laptopie: <kbd className="rounded border border-[var(--color-obramowanie)] px-1.5 py-0.5">spacja</kbd> = {measuring ? "STOP" : "START"}
           </p>
         </>
       )}
