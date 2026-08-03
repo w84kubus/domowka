@@ -14,6 +14,10 @@ interface RoomState {
 /**
  * Realtime subskrypcja dokumentu pokoju (SPEC §3.1: klient tylko CZYTA).
  * Wymaga wcześniejszego uwierzytelnienia (reguły §3.3 wpuszczają tylko graczy/obserwatorów).
+ *
+ * ODPORNOŚĆ: tuż po dołączeniu token gracza bywa jeszcze nie w pełni rozpropagowany do
+ * Firestore SDK → pierwszy odczyt może dostać przejściowy permission-denied. Zamiast wisieć
+ * na „Wchodzę do pokoju…" bez końca, ponawiamy subskrypcję z narastającym opóźnieniem.
  */
 export function useRoom(code: string | null, authReady: boolean): RoomState {
   const [state, setState] = useState<RoomState>({
@@ -25,32 +29,44 @@ export function useRoom(code: string | null, authReady: boolean): RoomState {
 
   useEffect(() => {
     if (!code || !authReady) return;
-    const ref = doc(getDb(), "rooms", code);
-    const unsub = onSnapshot(
-      ref,
-      (snap) => {
-        if (!snap.exists()) {
-          setState({ room: null, loading: false, error: null, notFound: true });
-          return;
-        }
-        // hasPendingWrites (§8 pkt 9) nas tu nie dotyczy — klient nie pisze do pokoju.
-        setState({
-          room: snap.data() as Room,
-          loading: false,
-          error: null,
-          notFound: false,
-        });
-      },
-      (err) => {
-        setState({
-          room: null,
-          loading: false,
-          error: err.message,
-          notFound: false,
-        });
-      },
-    );
-    return unsub;
+    let cancelled = false;
+    let unsub: () => void = () => {};
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    let retries = 0;
+    const MAX_RETRIES = 6;
+
+    const subscribe = () => {
+      const ref = doc(getDb(), "rooms", code);
+      unsub = onSnapshot(
+        ref,
+        (snap) => {
+          if (cancelled) return;
+          retries = 0; // udany odczyt zeruje licznik
+          if (!snap.exists()) {
+            setState({ room: null, loading: false, error: null, notFound: true });
+            return;
+          }
+          setState({ room: snap.data() as Room, loading: false, error: null, notFound: false });
+        },
+        (err) => {
+          if (cancelled) return;
+          unsub(); // martwy listener — trzeba założyć nowy
+          if (retries < MAX_RETRIES) {
+            retries++;
+            retryTimer = setTimeout(subscribe, 400 * retries); // 0,4s, 0,8s, 1,2s…
+          } else {
+            setState({ room: null, loading: false, error: err.message, notFound: false });
+          }
+        },
+      );
+    };
+    subscribe();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      unsub();
+    };
   }, [code, authReady]);
 
   return state;

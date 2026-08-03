@@ -24,21 +24,29 @@ export function useAnonAuth(): AnonAuthState {
 
   useEffect(() => {
     let active = true;
-    ensureAnonAuth()
-      .then((user) => {
-        if (active) setState({ user, uid: user.uid, loading: false, error: null });
-      })
-      .catch((err) => {
-        if (active)
-          setState({
-            user: null,
-            uid: null,
-            loading: false,
-            error: err?.message ?? "Nie udało się zalogować anonimowo.",
-          });
-      });
+    let attempt = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const tryAuth = () => {
+      ensureAnonAuth()
+        .then((user) => {
+          if (active) setState({ user, uid: user.uid, loading: false, error: null });
+        })
+        .catch((err) => {
+          if (!active) return;
+          if (attempt < 4) {
+            attempt++;
+            retryTimer = setTimeout(tryAuth, 500 * attempt); // przejściowy błąd sieci → ponów
+          } else {
+            setState({ user: null, uid: null, loading: false, error: err?.message ?? "Nie udało się zalogować anonimowo." });
+          }
+        });
+    };
+    tryAuth();
+
     return () => {
       active = false;
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, []);
 

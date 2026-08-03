@@ -71,6 +71,22 @@ export default function LobbyPage() {
     );
   }
 
+  // Subskrypcja ostatecznie padła (po ponowieniach) — pokaż odzysk zamiast wisieć w nieskończoność.
+  if (error && !wasMemberRef.current) {
+    return (
+      <main className="screen items-center justify-center gap-6 text-center">
+        <p className="text-lg">Nie udało się wejść do pokoju.</p>
+        <p className="text-sm text-[var(--color-tekst-drugi)]">Sprawdź połączenie i spróbuj ponownie.</p>
+        <button type="button" className="btn btn-accent" onClick={() => window.location.reload()}>
+          Spróbuj ponownie
+        </button>
+        <Link href="/dolacz" className="text-sm text-[var(--color-tekst-drugi)] underline underline-offset-4">
+          ← wróć
+        </Link>
+      </main>
+    );
+  }
+
   if (loading || authLoading || !room) {
     return (
       <main className="screen items-center justify-center">
