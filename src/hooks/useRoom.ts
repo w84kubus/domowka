@@ -53,7 +53,8 @@ export function useRoom(code: string | null, authReady: boolean): RoomState {
           unsub(); // martwy listener — trzeba założyć nowy
           if (retries < MAX_RETRIES) {
             retries++;
-            retryTimer = setTimeout(subscribe, 400 * retries); // 0,4s, 0,8s, 1,2s…
+            // C4: wykładniczy backoff — 0,5s, 1s, 2s, 4s, 8s, 16s
+            retryTimer = setTimeout(subscribe, Math.min(500 * Math.pow(2, retries - 1), 16_000));
           } else {
             setState({ room: null, loading: false, error: err.message, notFound: false });
           }

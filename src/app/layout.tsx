@@ -3,6 +3,7 @@ import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { ConnectionBar } from "@/components/ConnectionBar";
 
 // Wszystkie trzy fonty mają subset latin-ext (Ą Ć Ę Ł Ń Ó Ś Ź Ż) — SPEC §6.2.
 const chakraPetch = Chakra_Petch({
@@ -67,6 +68,7 @@ export default function RootLayout({
       <body
         className={`${chakraPetch.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       >
+        <ConnectionBar />
         {children}
         <InstallPrompt />
         <ServiceWorkerRegister />
