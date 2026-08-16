@@ -54,6 +54,43 @@ export const sfx = {
   fanfara: () => {
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 180, "triangle", 0.14), i * 120));
   },
+  // D5/D6: nowe dźwięki
+  /** Dołączenie gracza — krótki „pop" */
+  join: () => tone(1200, 60, "sine", 0.1),
+  /** Zmiana fazy — niski swoosh */
+  phaseChange: () => {
+    tone(200, 300, "sine", 0.08);
+    setTimeout(() => tone(400, 200, "sine", 0.1), 150);
+  },
+  /** Timer <5 s — przyśpieszony tick */
+  urgentTick: () => tone(800, 30, "square", 0.1),
+  /** Porażka — krótki dong */
+  defeat: () => {
+    tone(220, 400, "sine", 0.12);
+    setTimeout(() => tone(165, 500, "sine", 0.1), 200);
+  },
+  /** Neon buzz — krótkie bzzt rurki neonowej (raz, przy ładowaniu kodu) */
+  neonBuzz: () => {
+    const c = ac();
+    if (!c || muted) return;
+    if (c.state === "suspended") c.resume().catch(() => {});
+    // Szum biały, krótki, cichy — imitacja zapalania rurki
+    const bufSize = c.sampleRate * 0.06; // 60ms
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.04;
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.06, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06);
+    const bpf = c.createBiquadFilter();
+    bpf.type = "bandpass";
+    bpf.frequency.value = 120;
+    bpf.Q.value = 2;
+    src.connect(bpf).connect(g).connect(c.destination);
+    src.start();
+  },
 };
 
 /** Wibracja (SPEC §5.2). iOS Safari tego nie wspiera — to bonus, nie feedback podstawowy. */
