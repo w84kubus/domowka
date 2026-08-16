@@ -59,3 +59,13 @@ firebase deploy --only firestore:rules
 - [x] Faza 6 — Impostor: role/hasło tajne, 5 wariantów podpowiedzi (+ „nie wie, że jest impostorem"), głosowanie, zgadywanie po wylocie; zweryfikowane na produkcji (brak wycieku w publicState)
 - [~] Faza 7 — Mafia: RDZEŃ gotowy i zweryfikowany na produkcji (mafia/mieszkańcy/detektyw/lekarz + auto-narrator, rozliczenie nocy, warunki wygranej, role tajne). Do zrobienia: role dodatkowe (§5.6) + tryb z prowadzącym
 - [~] Faza 8 — polish: PWA (instalowalna, manifest+SW+ikona), Wake Lock (ekran nie gaśnie), konfetti+fanfara na wygranych — zweryfikowane na produkcji. Zostało: Stoper tryb B, role dodatkowe Mafii, „Rekordy pokoju", dopieszczenie dźwięków
+
+## Upgrade v2 — aktualny stan
+
+- [x] Faza A — audyt (`AUDIT.md`): bezpieczeństwo OK, 0 [KRYTYCZNE], lista braków vs SPEC
+- [x] Faza B — PWA: Serwist SW (NetworkOnly /api/ + Firebase), manifest kompletny (id/scope/shortcuts), ikony PNG (any+maskable+apple), prompt instalacji (beforeinstallprompt + iOS hint), ekran offline, useVisualViewport, useVibrate, user-scalable=no usunięte globalnie
+- [ ] Faza C — realtime (rozłączenia, idempotencja, migracja hosta)
+- [ ] Faza D — wygląd (WYMAGA akceptacji planu wizualnego)
+- [ ] Faza E — wydajność (Lighthouse, dynamic imports, fonty)
+- [ ] Faza F — jakość i testy (Vitest pełne partie, Playwright E2E)
+- [ ] Faza G — dopracowanie (QR share, deep links, rekordy)
