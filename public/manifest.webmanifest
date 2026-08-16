@@ -1,14 +1,36 @@
 {
-  "name": "Domówka",
+  "id": "/",
+  "name": "Domówka — gry imprezowe",
   "short_name": "Domówka",
   "description": "Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.",
   "lang": "pl",
+  "dir": "ltr",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0B0A12",
   "theme_color": "#0B0A12",
+  "categories": ["games"],
   "icons": [
-    { "src": "/icon.svg", "sizes": "192x192 512x512 any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nowy pokój",
+      "short_name": "Nowy",
+      "url": "/nowy",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Dołącz do pokoju",
+      "short_name": "Dołącz",
+      "url": "/dolacz",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }
