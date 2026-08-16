@@ -5,6 +5,7 @@ import { GAMES } from "@/games/registry";
 import { usePrivate } from "@/hooks/usePrivate";
 import { useGameTick } from "@/hooks/useGameTick";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { useVisualViewport } from "@/hooks/useVisualViewport";
 import { apiPost } from "@/lib/client/api";
 import { isMuted, setMuted, unlockAudio, sfx } from "@/lib/sound";
 import { celebrate } from "@/lib/confetti";
@@ -30,6 +31,7 @@ export function GameShell({
 
   const privateState = usePrivate(room.code, meUid, true);
   const { supported: wakeSupported } = useWakeLock(true); // ekran nie gaśnie w grze
+  useVisualViewport(); // --vvh, --vv-offset dla klawiatury na mobile
   const [muted, setMutedState] = useState(false);
 
   useEffect(() => {
