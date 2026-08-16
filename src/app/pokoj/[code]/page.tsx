@@ -11,6 +11,7 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useServerClock } from "@/hooks/useServerClock";
 import { useRoom } from "@/hooks/useRoom";
 import { usePresence } from "@/hooks/usePresence";
+import { LobbySkeleton } from "@/components/LobbySkeleton";
 import { apiPost } from "@/lib/client/api";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { useSession } from "@/lib/store/session";
@@ -103,11 +104,7 @@ export default function LobbyPage() {
   }
 
   if (loading || authLoading || !room) {
-    return (
-      <main className="screen items-center justify-center">
-        <p className="text-[var(--color-tekst-drugi)]">Wchodzę do pokoju…</p>
-      </main>
-    );
+    return <LobbySkeleton />;
   }
 
   // Gra w toku (lub zakończona) → oddajemy ekran harnessowi gry.
