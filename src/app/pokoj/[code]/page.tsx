@@ -7,6 +7,7 @@ import { RoomQr } from "@/components/RoomQr";
 import { PlayerList } from "@/components/PlayerList";
 import { GameShell } from "@/components/game/GameShell";
 import { LobbyGames } from "@/components/game/LobbyGames";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useServerClock } from "@/hooks/useServerClock";
 import { useRoom } from "@/hooks/useRoom";
@@ -109,7 +110,11 @@ export default function LobbyPage() {
 
   // Gra w toku (lub zakończona) → oddajemy ekran harnessowi gry.
   if (room.status !== "lobby" && uid) {
-    return <GameShell room={room} meUid={uid} serverNow={serverNow} />;
+    return (
+      <ErrorBoundary context={`game:${room.gameId} room:${code}`}>
+        <GameShell room={room} meUid={uid} serverNow={serverNow} />
+      </ErrorBoundary>
+    );
   }
 
   const isHost = uid === room.hostUid;

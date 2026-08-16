@@ -2,6 +2,7 @@ import "server-only";
 import { FieldValue, type Transaction } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { ApiError } from "./auth";
+import { logger } from "./logger";
 import { GAMES } from "@/games/registry";
 import { mulberry32, randomSeed, shuffle } from "@/games/rng";
 import { GameError, type GameEngine } from "@/games/types";
@@ -138,6 +139,7 @@ export async function startGame(
 
     t.update(ref, { gameId, settings, seatOrder, round: 0, narratorUid: room.narratorUid ?? null });
     persist(t, ref, { ...room, seatOrder, phase: "" }, engine, state, seed, now);
+    logger.info("gra wystartowała", { room: code, game: gameId });
   });
 }
 
@@ -182,7 +184,9 @@ export async function applyAction(code: string, uid: string, rawAction: unknown,
       ? [...recentIds, actionId].slice(-MAX_RECENT_ACTION_IDS)
       : recentIds;
 
+    const phase = engine.phase(next);
     persist(t, ref, room, engine, next, secret.seed, now, updatedIds, secret.fullState);
+    logger.info("akcja", { room: code, game: room.gameId!, phase: phase.name, action: action.type as string });
   });
 }
 
@@ -210,6 +214,8 @@ export async function tickGame(code: string, now: number): Promise<boolean> {
       rng,
     });
     persist(t, ref, room, engine, next, secret.seed, now, undefined, secret.fullState);
+    const newPhase = engine.phase(next);
+    logger.info("tick", { room: code, game: room.gameId!, phase: newPhase.name });
     return true;
   });
 }

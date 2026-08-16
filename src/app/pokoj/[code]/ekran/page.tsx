@@ -12,6 +12,7 @@ import { normalizeRoomCode } from "@/lib/room-code";
 import { DISCONNECT_AFTER_MS } from "@/lib/types/room";
 import { GAME_MANIFESTS } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Ekran hosta (SPEC §3.9, UPGRADE.md §D7): wspólny ekran na TV/laptop.
 // Duża typografia czytelna z 3 metrów, osobny layout — nie skalowany telefon.
@@ -55,14 +56,16 @@ export default function EkranPage() {
     const HostView = GAME_COMPONENTS[room.gameId]?.HostView;
     const accent = manifest?.accentColor ?? "#22d3ee";
     return (
-      <main className="crt flex min-h-[100dvh] flex-col items-center justify-center gap-8 p-8 text-center">
-        <div className="crt-scanlines" aria-hidden />
-        <div className="flex items-center gap-4">
-          <span className="text-4xl">{manifest?.emoji}</span>
-          <RoomCodeNeon code={code} size="3rem" accent={accent} />
-        </div>
-        {HostView && <HostView room={room} publicState={room.publicState} serverNow={serverNow} accent={accent} />}
-      </main>
+      <ErrorBoundary context={`ekran:${room.gameId} room:${code}`}>
+        <main className="crt flex min-h-[100dvh] flex-col items-center justify-center gap-8 p-8 text-center">
+          <div className="crt-scanlines" aria-hidden />
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">{manifest?.emoji}</span>
+            <RoomCodeNeon code={code} size="3rem" accent={accent} />
+          </div>
+          {HostView && <HostView room={room} publicState={room.publicState} serverNow={serverNow} accent={accent} />}
+        </main>
+      </ErrorBoundary>
     );
   }
 
