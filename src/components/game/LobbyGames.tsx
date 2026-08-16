@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { GAME_LIST } from "@/games/registry";
+import { GAME_LIST } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
 import { apiPost } from "@/lib/client/api";
 import { ApiClientError } from "@/lib/client/api";

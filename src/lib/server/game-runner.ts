@@ -41,6 +41,8 @@ function persist(
   seed: number,
   now: number,
   recentActionIds?: string[],
+  /** Poprzedni stan silnika — jeśli podany, private docs piszemy tylko gdy się zmieniły. */
+  prevState?: unknown,
 ) {
   const players = room.players;
   const phase = engine.phase(state);
@@ -71,8 +73,15 @@ function persist(
     ...(recentActionIds ? { recentActionIds } : {}),
   });
 
+  // E1: selektywny zapis private docs — piszemy tylko te, które się zmieniły (UPGRADE.md §E).
+  // Zmniejsza snapshot reads na kliencie (każdy zapis = 1 read per listener).
   for (const uid of Object.keys(players)) {
-    t.set(ref.collection("private").doc(uid), { payload: engine.privateView(state, uid) ?? null });
+    const next = engine.privateView(state, uid) ?? null;
+    if (prevState) {
+      const prev = engine.privateView(prevState, uid) ?? null;
+      if (JSON.stringify(prev) === JSON.stringify(next)) continue;
+    }
+    t.set(ref.collection("private").doc(uid), { payload: next });
   }
 
   for (const ev of events) {
@@ -173,7 +182,7 @@ export async function applyAction(code: string, uid: string, rawAction: unknown,
       ? [...recentIds, actionId].slice(-MAX_RECENT_ACTION_IDS)
       : recentIds;
 
-    persist(t, ref, room, engine, next, secret.seed, now, updatedIds);
+    persist(t, ref, room, engine, next, secret.seed, now, updatedIds, secret.fullState);
   });
 }
 
@@ -200,7 +209,7 @@ export async function tickGame(code: string, now: number): Promise<boolean> {
       now,
       rng,
     });
-    persist(t, ref, room, engine, next, secret.seed, now);
+    persist(t, ref, room, engine, next, secret.seed, now, undefined, secret.fullState);
     return true;
   });
 }

@@ -12,6 +12,10 @@ export const runtime = "nodejs";
 // Gdy host nie pingował >30 s, dowolny gracz, który pinguje, wyzwala migrację.
 const HOST_MIGRATE_AFTER_MS = 30_000;
 
+// E1: debounce zapisu ping — nie piszemy do room doc jeśli gracz pingował < 10 s temu.
+// Zmniejsza snapshot reads (każdy zapis → read per listener).
+const PING_DEBOUNCE_MS = 10_000;
+
 // POST /api/rooms/[code]/ping — obecność (SPEC §3.7). Klient strzela co 5 s.
 // Aktualizujemy lastSeenAt + connected gracza; sprawdzamy migrację hosta.
 export async function POST(
@@ -30,10 +34,7 @@ export async function POST(
     const room = snap.data() as Room;
     if (!room.players[uid]) return new NextResponse(null, { status: 204 });
 
-    const update: Record<string, unknown> = {
-      [`players.${uid}.lastSeenAt`]: now,
-      [`players.${uid}.connected`]: true,
-    };
+    const update: Record<string, unknown> = {};
 
     // C1: Migracja hosta — host rozłączony >30 s → przejdź na najstarszego gracza.
     const host = room.players[room.hostUid];
@@ -46,7 +47,20 @@ export async function POST(
       }
     }
 
-    await ref.update(update);
+    // E1: debounce — piszemy lastSeenAt tylko jeśli minęło >10 s lub status się zmienił.
+    const me = room.players[uid];
+    const stale = now - me.lastSeenAt >= PING_DEBOUNCE_MS;
+    const reconnecting = !me.connected;
+    if (stale || reconnecting) {
+      update[`players.${uid}.lastSeenAt`] = now;
+      update[`players.${uid}.connected`] = true;
+    }
+
+    // Pomijamy zapis jeśli nic się nie zmieniło — zero triggerów snapshotów.
+    if (Object.keys(update).length > 0) {
+      await ref.update(update);
+    }
+
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleApiError(err);

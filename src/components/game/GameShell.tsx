@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { GAME_COMPONENTS } from "@/games/components";
-import { GAMES } from "@/games/registry";
+import { GAME_MANIFESTS } from "@/games/manifests";
 import { usePrivate } from "@/hooks/usePrivate";
 import { useGameTick } from "@/hooks/useGameTick";
 import { useWakeLock } from "@/hooks/useWakeLock";
@@ -25,10 +25,10 @@ export function GameShell({
   serverNow: () => number;
 }) {
   const gameId = room.gameId!;
-  const entry = GAMES[gameId];
+  const manifest = GAME_MANIFESTS[gameId];
   const comps = GAME_COMPONENTS[gameId];
   const isHost = room.hostUid === meUid;
-  const accent = entry?.manifest.accentColor ?? "#f5f3ff";
+  const accent = manifest?.accentColor ?? "#f5f3ff";
 
   const privateState = usePrivate(room.code, meUid, true);
   const { supported: wakeSupported } = useWakeLock(true); // ekran nie gaśnie w grze
@@ -52,7 +52,7 @@ export function GameShell({
 
   useGameTick(room.code, room.phaseEndsAt, room.status === "playing", serverNow);
 
-  if (!entry || !comps) {
+  if (!manifest || !comps) {
     return <p className="p-6 text-center text-[var(--color-tekst-drugi)]">Nieznana gra: {gameId}</p>;
   }
   const { PlayerView } = comps;
@@ -66,7 +66,7 @@ export function GameShell({
     <main className="screen gap-6" style={{ ["--accent" as string]: accent }}>
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-[var(--color-tekst-drugi)]">
-          <span>{entry.manifest.emoji}</span>
+          <span>{manifest.emoji}</span>
           <RoomCodeNeon code={room.code} size="1.1rem" accent={accent} />
         </div>
         <button
