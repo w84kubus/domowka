@@ -36,7 +36,7 @@ export function PlayerList({
         return (
           <li
             key={p.uid}
-            className="card flex items-center gap-3 px-4 py-3"
+            className="card flex items-center gap-3 px-4 py-3 animate-[slideIn_0.3s_ease]"
             style={{ opacity: connected ? 1 : 0.45 }}
           >
             <span className="text-2xl" aria-hidden>

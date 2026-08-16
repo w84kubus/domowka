@@ -52,6 +52,16 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* D5: timer pulsuje gdy <5 s — kolor przechodzi w czerwień */
+.timer-urgent {
+  color: var(--color-czerwien);
+  animation: timerPulse 0.6s ease infinite;
+}
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
 /* --- Wspólny layout ekranu z safe-area (SPEC §6.5) --- */
 .screen {
   display: flex;
@@ -181,7 +191,7 @@ body {
   }
 }
 
-/* --- Animacja slideUp dla InstallPrompt (UPGRADE.md §B3) --- */
+/* --- Animacje UI (UPGRADE.md §B3, §D5) --- */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -190,5 +200,25 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
