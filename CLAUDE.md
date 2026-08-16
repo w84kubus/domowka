@@ -64,7 +64,7 @@ firebase deploy --only firestore:rules
 
 - [x] Faza A — audyt (`AUDIT.md`): bezpieczeństwo OK, 0 [KRYTYCZNE], lista braków vs SPEC
 - [x] Faza B — PWA: Serwist SW (NetworkOnly /api/ + Firebase), manifest kompletny (id/scope/shortcuts), ikony PNG (any+maskable+apple), prompt instalacji (beforeinstallprompt + iOS hint), ekran offline, useVisualViewport, useVibrate, user-scalable=no usunięte globalnie
-- [ ] Faza C — realtime (rozłączenia, idempotencja, migracja hosta)
+- [x] Faza C — realtime: resync zegara po tła, powrót do pokoju (localStorage), migracja hosta na rozłączeniu (>30s via ping), actionId idempotencja, reset w transakcji, pasek połączenia, wykładniczy backoff
 - [ ] Faza D — wygląd (WYMAGA akceptacji planu wizualnego)
 - [ ] Faza E — wydajność (Lighthouse, dynamic imports, fonty)
 - [ ] Faza F — jakość i testy (Vitest pełne partie, Playwright E2E)
