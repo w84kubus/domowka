@@ -13,7 +13,12 @@ import type { Room } from "@/lib/types/room";
 interface SecretState {
   fullState: unknown;
   seed: number;
+  // C2: lista ostatnich actionId do odrzucania duplikatów.
+  recentActionIds?: string[];
 }
+
+// Ile ostatnich actionId trzymamy w secret state (reszta się rotuje).
+const MAX_RECENT_ACTION_IDS = 50;
 
 function getGame(gameId: string) {
   const g = GAMES[gameId];
@@ -35,6 +40,7 @@ function persist(
   state: unknown,
   seed: number,
   now: number,
+  recentActionIds?: string[],
 ) {
   const players = room.players;
   const phase = engine.phase(state);
@@ -59,7 +65,11 @@ function persist(
     version: room.version + 1,
   };
 
-  t.set(ref.collection("secret").doc("state"), { fullState: cleanState, seed });
+  t.set(ref.collection("secret").doc("state"), {
+    fullState: cleanState,
+    seed,
+    ...(recentActionIds ? { recentActionIds } : {}),
+  });
 
   for (const uid of Object.keys(players)) {
     t.set(ref.collection("private").doc(uid), { payload: engine.privateView(state, uid) ?? null });
@@ -122,8 +132,8 @@ export async function startGame(
   });
 }
 
-/** Zwykła akcja gracza z klienta. */
-export async function applyAction(code: string, uid: string, rawAction: unknown, now: number) {
+/** Zwykła akcja gracza z klienta. actionId (C2) — opcjonalny UUID do odrzucania duplikatów. */
+export async function applyAction(code: string, uid: string, rawAction: unknown, now: number, actionId?: string) {
   const db = getAdminDb();
   const ref = db.doc(`rooms/${code}`);
 
@@ -139,6 +149,13 @@ export async function applyAction(code: string, uid: string, rawAction: unknown,
 
     const { engine } = getGame(room.gameId);
     const secret = secretSnap.data() as SecretState;
+
+    // C2: odrzucenie duplikatu (ten sam actionId już przetworzony).
+    const recentIds = secret.recentActionIds ?? [];
+    if (actionId && recentIds.includes(actionId)) {
+      throw new ApiError(409, "Duplikat akcji.");
+    }
+
     const action = engine.actionSchema.parse(rawAction);
     // rng odtwarzalne z (seed, version): deterministyczne i różne per akcja (SPEC §3.4).
     const rng = mulberry32((secret.seed + room.version) >>> 0);
@@ -150,7 +167,13 @@ export async function applyAction(code: string, uid: string, rawAction: unknown,
       if (err instanceof GameError) throw new ApiError(err.status, err.message);
       throw err;
     }
-    persist(t, ref, room, engine, next, secret.seed, now);
+
+    // C2: zapamiętaj actionId w secret state (rotuj, żeby nie rósł bez końca).
+    const updatedIds = actionId
+      ? [...recentIds, actionId].slice(-MAX_RECENT_ACTION_IDS)
+      : recentIds;
+
+    persist(t, ref, room, engine, next, secret.seed, now, updatedIds);
   });
 }
 

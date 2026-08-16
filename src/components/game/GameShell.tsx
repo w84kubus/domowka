@@ -7,6 +7,7 @@ import { useGameTick } from "@/hooks/useGameTick";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import { apiPost } from "@/lib/client/api";
+import { newActionId } from "@/lib/action-id";
 import { isMuted, setMuted, unlockAudio, sfx } from "@/lib/sound";
 import { celebrate } from "@/lib/confetti";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
@@ -56,8 +57,9 @@ export function GameShell({
   }
   const { PlayerView } = comps;
 
+  // C2: actionId generowany raz per kliknięcie — serwer odrzuca duplikaty.
   const dispatch = (action: unknown): Promise<void> =>
-    apiPost(`/api/rooms/${room.code}/action`, { action }).then(() => undefined);
+    apiPost(`/api/rooms/${room.code}/action`, { action, actionId: newActionId() }).then(() => undefined);
   const finished = room.status === "finished";
 
   return (
