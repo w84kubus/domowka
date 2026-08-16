@@ -8,6 +8,7 @@ import { PlayerList } from "@/components/PlayerList";
 import { GameShell } from "@/components/game/GameShell";
 import { LobbyGames } from "@/components/game/LobbyGames";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ShareButton } from "@/components/ShareButton";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useServerClock } from "@/hooks/useServerClock";
 import { useRoom } from "@/hooks/useRoom";
@@ -134,6 +135,7 @@ export default function LobbyPage() {
         <p className="text-center text-sm text-[var(--color-tekst-drugi)]">
           Zeskanuj albo podaj kod znajomym.
         </p>
+        <ShareButton code={room.code} />
         <Link
           href={`/pokoj/${room.code}/ekran`}
           target="_blank"

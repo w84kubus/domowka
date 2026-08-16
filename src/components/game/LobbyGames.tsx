@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { GAME_LIST } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
+import { GameRulesCard } from "@/components/game/GameRulesCard";
 import { apiPost } from "@/lib/client/api";
 import { ApiClientError } from "@/lib/client/api";
 
@@ -76,6 +77,12 @@ export function LobbyGames({
           })}
         </div>
       </div>
+
+      {manifest && (
+        <div className="flex justify-center">
+          <GameRulesCard manifest={manifest} />
+        </div>
+      )}
 
       {SettingsPanel && manifest && (
         <div className="card flex flex-col gap-4 p-4">
