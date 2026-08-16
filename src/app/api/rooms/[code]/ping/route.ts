@@ -3,12 +3,17 @@ import { getAdminDb } from "@/lib/firebase/admin";
 import { requireUid } from "@/lib/server/auth";
 import { handleApiError } from "@/lib/server/http";
 import { codeParamSchema } from "@/lib/schemas/room";
+import { pickNewHost, isConnected } from "@/lib/server/rooms";
 import type { Room } from "@/lib/types/room";
 
 export const runtime = "nodejs";
 
+// C1 (UPGRADE.md §C1): migracja hosta na rozłączeniu.
+// Gdy host nie pingował >30 s, dowolny gracz, który pinguje, wyzwala migrację.
+const HOST_MIGRATE_AFTER_MS = 30_000;
+
 // POST /api/rooms/[code]/ping — obecność (SPEC §3.7). Klient strzela co 5 s.
-// Aktualizujemy tylko lastSeenAt + connected gracza; NIE ruszamy version (to nie akcja gry).
+// Aktualizujemy lastSeenAt + connected gracza; sprawdzamy migrację hosta.
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ code: string }> },
@@ -25,10 +30,23 @@ export async function POST(
     const room = snap.data() as Room;
     if (!room.players[uid]) return new NextResponse(null, { status: 204 });
 
-    await ref.update({
+    const update: Record<string, unknown> = {
       [`players.${uid}.lastSeenAt`]: now,
       [`players.${uid}.connected`]: true,
-    });
+    };
+
+    // C1: Migracja hosta — host rozłączony >30 s → przejdź na najstarszego gracza.
+    const host = room.players[room.hostUid];
+    if (host && room.hostUid !== uid && !isConnected(host, now) && now - host.lastSeenAt > HOST_MIGRATE_AFTER_MS) {
+      const nextHost = pickNewHost(room.players, room.seatOrder, room.hostUid, now);
+      if (nextHost) {
+        update.hostUid = nextHost;
+        update[`players.${nextHost}.isHost`] = true;
+        update[`players.${room.hostUid}.isHost`] = false;
+      }
+    }
+
+    await ref.update(update);
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleApiError(err);
