@@ -1,8 +1,10 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Korekta zegara (SPEC §3.6): telefony mają zegary rozjechane o kilkadziesiąt sekund,
-// więc czas do odliczeń bierzemy jako Date.now() + offset względem serwera.
+// Korekta zegara (SPEC §3.6, UPGRADE.md §C3): telefony mają zegary rozjechane o kilkadziesiąt
+// sekund, więc czas do odliczeń bierzemy jako Date.now() + offset względem serwera.
+// Po powrocie z tła (visibilitychange) resyncujemy — telefon uśpiony na 5 minut
+// wraca z rozjechanym czasem.
 async function measureOffset(): Promise<number> {
   const t0 = Date.now();
   const res = await fetch("/api/time", { cache: "no-store" });
@@ -31,9 +33,17 @@ export function useServerClock() {
     };
     sync();
     const id = setInterval(sync, 60_000); // odświeżaj offset co 60 s (SPEC §3.6)
+
+    // C3: resync po powrocie z tła — telefon uśpiony wraca z rozjechanym czasem.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") sync();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       active = false;
       clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
