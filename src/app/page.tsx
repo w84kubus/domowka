@@ -1,5 +1,7 @@
 // Ekran startowy (SPEC §4): dwa przyciski, zero marketingu, zero landing page'a.
+// C1: propozycja powrotu do aktywnego pokoju.
 import Link from "next/link";
+import { ReturnToRoom } from "@/components/ReturnToRoom";
 
 export default function Home() {
   return (
@@ -15,6 +17,8 @@ export default function Home() {
           Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.
         </p>
       </header>
+
+      <ReturnToRoom />
 
       <div className="flex w-full max-w-xs flex-col gap-4">
         <Link href="/nowy" className="btn btn-accent">

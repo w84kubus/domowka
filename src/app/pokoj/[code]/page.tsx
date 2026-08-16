@@ -13,6 +13,7 @@ import { useRoom } from "@/hooks/useRoom";
 import { usePresence } from "@/hooks/usePresence";
 import { apiPost } from "@/lib/client/api";
 import { normalizeRoomCode } from "@/lib/room-code";
+import { useSession } from "@/lib/store/session";
 
 export default function LobbyPage() {
   const router = useRouter();
@@ -22,9 +23,18 @@ export default function LobbyPage() {
   const { uid, loading: authLoading } = useAnonAuth();
   const { serverNow } = useServerClock();
   const { room, loading, error, notFound } = useRoom(code, !authLoading && !!uid);
+  const setActiveRoom = useSession((s) => s.setActiveRoom);
 
   const amMember = !!(uid && room?.players[uid]);
   usePresence(code, amMember);
+
+  // C1: Zapamiętaj aktywny pokój, żeby dało się wrócić po odświeżeniu.
+  useEffect(() => {
+    if (amMember && room) {
+      const nick = room.players[uid!]?.nick ?? "";
+      setActiveRoom({ code: room.code, nick });
+    }
+  }, [amMember, room, uid, code, setActiveRoom]);
 
   // Rozróżniamy „nigdy nie dołączył" (→ ekran dołączania) od „wyrzucony/wyszedł" (→ start).
   const wasMemberRef = useRef(false);
@@ -36,11 +46,15 @@ export default function LobbyPage() {
     if (loading || authLoading) return;
     if (notFound) return;
     if (room && uid && !room.players[uid]) {
+      setActiveRoom(null); // C1: wyrzucony/wyszedł — czyść sesję
       router.replace(wasMemberRef.current ? "/" : `/p/${code}`);
     }
     // Utrata dostępu do odczytu po wyrzuceniu objawia się błędem reguł.
-    if (error && wasMemberRef.current) router.replace("/");
-  }, [room, uid, loading, authLoading, notFound, error, code, router]);
+    if (error && wasMemberRef.current) {
+      setActiveRoom(null);
+      router.replace("/");
+    }
+  }, [room, uid, loading, authLoading, notFound, error, code, router, setActiveRoom]);
 
   const leave = async () => {
     try {
@@ -48,6 +62,7 @@ export default function LobbyPage() {
     } catch {
       /* i tak wychodzimy */
     }
+    setActiveRoom(null); // C1: czyścimy sesję przy wyjściu
     router.push("/");
   };
 

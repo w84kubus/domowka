@@ -18,7 +18,7 @@ export function EntryForm({
   initialCode?: string;
 }) {
   const router = useRouter();
-  const { nick, avatar, setNick, setAvatar } = useSession();
+  const { nick, avatar, setNick, setAvatar, setActiveRoom } = useSession();
   const [code, setCode] = useState(normalizeRoomCode(initialCode));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +37,11 @@ export function EntryForm({
           nick,
           avatar,
         });
+        setActiveRoom({ code: newCode, nick });
         router.push(`/pokoj/${newCode}`);
       } else {
         await apiPost(`/api/rooms/${code}/join`, { nick, avatar });
+        setActiveRoom({ code, nick });
         router.push(`/pokoj/${code}`);
       }
     } catch (err) {
