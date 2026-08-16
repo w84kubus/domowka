@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@serwist/next": "^9.5.12",
     "@types/canvas-confetti": "^1.9.0",
     "canvas-confetti": "^1.9.4",
     "firebase": "^12.16.0",
@@ -21,6 +22,7 @@
     "qrcode.react": "^4.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "serwist": "^9.5.12",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
