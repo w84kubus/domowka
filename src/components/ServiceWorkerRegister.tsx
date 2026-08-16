@@ -1,14 +1,17 @@
 "use client";
 import { useEffect } from "react";
 
-// Rejestracja service workera (PWA, SPEC §7). Cicho, po załadowaniu strony.
+// Rejestracja service workera (Serwist, UPGRADE.md §B2).
+// register: false w next.config.ts — rejestrujemy ręcznie, żeby kontrolować timing.
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
-    const onLoad = () => navigator.serviceWorker.register("/sw.js").catch(() => {});
-    if (document.readyState === "complete") onLoad();
-    else window.addEventListener("load", onLoad, { once: true });
-    return () => window.removeEventListener("load", onLoad);
+    const register = () => {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+    };
+    if (document.readyState === "complete") register();
+    else window.addEventListener("load", register, { once: true });
+    return () => window.removeEventListener("load", register);
   }, []);
   return null;
 }

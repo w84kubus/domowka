@@ -42,3 +42,8 @@ firestore-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Serwist: service worker generowany z src/sw.ts podczas `next build`
+/public/sw.js
+/public/sw.js.map
+/public/swe-worker-*.js

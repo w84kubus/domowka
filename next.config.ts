@@ -1,4 +1,17 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
+
+const withSerwist = withSerwistInit({
+  swSrc: "src/sw.ts",
+  swDest: "public/sw.js",
+  swUrl: "/sw.js",
+  // Nie rejestruj automatycznie — mamy własny komponent z lepszą kontrolą.
+  register: false,
+  // Nie cache'uj nawigacji w SW entry worker — stan gry musi iść przez sieć.
+  cacheOnNavigation: false,
+  // Wyłącz w dev — SW przeszkadza w HMR.
+  disable: process.env.NODE_ENV === "development",
+});
 
 const nextConfig: NextConfig = {
   // Trasowanie plików liczymy względem katalogu projektu (w domu bywa lockfile wyżej).
@@ -9,4 +22,4 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["firebase-admin"],
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);
