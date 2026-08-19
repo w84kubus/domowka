@@ -70,6 +70,16 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Skala na dużych ekranach. Wszystkie rozmiary w projekcie są w rem, więc podniesienie
+   bazowego rozmiaru skaluje naraz typografię, odstępy i szerokości kolumn (max-w-3xl to
+   48rem, czyli 864 px przy 18 px i 960 px przy 20 px). Na telefonie zostaje 16 px. */
+@media (min-width: 1280px) {
+  html { font-size: 18px; }
+}
+@media (min-width: 1680px) {
+  html { font-size: 20px; }
+}
+
 body {
   min-height: 100dvh;
   margin: 0;

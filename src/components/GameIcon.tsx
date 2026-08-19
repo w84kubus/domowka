@@ -24,6 +24,9 @@ export function GameIcon({
         alt=""
         width={size}
         height={size}
+        // Rozmiar w rem, nie w px: atrybuty width/height nie skalują się z bazowym
+        // rozmiarem czcionki, więc na desktopie ikona zostawała mała mimo powiększenia UI.
+        style={{ width: `${size / 16}rem`, height: `${size / 16}rem` }}
         className={`inline-block shrink-0 align-[-0.18em] ${className ?? ""}`}
         aria-hidden
         unoptimized
