@@ -1,46 +1,13 @@
 "use client";
+import { SegmentPicker } from "@/components/SegmentPicker";
 import type { GameSettingsProps } from "@/games/view";
 import type { StoperSettings } from "./manifest";
-
-function Seg<T extends string | number>({
-  label,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: { v: T; l: string }[];
-  value: T;
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="text-sm text-[var(--color-tekst-drugi)]">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <button
-            key={String(o.v)}
-            type="button"
-            onClick={() => onChange(o.v)}
-            className={`min-h-[44px] rounded-lg border px-3 text-sm font-semibold transition-colors ${
-              value === o.v
-                ? "border-[var(--color-limonka)] bg-[var(--color-uniesione)] text-[var(--color-tekst)]"
-                : "border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] text-[var(--color-tekst-drugi)]"
-            }`}
-          >
-            {o.l}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<StoperSettings>) {
   const set = (patch: Partial<StoperSettings>) => onChange({ ...value, ...patch });
   return (
     <div className="flex flex-col gap-5">
-      <Seg
+      <SegmentPicker
         label="Cel"
         value={value.targetMode}
         onChange={(v) => set({ targetMode: v })}
@@ -50,7 +17,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
         ]}
       />
       {value.targetMode === "losowy" ? (
-        <Seg
+        <SegmentPicker
           label="Zakres celu (max)"
           value={value.targetMaxMs}
           onChange={(v) => set({ targetMaxMs: v as StoperSettings["targetMaxMs"] })}
@@ -62,7 +29,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           ]}
         />
       ) : (
-        <Seg
+        <SegmentPicker
           label="Stały cel"
           value={value.fixedTargetMs}
           onChange={(v) => set({ fixedTargetMs: v as number })}
@@ -73,7 +40,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           ]}
         />
       )}
-      <Seg
+      <SegmentPicker
         label="Rundy"
         value={value.rounds}
         onChange={(v) => set({ rounds: v as StoperSettings["rounds"] })}
@@ -84,7 +51,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           { v: 0, l: "∞" },
         ]}
       />
-      <Seg
+      <SegmentPicker
         label="Punktacja"
         value={value.scoring}
         onChange={(v) => set({ scoring: v })}

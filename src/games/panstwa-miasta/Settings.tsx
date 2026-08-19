@@ -1,48 +1,15 @@
 "use client";
+import { SegmentPicker } from "@/components/SegmentPicker";
 import type { GameSettingsProps } from "@/games/view";
 import type { PmSettings } from "./manifest";
 import { CATEGORY_SETS } from "./data/categories";
-
-function Seg<T extends string | number | boolean>({
-  label,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: { v: T; l: string }[];
-  value: T;
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="text-sm text-[var(--color-tekst-drugi)]">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <button
-            key={String(o.v)}
-            type="button"
-            onClick={() => onChange(o.v)}
-            className={`min-h-[44px] rounded-lg border px-3 text-sm font-semibold transition-colors ${
-              value === o.v
-                ? "border-[var(--color-cyjan)] bg-[var(--color-uniesione)] text-[var(--color-tekst)]"
-                : "border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] text-[var(--color-tekst-drugi)]"
-            }`}
-          >
-            {o.l}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSettings>) {
   const set = (patch: Partial<PmSettings>) => onChange({ ...value, ...patch });
   const cats = CATEGORY_SETS[value.categorySet]?.categories ?? [];
   return (
     <div className="flex flex-col gap-5">
-      <Seg
+      <SegmentPicker
         label="Zestaw kategorii"
         value={value.categorySet}
         onChange={(v) => set({ categorySet: v as PmSettings["categorySet"], customCategories: undefined })}
@@ -50,7 +17,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
       />
       <p className="text-xs text-[var(--color-tekst-drugi)]">{cats.join(" · ")}</p>
 
-      <Seg
+      <SegmentPicker
         label="Koniec rundy"
         value={value.endMode}
         onChange={(v) => set({ endMode: v as PmSettings["endMode"] })}
@@ -61,7 +28,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
         ]}
       />
       {value.endMode === "czas" && (
-        <Seg
+        <SegmentPicker
           label="Czas"
           value={value.timeLimitMs}
           onChange={(v) => set({ timeLimitMs: v as PmSettings["timeLimitMs"] })}
@@ -74,7 +41,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
         />
       )}
       {value.endMode === "stop" && (
-        <Seg
+        <SegmentPicker
           label="Doliczka po STOP"
           value={value.graceMs}
           onChange={(v) => set({ graceMs: v as PmSettings["graceMs"] })}
@@ -85,7 +52,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
           ]}
         />
       )}
-      <Seg
+      <SegmentPicker
         label="Rundy"
         value={value.rounds}
         onChange={(v) => set({ rounds: v as PmSettings["rounds"] })}
@@ -96,7 +63,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
           { v: 0, l: "∞" },
         ]}
       />
-      <Seg
+      <SegmentPicker
         label="Tryb hardcore (litery z ogonkami)"
         value={value.hardcore}
         onChange={(v) => set({ hardcore: v as boolean })}
