@@ -55,3 +55,5 @@ next-env.d.ts
 # Źródła pakietów ikon (PNG-i) — do repo idą przetworzone WebP z public/
 /emoji-pack/
 /emotki-gry/
+# Zrzuty ekranu wrzucane do rootu na potrzeby rozmowy (10 MB) — nie należą do repo
+/*.jpg

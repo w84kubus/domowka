@@ -42,10 +42,10 @@ export function PlayerList({
             style={{ opacity: connected ? 1 : 0.45 }}
           >
             <span
-              className="flex size-11 flex-none items-center justify-center rounded-full border-[3px] border-white bg-panel-hi text-2xl"
+              className="flex size-14 flex-none items-center justify-center rounded-full border-[3px] border-white bg-panel-hi"
               aria-hidden
             >
-              <AvatarIcon avatar={p.avatar} size={22} />
+              <AvatarIcon avatar={p.avatar} size={34} />
             </span>
             <span className="flex-1 truncate text-base font-bold text-ink">
               {p.nick}
