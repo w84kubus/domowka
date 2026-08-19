@@ -74,15 +74,25 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     dispatch({ type: "SUBMIT", valueMs: Math.round(elapsed) }).catch(() => {});
   };
 
+  // Potwierdzenie zamknięcia rundy (akcja niszcząca dla całego pokoju).
+  const [confirmClose, setConfirmClose] = useState(false);
+  // Nowa runda albo zmiana fazy rozbraja potwierdzenie — nie może zostać „uzbrojone".
+  useEffect(() => setConfirmClose(false), [pub.round, pub.phase]);
+
   // Gra na laptopie: spacja = START, a potem STOP (SPEC §5.2 — duży przycisk, tu też klawisz).
   useEffect(() => {
-    if (pub.phase !== "pomiar" || submitted) return;
+    // Podpięte na CAŁĄ fazę pomiaru — także po zatrzymaniu. Wcześniej handler odpinał się
+    // przy `submitted`, więc spacja przestawała być blokowana i aktywowała przycisk, który
+    // akurat miał fokus. Gdy był nim „Zamknij rundę", host jednym naciśnięciem zamykał
+    // rundę wszystkim — wyglądało to, jakby gra sama ją przeskoczyła.
+    if (pub.phase !== "pomiar") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== "Space" && e.key !== " ") return;
       if (e.repeat) return; // trzymanie spacji nie liczy się wielokrotnie
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-      e.preventDefault(); // blokuje przewijanie strony i podwójne wyzwolenie z fokusa przycisku
+      e.preventDefault(); // blokuje przewijanie i aktywację przycisku z fokusem
+      if (submitted) return; // po zatrzymaniu spacja nie robi już nic — ale nadal nic nie klika
       if (measuring) stop();
       else start();
     };
@@ -223,10 +233,21 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
       {isHost && (
         <button
+          type="button"
           className="btn btn-ghost mt-2 text-sm"
-          onClick={() => dispatch({ type: "NEXT" })}
+          onClick={() => {
+            // Dwa kroki: zamknięcie rundy przepada wszystkim, którzy jeszcze nie zdążyli,
+            // więc jeden przypadkowy tap (albo spacja z fokusem) nie może tego zrobić.
+            if (!confirmClose) {
+              setConfirmClose(true);
+              return;
+            }
+            setConfirmClose(false);
+            dispatch({ type: "NEXT" });
+          }}
+          onBlur={() => setConfirmClose(false)}
         >
-          Zamknij rundę
+          {confirmClose ? "Na pewno? Reszta bez wyniku" : "Zamknij rundę"}
         </button>
       )}
     </div>
