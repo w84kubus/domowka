@@ -32,7 +32,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
   const [sent, markSent] = useSent(room.version); // natychmiastowy feedback (potwierdzenie/głos)
 
   const header = (
-    <p className="text-center text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
+    <p className="text-center text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
       Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}
     </p>
   );
@@ -44,7 +44,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
         {header}
         <RoleCard priv={priv} accent={accent} />
         {me?.confirmed || sent ? (
-          <p className="text-[var(--color-tekst-drugi)]">Czekamy na resztę… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
+          <p className="text-[var(--color-ink-muted)]">Czekamy na resztę… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
         ) : (
           <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>Zapamiętałem</button>
         )}
@@ -61,8 +61,8 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
         <p className="text-2xl font-bold" style={{ color: civWin ? "#4ade80" : accent }}>
           {pub.phase === "koniec" ? "Koniec gry 🏁" : civWin ? "Cywile wygrywają!" : pub.byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!"}
         </p>
-        <p>Hasło: <b>{pub.word}</b> {pub.category && <span className="text-[var(--color-tekst-drugi)]">({pub.category})</span>}</p>
-        <p className="text-sm text-[var(--color-tekst-drugi)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
+        <p>Hasło: <b>{pub.word}</b> {pub.category && <span className="text-[var(--color-ink-muted)]">({pub.category})</span>}</p>
+        <p className="text-sm text-[var(--color-ink-muted)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
         <ScoreList pub={pub} meUid={meUid} accent={accent} />
         {isHost && pub.phase === "wynik" && (
           <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Dalej →</button>
@@ -83,7 +83,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
             <GuessBox dispatch={dispatch} accent={accent} />
           </>
         ) : (
-          <p className="text-center text-[var(--color-tekst-drugi)]">{nickOf(pub.ejected ?? "")} był impostorem i zgaduje hasło… ({left ?? 0}s)</p>
+          <p className="text-center text-[var(--color-ink-muted)]">{nickOf(pub.ejected ?? "")} był impostorem i zgaduje hasło… ({left ?? 0}s)</p>
         )}
       </div>
     );
@@ -96,7 +96,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
         {header}
         <p className="text-center font-semibold" style={{ color: accent }}>Kto jest impostorem? {left != null ? `· ${left}s` : ""}</p>
         {me?.voted || sent ? (
-          <p className="text-center text-[var(--color-tekst-drugi)]">Zagłosowano — czekamy…</p>
+          <p className="text-center text-[var(--color-ink-muted)]">Zagłosowano — czekamy…</p>
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {pub.players.filter((p) => p.uid !== meUid).map((p) => (
@@ -105,7 +105,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
             ))}
           </div>
         )}
-        {me?.voted && <p className="text-center text-sm text-[var(--color-tekst-drugi)]">Zagłosowano. Czekamy…</p>}
+        {me?.voted && <p className="text-center text-sm text-[var(--color-ink-muted)]">Zagłosowano. Czekamy…</p>}
       </div>
     );
   }
@@ -120,11 +120,11 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
 
       {pub.phase === "podpowiedzi" && (
         <div className="flex flex-col gap-3">
-          <p className="text-center text-sm text-[var(--color-tekst-drugi)]">
+          <p className="text-center text-sm text-[var(--color-ink-muted)]">
             Podpowiedzi {pub.clueRound}/{pub.totalClueRounds} · {pub.speakMode === "tekstowy" ? "wpisz jedno słowo" : "mówcie po kolei"}
           </p>
           {pub.speakMode === "tekstowy" ? (
-            myClueGiven ? <p className="text-center text-[var(--color-tekst-drugi)]">Podano. Czekamy na innych…</p>
+            myClueGiven ? <p className="text-center text-[var(--color-ink-muted)]">Podano. Czekamy na innych…</p>
               : <ClueBox dispatch={dispatch} accent={accent} />
           ) : (
             <p className="text-center text-lg">{amSpeaker ? "Twoja kolej — powiedz słowo!" : <>Teraz: <b>{nickOf(pub.currentSpeaker ?? "")}</b></>}</p>
@@ -144,9 +144,9 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
 
       {pub.speakMode === "tekstowy" && pub.clues.length > 0 && (
         <div className="card p-3">
-          <p className="mb-2 text-xs uppercase tracking-widest text-[var(--color-tekst-drugi)]">Słowa</p>
+          <p className="mb-2 text-xs uppercase tracking-widest text-[var(--color-ink-muted)]">Słowa</p>
           <ul className="flex flex-col gap-1 text-sm">
-            {pub.clues.map((c, i) => <li key={i} className="flex justify-between"><span className="text-[var(--color-tekst-drugi)]">{nickOf(c.uid)}</span><span className="font-semibold">{c.word}</span></li>)}
+            {pub.clues.map((c, i) => <li key={i} className="flex justify-between"><span className="text-[var(--color-ink-muted)]">{nickOf(c.uid)}</span><span className="font-semibold">{c.word}</span></li>)}
           </ul>
         </div>
       )}
@@ -163,26 +163,26 @@ function RoleCard({ priv, accent }: { priv: Priv | null; accent: string }) {
       onPointerUp={() => setShow(false)}
       onPointerLeave={() => setShow(false)}
       className="flex h-56 w-full max-w-xs select-none flex-col items-center justify-center gap-2 rounded-3xl border-2 text-center"
-      style={{ borderColor: accent, background: "var(--color-powierzchnia)" }}
+      style={{ borderColor: accent, background: "var(--color-panel)" }}
     >
       {show ? (
         isImp ? (
           <>
             <span className="text-3xl font-bold" style={{ color: accent, fontFamily: "var(--font-display)" }}>IMPOSTOR</span>
             {priv?.hint && <span className="text-lg">Podpowiedź: <b>{priv.hint}</b></span>}
-            {priv?.coImpostors && priv.coImpostors.length > 0 && <span className="text-sm text-[var(--color-tekst-drugi)]">Twoi: {priv.coImpostors.join(", ")}</span>}
-            <span className="text-xs text-[var(--color-tekst-drugi)]">Udawaj, że znasz hasło.</span>
+            {priv?.coImpostors && priv.coImpostors.length > 0 && <span className="text-sm text-[var(--color-ink-muted)]">Twoi: {priv.coImpostors.join(", ")}</span>}
+            <span className="text-xs text-[var(--color-ink-muted)]">Udawaj, że znasz hasło.</span>
           </>
         ) : (
           <>
-            <span className="text-sm text-[var(--color-tekst-drugi)]">Twoje hasło:</span>
+            <span className="text-sm text-[var(--color-ink-muted)]">Twoje hasło:</span>
             <span className="text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{priv?.word}</span>
           </>
         )
       ) : (
         <>
           <span className="text-5xl">🤫</span>
-          <span className="text-[var(--color-tekst-drugi)]">Przytrzymaj palec, żeby zobaczyć</span>
+          <span className="text-[var(--color-ink-muted)]">Przytrzymaj palec, żeby zobaczyć</span>
         </>
       )}
     </button>
@@ -204,7 +204,7 @@ function ClueBox({ dispatch, accent }: { dispatch: (a: unknown) => Promise<void>
   return (
     <div className="flex gap-2">
       <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={30} autoComplete="off" placeholder="jedno słowo…"
-        className="min-h-[52px] flex-1 rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-3 outline-none" />
+        className="min-h-[52px] flex-1 rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi" />
       <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => dispatch({ type: "CLUE", word })}>Podaj</button>
     </div>
   );
@@ -214,7 +214,7 @@ function GuessBox({ dispatch, accent }: { dispatch: (a: unknown) => Promise<void
   return (
     <div className="flex gap-2">
       <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={40} autoComplete="off" placeholder="hasło…"
-        className="min-h-[52px] flex-1 rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-3 outline-none" />
+        className="min-h-[52px] flex-1 rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi" />
       <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => dispatch({ type: "GUESS_WORD", word })}>Zgaduję</button>
     </div>
   );

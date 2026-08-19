@@ -1,9 +1,14 @@
-// Ekran startowy (SPEC §4): dwa przyciski, zero marketingu, zero landing page'a.
+// Ekran startowy (SPEC §4) + landing (mockup: hero → sekcja gier → jak grać → stopka).
 // G2: deep link /?kod=XYZW → redirect do /p/XYZW (UPGRADE.md §G).
 // C1: propozycja powrotu do aktywnego pokoju.
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ReturnToRoom } from "@/components/ReturnToRoom";
+import { GameCard } from "@/components/GameCard";
+import { HowToPlay } from "@/components/HowToPlay";
+// manifests.ts, nie registry.ts — registry ciągnie silniki gier (~1700 linii),
+// a landing potrzebuje tylko metadanych.
+import { GAME_LIST } from "@/games/manifests";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/room-code";
 
 export default async function Home({
@@ -17,29 +22,53 @@ export default async function Home({
     if (isValidRoomCode(code)) redirect(`/p/${code}`);
   }
   return (
-    <main className="screen items-center justify-center gap-12">
-      <header className="flex flex-col items-center gap-3 text-center">
-        <h1
-          className="text-6xl font-bold tracking-wide"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          DOMÓWKA
+    <main className="arcade-bg screen relative items-center gap-10 overflow-hidden">
+      <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+
+      {/* Hero */}
+      {/* w-full: w kolumnowym flexie z items-center dziecko rozpycha się do
+          szerokości treści i wychodzi poza ekran na wąskich telefonach. */}
+      <header className="relative flex w-full flex-col items-center gap-4 pt-4 text-center">
+        <h1 className="font-display text-5xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_4px_0_rgb(0_0_0/0.35)] sm:text-6xl">
+          Domówka
         </h1>
-        <p className="max-w-xs text-[var(--color-tekst-drugi)]">
+        <p className="max-w-md text-lg font-semibold leading-relaxed text-ink-muted">
           Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.
         </p>
+        <div className="flex w-full max-w-md gap-3 pt-2">
+          {/* min-w-0: bez tego flex-1 nie zejdzie poniżej szerokości najdłuższego
+              słowa („ZAKŁADAM") i przyciski wystają poza ekran na 320–375 px. */}
+          <Link href="/nowy" className="btn min-w-0 flex-1 px-3 text-base sm:whitespace-nowrap">
+            Zakładam pokój
+          </Link>
+          <Link
+            href="/dolacz"
+            className="btn btn-ghost min-w-0 flex-1 px-3 text-base sm:whitespace-nowrap"
+          >
+            Dołączam
+          </Link>
+        </div>
       </header>
 
       <ReturnToRoom />
 
-      <div className="flex w-full max-w-xs flex-col gap-4">
-        <Link href="/nowy" className="btn btn-accent">
-          Zakładam pokój
-        </Link>
-        <Link href="/dolacz" className="btn">
-          Dołączam
-        </Link>
-      </div>
+      {/* Sekcja gier */}
+      <section className="relative flex w-full max-w-4xl flex-col gap-4">
+        <h2 className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_3px_0_rgb(0_0_0/0.35)]">
+          Sekcja gier
+        </h2>
+        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          {GAME_LIST.map((g) => (
+            <GameCard key={g.id} manifest={g} />
+          ))}
+        </ul>
+      </section>
+
+      <HowToPlay />
+
+      <footer className="font-display relative mt-auto pt-4 text-center text-xs font-bold uppercase tracking-[0.06em] text-ink-muted opacity-70">
+        domowka.vercel.app
+      </footer>
     </main>
   );
 }

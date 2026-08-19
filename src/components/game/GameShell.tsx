@@ -63,10 +63,15 @@ export function GameShell({
   const finished = room.status === "finished";
 
   return (
-    <main className="screen gap-6" style={{ ["--accent" as string]: accent }}>
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-[var(--color-tekst-drugi)]">
-          <span>{manifest.emoji}</span>
+    <main
+      className="arcade-bg screen relative gap-5 overflow-hidden"
+      style={{ ["--accent" as string]: accent }}
+    >
+      <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+
+      <header className="relative flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-2xl" aria-hidden>{manifest.emoji}</span>
           <RoomCodeNeon code={room.code} size="1.1rem" accent={accent} />
         </div>
         <button
@@ -78,13 +83,13 @@ export function GameShell({
             setMutedState(m);
             if (!m) unlockAudio();
           }}
-          className="rounded-lg border border-[var(--color-obramowanie)] px-3 py-1 text-sm"
+          className="flex size-11 flex-none items-center justify-center rounded-[14px] border-[3px] border-stroke bg-panel text-lg shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint active:translate-y-[3px] active:shadow-none"
         >
           {muted ? "🔇" : "🔊"}
         </button>
       </header>
 
-      <div className="flex-1">
+      <div className="relative flex-1">
         <PlayerView
           room={room}
           publicState={room.publicState}
@@ -98,14 +103,17 @@ export function GameShell({
       </div>
 
       {!wakeSupported && (
-        <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
+        <p className="relative text-center text-xs font-semibold text-ink-muted">
           Ustaw wygaszanie ekranu na dłużej — Twoja przeglądarka nie utrzyma go sama.
         </p>
       )}
 
       {finished && isHost && (
-        <button className="btn" onClick={() => apiPost(`/api/rooms/${room.code}/reset`).catch(() => {})}>
-          Do lobby (jeszcze raz)
+        <button
+          className="btn relative"
+          onClick={() => apiPost(`/api/rooms/${room.code}/reset`).catch(() => {})}
+        >
+          Jeszcze raz
         </button>
       )}
     </main>

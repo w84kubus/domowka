@@ -33,10 +33,10 @@ export function ConnectionBar() {
 
   return (
     <div
-      className="fixed left-0 right-0 top-0 z-50 flex items-center justify-center px-4 py-1.5 text-sm font-medium"
+      className="font-display fixed left-0 right-0 top-0 z-50 flex items-center justify-center px-4 py-1.5 text-sm font-bold uppercase tracking-[0.06em]"
       style={{
-        background: online ? "#166534" : "#991b1b",
-        color: "#fff",
+        background: online ? "var(--color-mint-deep)" : "var(--color-czerwien)",
+        color: "var(--color-ink)",
         paddingTop: "max(0.375rem, env(safe-area-inset-top))",
       }}
       role="status"

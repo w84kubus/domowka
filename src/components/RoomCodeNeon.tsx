@@ -2,20 +2,32 @@
 import { useCallback, useState } from "react";
 import { vibrate } from "@/hooks/useVibrate";
 
-// Kod pokoju jako neonowy szyld (SPEC §6.3) — element sygnaturowy.
-// D4: kliknięcie kopiuje kod do schowka z flash efektem i wibracją.
-// Poświata otoczenia (ambient glow) w CSS — radialny gradient za kodem.
+// Kod pokoju jako klocowate litery arcade (DESIGN.md §0) — element sygnaturowy.
+// Kliknięcie kopiuje kod do schowka z feedbackiem i wibracją.
+
+/** Czy na tym tle czytelniejszy jest czarny tekst? (akcenty gier bywają jasne, np. limonka) */
+function needsDarkInk(hex: string): boolean {
+  const m = /^#?([a-f\d]{6})$/i.exec(hex.trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4;
+}
 
 export function RoomCodeNeon({
   code,
   size = "3rem",
-  accent = "#f5f3ff",
+  accent,
 }: {
   code: string;
   size?: string;
   accent?: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const darkInk = !!accent && needsDarkInk(accent);
 
   const copyCode = useCallback(async () => {
     try {
@@ -29,18 +41,22 @@ export function RoomCodeNeon({
   }, [code]);
 
   return (
-    <div className="relative flex flex-col items-center">
-      {/* Poświata otoczenia — neon odbija się od ściany */}
-      <div
-        className="pointer-events-none absolute -inset-8 -z-10 rounded-3xl opacity-30 blur-2xl"
-        style={{ background: `radial-gradient(ellipse, ${accent}, transparent 70%)` }}
-        aria-hidden
-      />
+    <div className="relative flex flex-col items-center gap-2">
       <button
         type="button"
         onClick={copyCode}
-        className="neon-code cursor-pointer border-none bg-transparent p-0"
-        style={{ fontSize: size, ["--accent" as string]: accent }}
+        className="neon-code cursor-pointer border-none bg-transparent p-0 transition-transform duration-75 active:translate-y-[3px]"
+        style={{
+          fontSize: size,
+          ...(accent
+            ? {
+                ["--color-primary" as string]: accent,
+                ...(darkInk
+                  ? { ["--code-ink" as string]: "var(--color-frame)", ["--code-shadow" as string]: "none" }
+                  : {}),
+              }
+            : {}),
+        }}
         aria-label={`Kod pokoju ${code.split("").join(" ")}. Kliknij, żeby skopiować.`}
         title="Kliknij, żeby skopiować"
       >
@@ -51,7 +67,7 @@ export function RoomCodeNeon({
         ))}
       </button>
       {copied && (
-        <span className="mt-1 text-xs text-[var(--color-tekst-drugi)] animate-[fadeIn_0.2s_ease]">
+        <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-mint animate-[fadeIn_0.2s_ease]">
           Skopiowano ✓
         </span>
       )}

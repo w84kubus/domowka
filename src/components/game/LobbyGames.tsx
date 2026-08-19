@@ -3,6 +3,7 @@ import { useState } from "react";
 import { GAME_LIST } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
 import { GameRulesCard } from "@/components/game/GameRulesCard";
+import { GameRow } from "@/components/GameRow";
 import { apiPost } from "@/lib/client/api";
 import { ApiClientError } from "@/lib/client/api";
 
@@ -24,7 +25,7 @@ export function LobbyGames({
 
   if (!isHost) {
     return (
-      <p className="text-center text-sm text-[var(--color-tekst-drugi)]">
+      <p className="card text-center text-base font-semibold leading-relaxed text-ink-muted">
         Host wybiera grę i ustawienia. Za chwilę ruszamy…
       </p>
     );
@@ -53,28 +54,18 @@ export function LobbyGames({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">Gra</span>
-        <div className="grid grid-cols-1 gap-2">
-          {GAME_LIST.map((g) => {
-            const selected = g.id === gameId;
-            return (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => pick(g.id)}
-                className="card flex items-center gap-3 px-4 py-3 text-left"
-                style={selected ? { borderColor: g.accentColor, boxShadow: `0 0 16px ${g.accentColor}44` } : undefined}
-              >
-                <span className="text-3xl">{g.emoji}</span>
-                <span className="flex-1">
-                  <span className="block font-semibold" style={{ fontFamily: "var(--font-display)" }}>{g.name}</span>
-                  <span className="block text-xs text-[var(--color-tekst-drugi)]">{g.tagline}</span>
-                </span>
-                <span className="text-xs text-[var(--color-tekst-drugi)]">{g.minPlayers}–{g.maxPlayers}</span>
-              </button>
-            );
-          })}
+      <div className="flex flex-col gap-3">
+        <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">Gra</h2>
+        <div className="flex flex-col gap-2" role="radiogroup" aria-label="Wybierz grę">
+          {GAME_LIST.map((g) => (
+            <GameRow
+              key={g.id}
+              manifest={g}
+              selected={g.id === gameId}
+              enoughPlayers={playerCount >= g.minPlayers}
+              onSelect={() => pick(g.id)}
+            />
+          ))}
         </div>
       </div>
 
@@ -85,18 +76,26 @@ export function LobbyGames({
       )}
 
       {SettingsPanel && manifest && (
-        <div className="card flex flex-col gap-4 p-4">
-          <span className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">Ustawienia</span>
+        <div className="card flex flex-col gap-4">
+          <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
+            Ustawienia
+          </span>
           <SettingsPanel value={settings} onChange={setSettings} playerCount={playerCount} />
         </div>
       )}
 
-      {error && <p className="text-center text-sm text-[var(--color-magenta)]">{error}</p>}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-[14px] border-[3px] border-white/40 bg-czerwien/90 px-4 py-3 text-center text-sm font-bold text-white shadow-[0_3px_0_rgb(0_0_0/0.35)]"
+        >
+          {error}
+        </p>
+      )}
 
       <button
         type="button"
-        className="btn btn-accent"
-        style={{ ["--accent" as string]: manifest?.accentColor }}
+        className="btn btn-lime text-2xl"
         disabled={!enoughPlayers || busy}
         onClick={start}
       >

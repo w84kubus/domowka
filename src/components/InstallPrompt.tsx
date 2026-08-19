@@ -94,19 +94,19 @@ export function InstallPrompt() {
 
   if (showIOSHint) {
     return (
-      <div className="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-sm animate-[slideUp_0.3s_ease] rounded-2xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] p-4 shadow-xl">
+      <div className="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-sm animate-[slideUp_0.3s_ease] rounded-[20px] border-[3px] border-white/40 bg-sheet p-4 text-sheet-ink shadow-[0_18px_40px_rgb(0_0_0/0.35)]">
         <button
           type="button"
           onClick={handleDismiss}
-          className="absolute right-3 top-2 text-lg text-[var(--color-tekst-drugi)] hover:text-[var(--color-tekst)]"
+          className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-lg text-lg font-bold opacity-60 hover:bg-black/10 hover:opacity-100"
           aria-label="Zamknij"
         >
           ✕
         </button>
-        <p className="mb-2 font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+        <p className="font-display mb-2 pr-8 text-base font-bold uppercase tracking-[0.04em]">
           Zainstaluj Domówkę
         </p>
-        <p className="text-sm text-[var(--color-tekst-drugi)]">
+        <p className="text-sm font-semibold leading-relaxed">
           Kliknij{" "}
           <span className="inline-flex items-center gap-0.5">
             <svg
@@ -118,7 +118,7 @@ export function InstallPrompt() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="inline text-[var(--color-cyjan)]"
+              className="inline text-primary"
             >
               <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
               <polyline points="16 6 12 2 8 6" />
@@ -134,20 +134,19 @@ export function InstallPrompt() {
   // Android/Chrome — przycisk instalacji.
   return (
     <div className="fixed bottom-4 right-4 z-40 animate-[slideUp_0.3s_ease]">
-      <div className="flex items-center gap-2 rounded-2xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] p-2 pl-4 shadow-xl">
-        <span className="text-sm text-[var(--color-tekst-drugi)]">Zainstaluj</span>
+      <div className="flex items-center gap-2 rounded-[20px] border-[3px] border-white/40 bg-sheet p-2 pl-4 text-sheet-ink shadow-[0_18px_40px_rgb(0_0_0/0.35)]">
+        <span className="text-sm font-bold">Zainstaluj</span>
         <button
           type="button"
           onClick={handleInstall}
-          className="rounded-xl bg-[var(--color-uniesione)] px-3 py-2 text-sm font-semibold text-[var(--color-tekst)] transition-colors hover:bg-[var(--color-obramowanie)]"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="font-display rounded-[14px] border-[3px] border-white/60 bg-primary px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_3px_0_var(--color-primary-deep)] transition-transform duration-75 active:translate-y-[3px] active:shadow-none"
         >
           📲 Dodaj
         </button>
         <button
           type="button"
           onClick={handleDismiss}
-          className="px-1 text-lg text-[var(--color-tekst-drugi)] hover:text-[var(--color-tekst)]"
+          className="flex size-9 items-center justify-center rounded-lg text-lg font-bold opacity-60 hover:bg-black/10 hover:opacity-100"
           aria-label="Zamknij"
         >
           ✕

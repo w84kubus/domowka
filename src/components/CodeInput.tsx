@@ -66,8 +66,7 @@ export function CodeInput({
             } else if (e.key === "ArrowLeft") focus(i - 1);
             else if (e.key === "ArrowRight") focus(i + 1);
           }}
-          className="h-16 w-14 rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] text-center text-3xl font-bold uppercase text-[var(--color-tekst)] outline-none focus:border-[var(--color-cyjan)]"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="font-display h-16 w-14 rounded-[14px] border-[3px] border-stroke bg-panel text-center text-3xl font-bold uppercase text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors focus:border-mint focus:bg-panel-hi"
           data-alphabet={ROOM_CODE_ALPHABET}
         />
       ))}

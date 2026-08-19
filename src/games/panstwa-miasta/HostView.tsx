@@ -29,7 +29,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
           {pub.letter}
         </div>
         <div className="text-left">
-          <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}</p>
+          <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}</p>
           <p className="text-2xl font-bold">{phaseLabel(pub.phase)}</p>
         </div>
       </div>
@@ -50,15 +50,15 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
           {pub.active ? (
             <div className="card p-4 text-center" style={{ borderColor: accent }}>
               <p className="text-lg">Kwestia: „{pub.entries?.find((e) => e.uid === pub.active!.targetUid)?.answer}” ({nickOf(pub.active.targetUid)})</p>
-              {pub.active.justification && <p className="italic text-[var(--color-tekst-drugi)]">— {pub.active.justification}</p>}
+              {pub.active.justification && <p className="italic text-[var(--color-ink-muted)]">— {pub.active.justification}</p>}
               <p className="mt-2 text-xl">UZNAJĘ {pub.active.tally.uznaje} · ODRZUCAM {pub.active.tally.odrzucam}</p>
             </div>
           ) : (
             <ul className="flex flex-col gap-1 text-lg">
               {pub.entries?.map((e) => (
-                <li key={e.uid} className="flex justify-between border-b border-[var(--color-obramowanie)] py-1">
-                  <span className="text-[var(--color-tekst-drugi)]">{nickOf(e.uid)}</span>
-                  <span className={e.autoZero || e.rejected ? "text-[var(--color-tekst-drugi)] line-through" : ""}>{e.answer || "—"}</span>
+                <li key={e.uid} className="flex justify-between border-b border-[var(--color-stroke)] py-1">
+                  <span className="text-[var(--color-ink-muted)]">{nickOf(e.uid)}</span>
+                  <span className={e.autoZero || e.rejected ? "text-[var(--color-ink-muted)] line-through" : ""}>{e.answer || "—"}</span>
                 </li>
               ))}
             </ul>
@@ -72,7 +72,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
           <ol className="flex flex-col gap-2">
             {[...pub.players].sort((a, b) => b.score - a.score).map((p, i) => (
               <li key={p.uid} className="card flex items-center gap-3 px-4 py-2 text-lg">
-                <span className="tabular w-6 text-center font-bold text-[var(--color-tekst-drugi)]">{i + 1}</span>
+                <span className="tabular w-6 text-center font-bold text-[var(--color-ink-muted)]">{i + 1}</span>
                 <span className="flex-1">{p.avatar} {p.nick}</span>
                 <span className="tabular font-bold">{p.score}</span>
                 {p.roundDelta > 0 && <span className="tabular text-sm" style={{ color: accent }}>+{p.roundDelta}</span>}
@@ -82,7 +82,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
         </div>
       )}
 
-      {(pub.phase === "losowanie") && <p className="text-xl text-[var(--color-tekst-drugi)]">{pub.categories.join(" · ")}</p>}
+      {(pub.phase === "losowanie") && <p className="text-xl text-[var(--color-ink-muted)]">{pub.categories.join(" · ")}</p>}
     </div>
   );
 }

@@ -79,10 +79,13 @@ export default function LobbyPage() {
 
   if (notFound) {
     return (
-      <main className="screen items-center justify-center gap-6 text-center">
-        <p className="text-lg">Nie ma pokoju o kodzie</p>
-        <RoomCodeNeon code={code} accent="#ff2d95" />
-        <Link href="/dolacz" className="btn">
+      <main className="arcade-bg screen relative items-center justify-center gap-6 overflow-hidden text-center">
+        <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+        <p className="font-display relative text-2xl font-bold uppercase text-ink">
+          Nie ma takiego pokoju
+        </p>
+        <RoomCodeNeon code={code} accent="var(--color-czerwien)" />
+        <Link href="/dolacz" className="btn relative">
           Spróbuj innego kodu
         </Link>
       </main>
@@ -92,13 +95,21 @@ export default function LobbyPage() {
   // Subskrypcja ostatecznie padła (po ponowieniach) — pokaż odzysk zamiast wisieć w nieskończoność.
   if (error && !wasMemberRef.current) {
     return (
-      <main className="screen items-center justify-center gap-6 text-center">
-        <p className="text-lg">Nie udało się wejść do pokoju.</p>
-        <p className="text-sm text-[var(--color-tekst-drugi)]">Sprawdź połączenie i spróbuj ponownie.</p>
-        <button type="button" className="btn btn-accent" onClick={() => window.location.reload()}>
+      <main className="arcade-bg screen relative items-center justify-center gap-5 overflow-hidden text-center">
+        <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+        <p className="font-display relative text-2xl font-bold uppercase text-ink">
+          Nie udało się wejść
+        </p>
+        <p className="relative max-w-xs text-base font-semibold text-ink-muted">
+          Sprawdź połączenie i spróbuj ponownie.
+        </p>
+        <button type="button" className="btn relative" onClick={() => window.location.reload()}>
           Spróbuj ponownie
         </button>
-        <Link href="/dolacz" className="text-sm text-[var(--color-tekst-drugi)] underline underline-offset-4">
+        <Link
+          href="/dolacz"
+          className="font-display relative text-sm font-bold uppercase tracking-[0.06em] text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+        >
           ← wróć
         </Link>
       </main>
@@ -122,48 +133,56 @@ export default function LobbyPage() {
   const playerCount = Object.keys(room.players).length;
 
   return (
-    <main className="screen gap-8">
-      <header className="flex flex-col items-center gap-2 pt-2">
-        <span className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
-          Pokój
-        </span>
-        <RoomCodeNeon code={room.code} />
+    <main className="arcade-bg screen relative gap-5 overflow-hidden">
+      <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+
+      {/* Nagłówek: wielki tytuł „POKÓJ XXXX" + QR w rogu (mockup) */}
+      <header className="relative flex items-start justify-between gap-3">
+        <h1 className="font-display text-outline min-w-0 flex-1 text-[2.75rem] font-bold uppercase leading-[1.05] tracking-wide text-ink">
+          Pokój{" "}
+          <span className="text-limonka">{room.code}</span>
+        </h1>
+        <div className="flex flex-none flex-col items-center gap-1 rounded-[20px] border-[3px] border-stroke bg-panel p-2 shadow-[0_4px_0_rgb(0_0_0/0.35)]">
+          <RoomQr code={room.code} size={92} />
+          <ShareButton code={room.code} compact />
+        </div>
       </header>
 
-      <section className="flex flex-col items-center gap-3">
-        <RoomQr code={room.code} />
-        <p className="text-center text-sm text-[var(--color-tekst-drugi)]">
-          Zeskanuj albo podaj kod znajomym.
-        </p>
-        <ShareButton code={room.code} />
-        <Link
-          href={`/pokoj/${room.code}/ekran`}
-          target="_blank"
-          className="text-sm text-[var(--color-cyjan)] underline underline-offset-4"
-        >
-          Otwórz ekran hosta (na TV) ↗
-        </Link>
+      {/* Pasek gracza */}
+      <section className="relative flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">
+            Gracze ({playerCount})
+          </h2>
+          <Link
+            href={`/pokoj/${room.code}/ekran`}
+            target="_blank"
+            className="font-display text-xs font-bold uppercase tracking-[0.06em] text-mint underline-offset-4 hover:underline"
+          >
+            Ekran na TV ↗
+          </Link>
+        </div>
+        {playerCount === 0 ? (
+          <p className="card text-center text-base font-semibold text-ink-muted">
+            Zaproś znajomych i zaczynajcie.
+          </p>
+        ) : (
+          <PlayerList
+            players={room.players}
+            hostUid={room.hostUid}
+            myUid={uid}
+            serverNow={serverNow}
+            onKick={isHost ? kick : undefined}
+          />
+        )}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
-          Gracze ({playerCount})
-        </h2>
-        <PlayerList
-          players={room.players}
-          hostUid={room.hostUid}
-          myUid={uid}
-          serverNow={serverNow}
-          onKick={isHost ? kick : undefined}
-        />
-      </section>
-
-      <section className="flex flex-col gap-3">
+      <section className="relative flex flex-col gap-3">
         <LobbyGames code={room.code} isHost={isHost} playerCount={playerCount} />
       </section>
 
-      <section className="mt-auto pt-2">
-        <button type="button" onClick={leave} className="btn w-full">
+      <section className="relative mt-auto pt-2">
+        <button type="button" onClick={leave} className="btn btn-ghost w-full">
           Wyjdź z pokoju
         </button>
       </section>

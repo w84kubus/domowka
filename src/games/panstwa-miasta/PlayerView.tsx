@@ -43,15 +43,15 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
     const left = secLeft(room.phaseEndsAt, now);
     return (
       <div className="flex flex-col items-center justify-center gap-6 pt-6 text-center" style={{ ["--accent" as string]: accent }}>
-        <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">Runda {pub.round} — litera</p>
+        <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">Runda {pub.round} — litera</p>
         <div
           className="flex h-40 w-40 items-center justify-center rounded-3xl text-8xl font-bold"
           style={{ background: accent, color: "#0b0a12", boxShadow: `0 0 50px ${accent}88`, fontFamily: "var(--font-display)" }}
         >
           {pub.letter}
         </div>
-        <p className="text-[var(--color-tekst-drugi)]">Piszcie za {left ?? 0}…</p>
-        <p className="max-w-xs text-xs text-[var(--color-tekst-drugi)]">{pub.categories.join(" · ")}</p>
+        <p className="text-[var(--color-ink-muted)]">Piszcie za {left ?? 0}…</p>
+        <p className="max-w-xs text-xs text-[var(--color-ink-muted)]">{pub.categories.join(" · ")}</p>
       </div>
     );
   }
@@ -68,27 +68,27 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
     return (
       <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
         <div className="text-center">
-          <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
+          <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
             Weryfikacja · litera {pub.letter}
           </p>
-          <p className="text-xs text-[var(--color-tekst-drugi)]">Przejrzyjcie odpowiedzi i zgłoście wątpliwe 🚩</p>
+          <p className="text-xs text-[var(--color-ink-muted)]">Przejrzyjcie odpowiedzi i zgłoście wątpliwe 🚩</p>
         </div>
 
         {active && (
           <div className="card sticky top-2 z-10 flex flex-col gap-3 p-4" style={{ borderColor: accent }}>
-            <p className="text-sm text-[var(--color-tekst-drugi)]">Kwestia: odpowiedź <b>{nickOf(active.targetUid)}</b></p>
-            {active.justification && <p className="text-center text-sm italic text-[var(--color-tekst-drugi)]">— {active.justification}</p>}
+            <p className="text-sm text-[var(--color-ink-muted)]">Kwestia: odpowiedź <b>{nickOf(active.targetUid)}</b></p>
+            {active.justification && <p className="text-center text-sm italic text-[var(--color-ink-muted)]">— {active.justification}</p>}
             {priv?.amTarget ? (
               <JustifyBox dispatch={dispatch} />
             ) : priv?.myVote || sent ? (
-              <p className="text-center text-sm text-[var(--color-tekst-drugi)]">Zagłosowano — czekamy…</p>
+              <p className="text-center text-sm text-[var(--color-ink-muted)]">Zagłosowano — czekamy…</p>
             ) : (
               <div className="flex gap-2">
                 <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "uznaje" }); }}>UZNAJĘ</button>
                 <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "odrzucam" }); }} style={{ color: "var(--color-magenta)" }}>ODRZUCAM</button>
               </div>
             )}
-            <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
+            <p className="text-center text-xs text-[var(--color-ink-muted)]">
               UZNAJĘ {active.tally.uznaje} · ODRZUCAM {active.tally.odrzucam} (remis = uznana)
             </p>
           </div>
@@ -100,16 +100,16 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
             <ul className="flex flex-col gap-1.5">
               {c.entries.map((e) => (
                 <li key={e.uid} className="card flex items-center gap-3 px-4 py-2">
-                  <span className="w-20 shrink-0 truncate text-sm text-[var(--color-tekst-drugi)]">{nickOf(e.uid)}</span>
-                  <span className={`flex-1 truncate font-semibold ${e.rejected || e.autoZero ? "text-[var(--color-tekst-drugi)] line-through" : ""}`}>
-                    {e.answer || <span className="italic text-[var(--color-tekst-drugi)]">—</span>}
+                  <span className="w-20 shrink-0 truncate text-sm text-[var(--color-ink-muted)]">{nickOf(e.uid)}</span>
+                  <span className={`flex-1 truncate font-semibold ${e.rejected || e.autoZero ? "text-[var(--color-ink-muted)] line-through" : ""}`}>
+                    {e.answer || <span className="italic text-[var(--color-ink-muted)]">—</span>}
                   </span>
                   {e.autoZero && <span title="zła litera" className="text-xs text-[var(--color-magenta)]">zła litera</span>}
                   {e.rejected && <span className="text-xs text-[var(--color-magenta)]">odrzucona</span>}
                   {!active && !sent && !e.autoZero && !e.rejected && e.answer && e.uid !== meUid && (
                     <button
                       onClick={() => { markSent(); dispatch({ type: "CHALLENGE", targetUid: e.uid, cat: c.cat }); }}
-                      className="rounded-md border border-[var(--color-obramowanie)] px-2 py-1 text-xs"
+                      className="rounded-md border border-[var(--color-stroke)] px-2 py-1 text-xs"
                       aria-label="Kwestionuję"
                     >
                       🚩
@@ -150,13 +150,13 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
 
       {pub.breakdown && (
         <details className="text-sm">
-          <summary className="cursor-pointer text-[var(--color-tekst-drugi)]">Szczegóły kategorii</summary>
+          <summary className="cursor-pointer text-[var(--color-ink-muted)]">Szczegóły kategorii</summary>
           <div className="mt-2 flex flex-col gap-3">
             {pub.breakdown.map((c) => (
               <div key={c.category}>
                 <p className="font-semibold">{c.category}</p>
                 {c.answers.filter((a) => a.answer).map((a) => (
-                  <div key={a.uid} className="flex justify-between px-2 text-[var(--color-tekst-drugi)]">
+                  <div key={a.uid} className="flex justify-between px-2 text-[var(--color-ink-muted)]">
                     <span>{nickOf(a.uid)}: {a.answer}</span>
                     <span className="tabular">{a.points}</span>
                   </div>
@@ -179,14 +179,14 @@ function JustifyBox({ dispatch }: { dispatch: (a: unknown) => Promise<void> }) {
   const [sent, setSent] = useState(false);
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-center text-sm text-[var(--color-tekst-drugi)]">To Twoja odpowiedź — możesz się bronić (15 s):</p>
+      <p className="text-center text-sm text-[var(--color-ink-muted)]">To Twoja odpowiedź — możesz się bronić (15 s):</p>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         maxLength={200}
         rows={2}
         placeholder="np. To realne miasto w…"
-        className="rounded-lg border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] p-2 text-sm"
+        className="rounded-lg border border-[var(--color-stroke)] bg-[var(--color-panel)] p-2 text-sm"
       />
       <button
         className="btn"
@@ -247,13 +247,13 @@ function WritingPhase({
     <div className="flex flex-col gap-3" style={{ ["--accent" as string]: accent }}>
       <div className="flex items-center justify-between">
         <span className="text-3xl font-bold" style={{ color: accent, fontFamily: "var(--font-display)" }}>{pub.letter}</span>
-        <span className="text-sm text-[var(--color-tekst-drugi)]">{filled}/{pub.categories.length}{left != null ? ` · ${left}s` : ""}</span>
+        <span className="text-sm text-[var(--color-ink-muted)]">{filled}/{pub.categories.length}{left != null ? ` · ${left}s` : ""}</span>
       </div>
       {pub.stoppedBy && <p className="text-center text-sm" style={{ color: accent }}>{nickOf(pub.stoppedBy)} skończył! Dokończ szybko.</p>}
 
       {pub.categories.map((cat, i) => (
         <div key={cat} className="flex flex-col gap-1">
-          <label className="text-xs text-[var(--color-tekst-drugi)]">{cat}</label>
+          <label className="text-xs text-[var(--color-ink-muted)]">{cat}</label>
           <input
             value={answers[i] ?? ""}
             onChange={(e) => change(i, e.target.value)}
@@ -261,15 +261,15 @@ function WritingPhase({
             autoCorrect="off"
             autoCapitalize="words"
             spellCheck={false}
-            className="min-h-[52px] rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-3 text-[var(--color-tekst)] outline-none focus:border-[var(--color-cyjan)]"
+            className="min-h-[52px] rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi"
           />
         </div>
       ))}
 
       <div className="mt-2 flex flex-col gap-2">
-        <div className="flex flex-wrap gap-1 text-xs text-[var(--color-tekst-drugi)]">
+        <div className="flex flex-wrap gap-1 text-xs text-[var(--color-ink-muted)]">
           {pub.progress?.map((pr) => (
-            <span key={pr.uid} className="rounded bg-[var(--color-powierzchnia)] px-2 py-0.5">
+            <span key={pr.uid} className="rounded bg-[var(--color-panel)] px-2 py-0.5">
               {nickOf(pr.uid)} {pr.filled}/{pub.categories.length}
             </span>
           ))}

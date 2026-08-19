@@ -12,21 +12,20 @@ export function ReturnToRoom() {
   if (!activeRoom) return null;
 
   return (
-    <div className="card flex w-full max-w-xs flex-col items-center gap-3 p-4">
-      <p className="text-sm text-[var(--color-tekst-drugi)]">Masz aktywny pokój:</p>
-      <RoomCodeNeon code={activeRoom.code} accent="#22d3ee" />
+    <div className="card arcade-pop relative flex w-full max-w-xs flex-col items-center gap-4">
+      <p className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
+        Masz aktywny pokój
+      </p>
+      <RoomCodeNeon code={activeRoom.code} size="2rem" />
       <div className="flex w-full gap-2">
-        <Link
-          href={`/pokoj/${activeRoom.code}`}
-          className="btn btn-accent flex-1 text-center"
-        >
+        <Link href={`/pokoj/${activeRoom.code}`} className="btn flex-1 px-4 text-base">
           Wróć
         </Link>
         <button
           type="button"
           onClick={() => setActiveRoom(null)}
-          className="btn flex-none px-3"
-          aria-label="Odrzuć"
+          className="btn btn-ghost flex-none px-4 text-xl"
+          aria-label="Odrzuć aktywny pokój"
         >
           ✕
         </button>

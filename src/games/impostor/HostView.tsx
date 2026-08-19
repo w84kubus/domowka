@@ -16,7 +16,7 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
-      <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-tekst-drugi)]">
+      <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-ink-muted)]">
         Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.phase}
       </p>
 
@@ -35,7 +35,7 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
         <div className="flex flex-wrap justify-center gap-3">
           {pub.clues.map((c, i) => (
             <div key={i} className="card px-4 py-2 text-center">
-              <div className="text-xs text-[var(--color-tekst-drugi)]">{nickOf(c.uid)}</div>
+              <div className="text-xs text-[var(--color-ink-muted)]">{nickOf(c.uid)}</div>
               <div className="text-lg font-semibold">{c.word}</div>
             </div>
           ))}
@@ -63,8 +63,8 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
           <p className="text-4xl font-bold" style={{ color: pub.result === "cywile" ? "#4ade80" : accent }}>
             {pub.result === "cywile" ? "Cywile wygrywają!" : pub.byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!"}
           </p>
-          <p className="mt-3 text-2xl">Hasło: <b>{pub.word}</b> <span className="text-[var(--color-tekst-drugi)]">({pub.category})</span></p>
-          <p className="text-lg text-[var(--color-tekst-drugi)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
+          <p className="mt-3 text-2xl">Hasło: <b>{pub.word}</b> <span className="text-[var(--color-ink-muted)]">({pub.category})</span></p>
+          <p className="text-lg text-[var(--color-ink-muted)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
         </div>
       )}
 

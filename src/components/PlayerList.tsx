@@ -36,27 +36,30 @@ export function PlayerList({
         return (
           <li
             key={p.uid}
-            className="card flex items-center gap-3 px-4 py-3 animate-[slideIn_0.3s_ease]"
+            className="flex items-center gap-3 rounded-[14px] border-[3px] border-stroke bg-panel px-3 py-2 shadow-[0_3px_0_rgb(0_0_0/0.35)] animate-[slideIn_0.3s_ease]"
             style={{ opacity: connected ? 1 : 0.45 }}
           >
-            <span className="text-2xl" aria-hidden>
+            <span
+              className="flex size-11 flex-none items-center justify-center rounded-full border-[3px] border-white bg-panel-hi text-2xl"
+              aria-hidden
+            >
               {p.avatar}
             </span>
-            <span className="flex-1 truncate font-semibold">
+            <span className="flex-1 truncate text-base font-bold text-ink">
               {p.nick}
-              {isMe && <span className="text-[var(--color-tekst-drugi)]"> (Ty)</span>}
+              {isMe && <span className="font-semibold text-ink-muted"> (Ty)</span>}
             </span>
             {p.uid === hostUid && (
               <span
-                className="rounded-md bg-[var(--color-uniesione)] px-2 py-0.5 text-xs text-[var(--color-bursztyn)]"
+                className="font-display rounded-md bg-mint px-2 py-0.5 text-xs font-bold uppercase text-sheet-ink"
                 title="Host"
               >
                 ★ host
               </span>
             )}
             <span
-              className="inline-block h-2.5 w-2.5 rounded-full"
-              style={{ background: connected ? "#4ade80" : "#6b7280" }}
+              className="inline-block size-3 flex-none rounded-full border-2 border-white/50"
+              style={{ background: connected ? "var(--color-online)" : "var(--color-offline)" }}
               aria-label={connected ? "połączony" : "rozłączony"}
               title={connected ? "połączony" : "rozłączony"}
             />
@@ -65,7 +68,7 @@ export function PlayerList({
                 type="button"
                 onClick={() => onKick!(p.uid)}
                 aria-label={`Wyrzuć ${p.nick}`}
-                className="rounded-md px-2 py-1 text-sm text-[var(--color-tekst-drugi)] hover:text-[var(--color-czerwien)]"
+                className="flex size-9 flex-none items-center justify-center rounded-lg text-base font-bold text-ink-muted transition-colors hover:bg-czerwien hover:text-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint"
               >
                 ✕
               </button>

@@ -12,8 +12,11 @@ export function RoomQr({ code, size = 160 }: { code: string; size?: number }) {
   if (!url) return <div style={{ width: size, height: size }} aria-hidden />;
 
   return (
-    <div className="inline-block rounded-xl bg-white p-3" aria-label="Kod QR do pokoju">
-      <QRCodeSVG value={url} size={size} bgColor="#ffffff" fgColor="#0b0a12" level="M" />
+    <div
+      className="inline-block rounded-[14px] border-[3px] border-white bg-white p-3 shadow-[0_4px_0_rgb(0_0_0/0.35)]"
+      aria-label="Kod QR do pokoju"
+    >
+      <QRCodeSVG value={url} size={size} bgColor="#ffffff" fgColor="#2A1758" level="M" />
     </div>
   );
 }

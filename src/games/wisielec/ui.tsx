@@ -29,14 +29,13 @@ export function PolishKeyboard({
             disabled={disabled || used}
             onClick={() => onLetter(l)}
             aria-label={`Litera ${l}`}
-            className="flex h-11 items-center justify-center rounded-lg border text-lg font-bold transition-transform active:scale-90 disabled:active:scale-100"
+            className="font-display flex h-11 items-center justify-center rounded-[10px] border-[3px] text-lg font-bold transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint active:translate-y-[3px] active:shadow-none disabled:active:translate-y-0"
             style={{
-              fontFamily: "var(--font-display)",
-              borderColor: hit ? "#4ade80" : miss ? "var(--color-czerwien)" : isPending ? "var(--color-bursztyn)" : "var(--color-obramowanie)",
-              background: hit ? "rgba(74,222,128,0.18)" : miss ? "rgba(228,0,43,0.18)" : isPending ? "var(--color-uniesione)" : "var(--color-powierzchnia)",
-              color: used ? "var(--color-tekst-drugi)" : "var(--color-tekst)",
+              borderColor: hit ? "var(--color-mint)" : miss ? "var(--color-czerwien)" : isPending ? "var(--color-bursztyn)" : "var(--color-stroke)",
+              background: hit ? "rgba(124,240,174,0.22)" : miss ? "rgba(228,0,43,0.22)" : isPending ? "var(--color-panel-hi)" : "var(--color-panel)",
+              color: used ? "var(--color-ink-muted)" : "var(--color-ink)",
+              boxShadow: used ? "none" : "0 3px 0 rgb(0 0 0 / 0.35)",
               opacity: (disabled && !used) || isPending ? 0.6 : 1,
-              transform: isPending ? "scale(0.92)" : undefined,
             }}
           >
             {l}
@@ -63,11 +62,10 @@ export function MaskedWord({ mask, accent, big }: { mask: MaskCell[]; accent: st
           {g.map((cell, i) => (
             <span
               key={i}
-              className={`inline-flex items-center justify-center border-b-2 text-center ${big ? "h-12 w-8 text-3xl" : "h-9 w-6 text-xl"} font-bold`}
+              className={`font-display inline-flex items-center justify-center border-b-[4px] text-center ${big ? "h-12 w-8 text-3xl" : "h-9 w-6 text-xl"} font-bold`}
               style={{
                 borderColor: cell.kind === "punct" ? "transparent" : accent,
-                fontFamily: "var(--font-display)",
-                color: cell.ch ? "var(--color-tekst)" : "transparent",
+                color: cell.ch ? "var(--color-ink)" : "transparent",
               }}
             >
               {cell.kind === "punct" ? cell.ch : (cell.ch ?? " ")}
@@ -86,7 +84,7 @@ export function Hangman({ wrong, maxWrong, size = 180 }: { wrong: number; maxWro
   // 1 utracone życie = 1 element (a nie ułamek); przy mniejszej liczbie żyć ludzik bywa niepełny.
   const shown = Math.min(PARTS, wrong);
   const on = (i: number) => (i < shown ? 1 : 0);
-  const stroke = { stroke: "var(--color-tekst)", strokeWidth: 4, fill: "none", strokeLinecap: "round" as const };
+  const stroke = { stroke: "var(--color-ink)", strokeWidth: 4, fill: "none", strokeLinecap: "round" as const };
   const T = "opacity 0.4s ease";
   return (
     <svg viewBox="0 0 200 220" width={size} height={size * 1.1} aria-label={`Szubienica: ${wrong}/${maxWrong}`}>

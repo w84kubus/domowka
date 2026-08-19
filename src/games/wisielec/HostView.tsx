@@ -25,7 +25,7 @@ export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
-      <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-tekst-drugi)]">
+      <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-ink-muted)]">
         Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.category}
       </p>
 
@@ -35,10 +35,10 @@ export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
             {pub.progress?.map((pr) => (
               <li key={pr.uid} className="flex items-center gap-3 text-xl">
                 <span className="w-40 truncate">{nickOf(pr.uid)}</span>
-                <span className="relative h-4 flex-1 overflow-hidden rounded-full bg-[var(--color-powierzchnia)]">
+                <span className="relative h-4 flex-1 overflow-hidden rounded-full bg-[var(--color-panel)]">
                   <span className="absolute inset-y-0 left-0" style={{ width: `${pr.percent}%`, background: pr.solved ? "#4ade80" : accent }} />
                 </span>
-                <span className="tabular w-16 text-right text-base text-[var(--color-tekst-drugi)]">{pr.solved ? "META" : `${pr.wrong}✗`}</span>
+                <span className="tabular w-16 text-right text-base text-[var(--color-ink-muted)]">{pr.solved ? "META" : `${pr.wrong}✗`}</span>
               </li>
             ))}
           </ul>

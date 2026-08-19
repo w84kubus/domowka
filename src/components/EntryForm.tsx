@@ -52,52 +52,68 @@ export function EntryForm({
 
   return (
     <form
-      className="flex w-full max-w-sm flex-col gap-6"
+      className="flex w-full max-w-sm flex-col gap-5"
       onSubmit={(e) => {
         e.preventDefault();
         submit();
       }}
     >
-      {mode === "join" && (
+      <div className="card arcade-pop flex flex-col gap-5">
+        {mode === "join" && (
+          <div className="flex flex-col gap-2">
+            <label className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
+              Kod pokoju
+            </label>
+            <CodeInput value={code} onChange={setCode} />
+          </div>
+        )}
+
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-[var(--color-tekst-drugi)]">Kod pokoju</label>
-          <CodeInput value={code} onChange={setCode} />
+          <label
+            htmlFor="nick"
+            className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint"
+          >
+            Twój nick
+          </label>
+          <input
+            id="nick"
+            value={nick}
+            onChange={(e) => setNick(e.target.value.replace(/[\r\n]/g, ""))}
+            maxLength={MAX_NICK_LENGTH * 2}
+            placeholder="np. Damian"
+            autoComplete="off"
+            className="min-h-[56px] rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-lg font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi"
+          />
         </div>
-      )}
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="nick" className="text-sm text-[var(--color-tekst-drugi)]">
-          Twój nick
-        </label>
-        <input
-          id="nick"
-          value={nick}
-          onChange={(e) => setNick(e.target.value.replace(/[\r\n]/g, ""))}
-          maxLength={MAX_NICK_LENGTH * 2}
-          placeholder="np. Damian"
-          autoComplete="off"
-          className="min-h-[56px] rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-4 text-lg text-[var(--color-tekst)] outline-none focus:border-[var(--color-cyjan)]"
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <span className="text-sm text-[var(--color-tekst-drugi)]">Awatar</span>
-        <AvatarPicker value={avatar} onChange={setAvatar} />
+        <div className="flex flex-col gap-2">
+          <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
+            Awatar
+          </span>
+          <AvatarPicker value={avatar} onChange={setAvatar} />
+        </div>
       </div>
 
       {error && (
-        <p className="rounded-lg bg-[var(--color-uniesione)] px-3 py-2 text-sm text-[var(--color-magenta)]">
+        <p
+          role="alert"
+          className="rounded-[14px] border-[3px] border-white/40 bg-czerwien/90 px-4 py-3 text-center font-body text-sm font-bold text-white shadow-[0_3px_0_rgb(0_0_0/0.35)]"
+        >
           {error}
         </p>
       )}
 
-      <button type="submit" className="btn btn-accent" disabled={!canSubmit}>
+      <button
+        type="submit"
+        className={`btn ${mode === "create" ? "btn-coral" : ""}`}
+        disabled={!canSubmit}
+      >
         {busy ? "Chwila…" : mode === "create" ? "Zakładam pokój" : "Dołączam"}
       </button>
 
       <Link
         href="/"
-        className="text-center text-sm text-[var(--color-tekst-drugi)] underline underline-offset-4"
+        className="font-display text-center text-sm font-bold uppercase tracking-[0.06em] text-ink-muted underline-offset-4 hover:text-ink hover:underline"
       >
         ← wróć
       </Link>

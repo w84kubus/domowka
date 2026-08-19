@@ -44,7 +44,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
 
   const header = (
     <div className="text-center">
-      <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
+      <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
         Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.mode}
       </p>
       {pub.category && <p className="text-lg font-semibold" style={{ color: accent }}>Kategoria: {pub.category}</p>}
@@ -58,7 +58,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
       <div className="flex flex-col gap-5" style={{ ["--accent" as string]: accent }}>
         {header}
         {priv?.amSetter ? <SetterInput dispatch={dispatch} accent={accent} /> : (
-          <p className="text-center text-[var(--color-tekst-drugi)]">
+          <p className="text-center text-[var(--color-ink-muted)]">
             {nickOf(pub.setterUid ?? "")} układa hasło… za chwilę zgadujecie.
           </p>
         )}
@@ -76,7 +76,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
         <p className="text-2xl font-bold" style={{ color: won ? "#4ade80" : "var(--color-czerwien)" }}>
           {pub.phase === "koniec" ? "Koniec gry 🏁" : won ? "Odgadnięte! 🎉" : "Wisielec zawisł 💀"}
         </p>
-        {pub.winners.length > 0 && <p className="text-sm text-[var(--color-tekst-drugi)]">Wygrywają: {pub.winners.map(nickOf).join(", ")}</p>}
+        {pub.winners.length > 0 && <p className="text-sm text-[var(--color-ink-muted)]">Wygrywają: {pub.winners.map(nickOf).join(", ")}</p>}
         <ul className="w-full max-w-sm">
           {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
             <li key={p.uid} className="flex justify-between px-2 py-1 text-sm">
@@ -125,14 +125,14 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
       <Hangman wrong={pub.wrong ?? 0} maxWrong={pub.maxWrong} size={150} />
       {pub.mask && <MaskedWord mask={pub.mask} accent={accent} />}
       {amSetter ? (
-        <p className="text-center text-[var(--color-tekst-drugi)]">Ty ułożyłeś hasło — obserwuj, jak zgadują.</p>
+        <p className="text-center text-[var(--color-ink-muted)]">Ty ułożyłeś hasło — obserwuj, jak zgadują.</p>
       ) : myTurn ? (
         <>
           <p className="text-sm font-semibold" style={{ color: accent }}>Twoja tura {left != null ? `· ${left}s` : ""}</p>
           <GuessControls hits={pub.hits ?? []} misses={pub.misses ?? []} dispatch={dispatch} disabled={false} extraLetters={pub.extraLetters} accent={accent} resetKey={room.version} />
         </>
       ) : (
-        <p className="text-center text-[var(--color-tekst-drugi)]">Tura: <b>{nickOf(pub.turnUid ?? "")}</b> {left != null ? `· ${left}s` : ""}</p>
+        <p className="text-center text-[var(--color-ink-muted)]">Tura: <b>{nickOf(pub.turnUid ?? "")}</b> {left != null ? `· ${left}s` : ""}</p>
       )}
     </div>
   );
@@ -167,7 +167,7 @@ function SolveBox({ dispatch, accent }: { dispatch: (a: unknown) => Promise<void
         onChange={(e) => setWord(e.target.value)}
         autoComplete="off"
         placeholder="całe hasło…"
-        className="min-h-[52px] flex-1 rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-3 outline-none"
+        className="min-h-[52px] flex-1 rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi"
       />
       <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => { dispatch({ type: "SOLVE", word }); setWord(""); setOpen(false); }}>OK</button>
     </div>
@@ -179,11 +179,11 @@ function SetterInput({ dispatch, accent }: { dispatch: (a: unknown) => Promise<v
   const [category, setCategory] = useState("");
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-center text-sm text-[var(--color-tekst-drugi)]">Ułóż hasło dla pozostałych (oni tego nie widzą).</p>
+      <p className="text-center text-sm text-[var(--color-ink-muted)]">Ułóż hasło dla pozostałych (oni tego nie widzą).</p>
       <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Kategoria / podpowiedź" maxLength={40}
-        className="min-h-[52px] rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-3 outline-none" />
+        className="min-h-[52px] rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi" />
       <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Hasło" maxLength={40} autoCapitalize="characters"
-        className="min-h-[52px] rounded-xl border border-[var(--color-obramowanie)] bg-[var(--color-powierzchnia)] px-3 outline-none" />
+        className="min-h-[52px] rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi" />
       <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!password.trim() || !category.trim()}
         onClick={() => dispatch({ type: "SET_PASSWORD", password, category })}>Ustaw hasło</button>
     </div>
@@ -193,15 +193,15 @@ function SetterInput({ dispatch, accent }: { dispatch: (a: unknown) => Promise<v
 function ProgressBars({ pub, nickOf, accent }: { pub: Pub; nickOf: (u: string) => string; accent: string }) {
   return (
     <div className="w-full max-w-sm">
-      <p className="mb-2 text-xs uppercase tracking-widest text-[var(--color-tekst-drugi)]">Wyścig</p>
+      <p className="mb-2 text-xs uppercase tracking-widest text-[var(--color-ink-muted)]">Wyścig</p>
       <ul className="flex flex-col gap-2">
         {pub.progress?.map((pr) => (
           <li key={pr.uid} className="flex items-center gap-2 text-sm">
             <span className="w-20 truncate">{nickOf(pr.uid)}</span>
-            <span className="relative h-2 flex-1 overflow-hidden rounded bg-[var(--color-powierzchnia)]">
+            <span className="relative h-2 flex-1 overflow-hidden rounded bg-[var(--color-panel)]">
               <span className="absolute inset-y-0 left-0 rounded" style={{ width: `${pr.percent}%`, background: pr.solved ? "#4ade80" : accent }} />
             </span>
-            <span className="tabular text-xs text-[var(--color-tekst-drugi)]">{pr.solved ? "✓" : `${pr.wrong}✗`}</span>
+            <span className="tabular text-xs text-[var(--color-ink-muted)]">{pr.solved ? "✓" : `${pr.wrong}✗`}</span>
           </li>
         ))}
       </ul>

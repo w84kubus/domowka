@@ -42,7 +42,9 @@ export default function EkranPage() {
     return (
       <main className="crt flex min-h-[100dvh] flex-col items-center justify-center">
         <div className="crt-scanlines" aria-hidden />
-        <p className="text-4xl text-[var(--color-tekst-drugi)]">Nie ma takiego pokoju.</p>
+        <p className="font-display text-4xl font-bold uppercase text-ink-muted">
+          Nie ma takiego pokoju.
+        </p>
       </main>
     );
   }
@@ -75,11 +77,11 @@ export default function EkranPage() {
       <div className="crt-scanlines" aria-hidden />
 
       {/* Header: wielki kod pokoju */}
-      <header className="flex flex-col items-center gap-4">
-        <span className="text-2xl uppercase tracking-[0.4em] text-[var(--color-tekst-drugi)]" style={{ fontFamily: "var(--font-display)" }}>
+      <header className="flex flex-col items-center gap-5">
+        <span className="font-display text-2xl font-bold uppercase tracking-[0.4em] text-mint">
           Dołącz do pokoju
         </span>
-        <RoomCodeNeon code={code} size="8rem" accent="#22d3ee" />
+        <RoomCodeNeon code={code} size="8rem" />
       </header>
 
       {/* QR — duży, czytelny ze skanem z dystansu */}
@@ -87,10 +89,7 @@ export default function EkranPage() {
 
       {/* Gracze — duże kafelki */}
       <section className="w-full max-w-4xl">
-        <h2
-          className="mb-6 text-2xl uppercase tracking-widest text-[var(--color-tekst-drugi)]"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
+        <h2 className="font-display mb-6 text-2xl font-bold uppercase tracking-widest text-mint">
           Gracze ({players.length})
         </h2>
         <ul className="flex flex-wrap justify-center gap-6">
@@ -99,19 +98,21 @@ export default function EkranPage() {
             return (
               <li
                 key={p.uid}
-                className="card flex flex-col items-center gap-2 px-8 py-6 animate-[slideIn_0.3s_ease]"
+                className="flex flex-col items-center gap-3 rounded-[20px] border-[3px] border-stroke bg-panel px-8 py-6 shadow-[0_4px_0_rgb(0_0_0/0.35)] animate-[slideIn_0.3s_ease]"
                 style={{ opacity: connected ? 1 : 0.35 }}
               >
-                <span className="text-6xl">{p.avatar}</span>
-                <span className="text-xl font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                  {p.nick}
+                <span className="flex size-24 items-center justify-center rounded-full border-[6px] border-white bg-panel-hi text-6xl">
+                  {p.avatar}
                 </span>
+                <span className="font-display text-xl font-bold text-ink">{p.nick}</span>
                 {p.uid === room?.hostUid && (
-                  <span className="text-sm text-[var(--color-bursztyn)]">★ host</span>
+                  <span className="font-display rounded-md bg-mint px-2 py-0.5 text-sm font-bold uppercase text-sheet-ink">
+                    ★ host
+                  </span>
                 )}
                 <span
-                  className="inline-block h-3 w-3 rounded-full"
-                  style={{ background: connected ? "#4ade80" : "#6b7280" }}
+                  className="inline-block size-3 rounded-full border-2 border-white/50"
+                  style={{ background: connected ? "var(--color-online)" : "var(--color-offline)" }}
                   aria-label={connected ? "połączony" : "rozłączony"}
                 />
               </li>
@@ -119,12 +120,14 @@ export default function EkranPage() {
           })}
         </ul>
         {players.length === 0 && (
-          <p className="text-2xl text-[var(--color-tekst-drugi)]">Czekamy na graczy…</p>
+          <p className="text-2xl font-semibold text-ink-muted">
+            Zaproś znajomych i zaczynajcie.
+          </p>
         )}
       </section>
 
       {/* URL do wpisania na telefonie */}
-      <footer className="text-xl text-[var(--color-tekst-drugi)]">
+      <footer className="font-display text-xl font-bold uppercase tracking-[0.06em] text-ink-muted">
         domowka.vercel.app
       </footer>
     </main>

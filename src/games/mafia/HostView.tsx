@@ -21,13 +21,13 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
          pub.phase === "glosowanie" ? "🗳️ Głosowanie" : pub.phase === "switt" ? "🌅 Świt" :
          pub.phase === "koniec" ? "🏁 Koniec" : "🃏 Rozdanie"}
       </p>
-      <p className="max-w-2xl text-center text-xl italic text-[var(--color-tekst-drugi)]">{pub.narrator}</p>
+      <p className="max-w-2xl text-center text-xl italic text-[var(--color-ink-muted)]">{pub.narrator}</p>
 
       {pub.phase === "switt" && (
         <div className="text-center">
           {pub.deaths.length ? pub.deaths.map((d) => (
             <p key={d} className="text-3xl font-bold">💀 {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_NAME[pub.players.find((p) => p.uid === d)!.role!]}` : ""}</p>
-          )) : <p className="text-2xl text-[var(--color-tekst-drugi)]">Noc minęła spokojnie.</p>}
+          )) : <p className="text-2xl text-[var(--color-ink-muted)]">Noc minęła spokojnie.</p>}
         </div>
       )}
 
@@ -40,7 +40,7 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
             {pub.players.map((p) => (
               <div key={p.uid} className="card px-4 py-2 text-center">
                 <div className="text-2xl">{p.avatar}</div><div>{p.nick}</div>
-                <div className="text-sm" style={{ color: p.role === "mafia" ? accent : "var(--color-tekst-drugi)" }}>{p.role ? ROLE_NAME[p.role] : "?"}</div>
+                <div className="text-sm" style={{ color: p.role === "mafia" ? accent : "var(--color-ink-muted)" }}>{p.role ? ROLE_NAME[p.role] : "?"}</div>
               </div>
             ))}
           </div>
@@ -57,7 +57,7 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
         </div>
       )}
 
-      <p className="text-[var(--color-tekst-drugi)]">Żywych: {pub.aliveCount}</p>
+      <p className="text-[var(--color-ink-muted)]">Żywych: {pub.aliveCount}</p>
     </div>
   );
 }

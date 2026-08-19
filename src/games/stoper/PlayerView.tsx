@@ -96,29 +96,29 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     const iWon = pub.perfectHits.includes(meUid);
     return (
       <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
-        <h2 className="text-center text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
+        <h2 className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink">
           {pub.phase === "koniec" ? "Koniec gry 🏁" : `Runda ${pub.round} — wyniki`}
         </h2>
         <ol className="flex flex-col gap-2">
           {(pub.reveal ?? []).map((r, i) => (
             <li
               key={r.uid}
-              className="card flex items-center gap-3 px-4 py-3"
-              style={r.perfect ? { borderColor: accent, boxShadow: `0 0 18px ${accent}55` } : undefined}
+              className="flex items-center gap-3 rounded-[14px] border-[3px] border-stroke bg-panel px-3 py-3 shadow-[0_3px_0_rgb(0_0_0/0.35)]"
+              style={r.perfect ? { borderColor: accent, boxShadow: `0 3px 0 ${accent}` } : undefined}
             >
-              <span className="tabular w-6 text-center text-lg font-bold text-[var(--color-tekst-drugi)]">{i + 1}</span>
-              <span className="flex-1 truncate font-semibold">
+              <span className="tabular w-6 text-center text-lg font-bold text-ink-muted">{i + 1}</span>
+              <span className="flex-1 truncate font-bold text-ink">
                 {nickOf(r.uid)}
                 {r.uid === meUid && " (Ty)"}
                 {r.suspicious && <span title="podejrzany wynik"> ⚠</span>}
               </span>
               <span className="tabular text-right text-sm">
                 {r.valueMs == null ? (
-                  <span className="text-[var(--color-tekst-drugi)]">brak</span>
+                  <span className="text-[var(--color-ink-muted)]">brak</span>
                 ) : (
                   <>
                     <div>{fmt(r.valueMs)}</div>
-                    <div className="text-xs text-[var(--color-tekst-drugi)]">{signed(r.signedMs ?? 0)}</div>
+                    <div className="text-xs text-[var(--color-ink-muted)]">{signed(r.signedMs ?? 0)}</div>
                   </>
                 )}
               </span>
@@ -127,10 +127,12 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
         </ol>
 
         <div className="mt-2">
-          <h3 className="mb-2 text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">Wyniki ogółem</h3>
+          <h3 className="font-display mb-2 text-sm font-bold uppercase tracking-[0.06em] text-mint">
+            Wyniki ogółem
+          </h3>
           <ul className="flex flex-col gap-1">
             {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
-              <li key={p.uid} className="flex justify-between px-1 text-sm">
+              <li key={p.uid} className="flex justify-between px-1 text-base font-semibold">
                 <span>{p.avatar} {p.nick}</span>
                 <span className="tabular font-bold">{p.score}</span>
               </li>
@@ -138,7 +140,11 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
           </ul>
         </div>
 
-        {iWon && <p className="text-center font-bold" style={{ color: accent }}>Idealne trafienie! 🎯</p>}
+        {iWon && (
+          <p className="font-display text-center text-lg font-bold uppercase" style={{ color: accent }}>
+            Idealne trafienie! 🎯
+          </p>
+        )}
 
         {isHost && pub.phase === "odsloniecie" && (
           <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>
@@ -153,7 +159,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
   return (
     <div className="flex flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
       <div className="text-center">
-        <p className="text-sm uppercase tracking-widest text-[var(--color-tekst-drugi)]">
+        <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
           Runda {pub.round}{pub.totalRounds ? ` / ${pub.totalRounds}` : ""} · Cel
         </p>
         <p className="tabular text-5xl font-bold" style={{ color: accent }}>{fmt(pub.target)}</p>
@@ -161,46 +167,64 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
       {submitted ? (
         <div className="flex flex-col items-center gap-3 text-center">
-          <p className="tabular text-3xl text-[var(--color-tekst-drugi)]">●●:●●.●●</p>
-          <p className="text-[var(--color-tekst-drugi)]">Zatrzymano. Czekamy na resztę…</p>
-          <p className="text-sm text-[var(--color-tekst-drugi)]">
+          <p className="tabular text-3xl text-ink-muted">●●:●●.●●</p>
+          <p className="text-lg font-bold text-ink">Zatrzymano. Czekamy na resztę…</p>
+          <p className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
             {pub.submitted.length} / {pub.players.length} gotowych
           </p>
         </div>
       ) : (
         <>
-          <p className="tabular text-4xl text-[var(--color-tekst-drugi)]">●●:●●.●●</p>
-          {invalidated && <p className="text-sm text-[var(--color-magenta)]">Nie zmieniaj karty 😉 — próba unieważniona.</p>}
+          <p className="tabular text-4xl text-ink-muted">●●:●●.●●</p>
+          {invalidated && (
+            <p className="rounded-[14px] border-2 border-czerwien/50 bg-czerwien/20 px-3 py-2 text-sm font-bold text-white">
+              Nie zmieniaj karty 😉 — próba unieważniona.
+            </p>
+          )}
           {!measuring ? (
             <button
               onClick={start}
-              className="flex h-40 w-40 items-center justify-center rounded-full text-3xl font-bold text-black"
-              style={{ background: accent, boxShadow: `0 0 40px ${accent}66`, fontFamily: "var(--font-display)" }}
+              className="font-display flex size-40 items-center justify-center rounded-full border-[5px] border-white text-3xl font-bold uppercase tracking-[0.06em] text-black transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-4 active:translate-y-[6px] active:shadow-none"
+              style={{
+                background: accent,
+                boxShadow: `0 6px 0 color-mix(in srgb, ${accent} 55%, black)`,
+              }}
             >
               START
             </button>
           ) : (
             <button
               onClick={stop}
-              className="flex h-40 w-40 items-center justify-center rounded-full border-4 text-3xl font-bold"
-              style={{ borderColor: accent, color: accent, fontFamily: "var(--font-display)" }}
+              className="font-display flex size-40 items-center justify-center rounded-full border-[5px] bg-panel-hi text-3xl font-bold uppercase tracking-[0.06em] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-4 active:translate-y-[6px] active:shadow-none"
+              style={{
+                borderColor: accent,
+                color: accent,
+                boxShadow: `0 6px 0 color-mix(in srgb, ${accent} 45%, black)`,
+              }}
             >
               STOP
             </button>
           )}
-          <p className="text-center text-xs text-[var(--color-tekst-drugi)]">
+          <p className="text-center text-sm font-semibold text-ink-muted">
             Zatrzymaj jak najbliżej celu. Cyfry są ukryte — licz w głowie.
           </p>
           {/* Podpowiedź o spacji tylko na urządzeniach z fizyczną klawiaturą (laptop). */}
-          <p className="hidden text-center text-xs text-[var(--color-tekst-drugi)] [@media(pointer:fine)]:block">
-            Na laptopie: <kbd className="rounded border border-[var(--color-obramowanie)] px-1.5 py-0.5">spacja</kbd> = {measuring ? "STOP" : "START"}
+          <p className="hidden text-center text-xs font-semibold text-ink-muted [@media(pointer:fine)]:block">
+            Na laptopie:{" "}
+            <kbd className="rounded-md border-2 border-stroke bg-panel px-1.5 py-0.5 font-bold">
+              spacja
+            </kbd>{" "}
+            = {measuring ? "STOP" : "START"}
           </p>
         </>
       )}
 
       {isHost && (
-        <button className="btn mt-2 text-sm" onClick={() => dispatch({ type: "NEXT" })}>
-          Zamknij rundę i pokaż wyniki
+        <button
+          className="btn btn-ghost mt-2 text-sm"
+          onClick={() => dispatch({ type: "NEXT" })}
+        >
+          Zamknij rundę
         </button>
       )}
     </div>
