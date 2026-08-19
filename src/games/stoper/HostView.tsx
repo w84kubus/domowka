@@ -1,5 +1,7 @@
 "use client";
+import { Target, TriangleAlert } from "lucide-react";
 import type { GameHostViewProps } from "@/games/view";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PublicState {
   round: number;
@@ -45,7 +47,7 @@ export function StoperHostView({ publicState, accent }: GameHostViewProps) {
                   style={{ borderColor: done ? accent : "var(--color-stroke)" }}
                 >
                   <span className="flex size-16 items-center justify-center rounded-full border-4 border-white bg-panel-hi text-4xl">
-                    {p.avatar}
+                    <AvatarIcon avatar={p.avatar} size={30} />
                   </span>
                   <span className="text-lg font-bold text-ink">{p.nick}</span>
                   <span
@@ -73,7 +75,7 @@ export function StoperHostView({ publicState, accent }: GameHostViewProps) {
               >
                 <span className="tabular w-8 text-center font-bold text-ink-muted">{i + 1}</span>
                 <span className="flex-1 font-bold text-ink">
-                  {nickOf(r.uid)}{r.suspicious && " ⚠"}{r.perfect && " 🎯"}
+                  {nickOf(r.uid)}{r.suspicious && <> <TriangleAlert size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}{r.perfect && <> <Target size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}
                 </span>
                 <span className="tabular text-right font-bold">
                   {r.valueMs == null ? "—" : <>{fmt(r.valueMs)} <span className="text-base font-semibold text-ink-muted">({signed(r.signedMs ?? 0)})</span></>}

@@ -1,4 +1,5 @@
 "use client";
+import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 
 // C4 (UPGRADE.md §C4): cienki pasek u góry „Brak połączenia — próbuję wrócić".
@@ -42,7 +43,13 @@ export function ConnectionBar() {
       role="status"
       aria-live="polite"
     >
-      {online ? "✓ Połączono" : "Brak połączenia — próbuję wrócić…"}
+      {online ? (
+        <>
+          <Check size={14} strokeWidth={3} className="inline-block align-[-0.15em]" aria-hidden /> Połączono
+        </>
+      ) : (
+        "Brak połączenia — próbuję wrócić…"
+      )}
     </div>
   );
 }

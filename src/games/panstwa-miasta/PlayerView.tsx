@@ -1,8 +1,10 @@
 "use client";
+import { Flag, FlagTriangleRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { sfx } from "@/lib/sound";
 import { useSent } from "@/games/useOptimistic";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface Common {
   round: number;
@@ -71,7 +73,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
           <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
             Weryfikacja · litera {pub.letter}
           </p>
-          <p className="text-xs text-[var(--color-ink-muted)]">Przejrzyjcie odpowiedzi i zgłoście wątpliwe 🚩</p>
+          <p className="text-xs text-[var(--color-ink-muted)]">Przejrzyjcie odpowiedzi i zgłoście wątpliwe <Flag size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></p>
         </div>
 
         {active && (
@@ -112,7 +114,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
                       className="rounded-md border border-[var(--color-stroke)] px-2 py-1 text-xs"
                       aria-label="Kwestionuję"
                     >
-                      🚩
+                      <Flag size={16} strokeWidth={2.5} aria-hidden />
                     </button>
                   )}
                 </li>
@@ -134,12 +136,12 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
   return (
     <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
       <h2 className="text-center text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
-        {pub.phase === "koniec" ? "Koniec gry 🏁" : `Runda ${pub.round} — wyniki`}
+        {pub.phase === "koniec" ? <>Koniec gry <FlagTriangleRight size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : `Runda ${pub.round} — wyniki`}
       </h2>
       <ul className="flex flex-col gap-1">
         {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
           <li key={p.uid} className="card flex items-center justify-between px-4 py-2">
-            <span>{p.avatar} {p.nick}{p.uid === meUid && " (Ty)"}</span>
+            <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"}</span>
             <span className="tabular">
               <b>{p.score}</b>
               {p.roundDelta > 0 && <span className="ml-2 text-sm" style={{ color: accent }}>+{p.roundDelta}</span>}

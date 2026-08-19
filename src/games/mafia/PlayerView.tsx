@@ -1,8 +1,11 @@
 "use client";
+import { Vote } from "lucide-react";
+import { Check, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import type { Role } from "./engine";
 import { useSent } from "@/games/useOptimistic";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; confirmed: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
@@ -12,11 +15,11 @@ interface Pub {
 }
 interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean }
 
-const ROLE_INFO: Record<Role, { emoji: string; name: string; desc: string }> = {
-  mafia: { emoji: "🔪", name: "Mafia", desc: "W nocy wybieracie ofiarę. Za dnia udawaj niewinnego." },
-  mieszkaniec: { emoji: "🏠", name: "Mieszkaniec", desc: "Nie masz zdolności. Znajdź mafię rozmową i głosem." },
-  detektyw: { emoji: "🔍", name: "Detektyw", desc: "Co noc sprawdzasz jedną osobę: mafia czy nie." },
-  lekarz: { emoji: "🩺", name: "Lekarz", desc: "Co noc chronisz jedną osobę przed śmiercią." },
+const ROLE_INFO: Record<Role, { Icon: LucideIcon; name: string; desc: string }> = {
+  mafia: { Icon: Swords, name: "Mafia", desc: "W nocy wybieracie ofiarę. Za dnia udawaj niewinnego." },
+  mieszkaniec: { Icon: House, name: "Mieszkaniec", desc: "Nie masz zdolności. Znajdź mafię rozmową i głosem." },
+  detektyw: { Icon: Search, name: "Detektyw", desc: "Co noc sprawdzasz jedną osobę: mafia czy nie." },
+  lekarz: { Icon: Stethoscope, name: "Lekarz", desc: "Co noc chronisz jedną osobę przed śmiercią." },
 };
 
 function useTicker(ms = 400) { const [, s] = useState(0); useEffect(() => { const id = setInterval(() => s((n) => n + 1), ms); return () => clearInterval(id); }, [ms]); }
@@ -52,7 +55,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         <p className="text-3xl font-bold" style={{ color: pub.winner === "mafia" ? accent : "#4ade80" }}>
-          {pub.winner === "mafia" ? "Mafia wygrywa! 🔪" : "Miasto wygrywa! 🎉"}
+          {pub.winner === "mafia" ? <>Mafia wygrywa! <Swords size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></> : <>Miasto wygrywa! <PartyPopper size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>}
         </p>
         {narrator}
         <RoleReveal pub={pub} meUid={meUid} accent={accent} />
@@ -66,7 +69,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         {narrator}
         {pub.deaths.length ? pub.deaths.map((d) => (
-          <p key={d} className="text-xl font-bold">💀 {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_INFO[pub.players.find((p) => p.uid === d)!.role!].name}` : ""}</p>
+          <p key={d} className="text-xl font-bold"><Skull size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /> {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_INFO[pub.players.find((p) => p.uid === d)!.role!].name}` : ""}</p>
         )) : <p className="text-lg text-[var(--color-ink-muted)]">Nikt nie zginął tej nocy.</p>}
         <AliveList pub={pub} meUid={meUid} />
         {isHost && <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Dalej →</button>}
@@ -82,7 +85,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
     const targets = pub.players.filter((p) => p.alive);
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
-        <p className="text-center text-2xl">🌙 Noc {pub.night}</p>
+        <p className="flex items-center justify-center gap-2 text-center text-2xl"><Moon size={24} strokeWidth={2.5} aria-hidden /> Noc {pub.night}</p>
         {narrator}
         {role === "mieszkaniec" && <p className="text-center text-[var(--color-ink-muted)]">Śpisz spokojnie. Miasto działa bez Ciebie.</p>}
         {role && role !== "mieszkaniec" && (
@@ -91,7 +94,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
               Wybór zapisany. Czekaj na świt… {left != null ? `(${left}s)` : ""}
               {role === "detektyw" && priv?.checks && priv.checks.length > 0 && (
                 <span className="mt-2 block text-sm text-[var(--color-ink-muted)]">
-                  Ostatni wynik: {nickOf(priv.checks[priv.checks.length - 1].target)} — {priv.checks[priv.checks.length - 1].isMafia ? "MAFIA 🔪" : "czysty ✓"}
+                  Ostatni wynik: {nickOf(priv.checks[priv.checks.length - 1].target)} — {priv.checks[priv.checks.length - 1].isMafia ? <>MAFIA <Swords size={14} strokeWidth={2.5} className="inline-block align-[-0.15em]" /></> : <>czysty <Check size={14} strokeWidth={3} className="inline-block align-[-0.15em]" /></>}
                 </span>
               )}
             </p>
@@ -109,7 +112,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
                   const mafiaVoteCount = role === "mafia" && priv?.mafiaVotes ? Object.values(priv.mafiaVotes).filter((t) => t === p.uid).length : 0;
                   return (
                     <button key={p.uid} className="btn" onClick={() => { markSent(); dispatch({ type, target: p.uid }); }}>
-                      {p.avatar} {p.nick}{mafiaVoteCount > 0 ? ` (${mafiaVoteCount})` : ""}
+                      <AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{mafiaVoteCount > 0 ? ` (${mafiaVoteCount})` : ""}
                     </button>
                   );
                 })}
@@ -128,7 +131,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
   if (pub.phase === "dzien") {
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
-        <p className="text-2xl">☀️ Dzień {pub.night}</p>
+        <p className="flex items-center gap-2 text-2xl"><Sun size={24} strokeWidth={2.5} aria-hidden /> Dzień {pub.night}</p>
         {narrator}
         <p className="text-[var(--color-ink-muted)]">Rozmawiajcie na żywo. {left != null ? `Zostało ${left}s.` : ""}</p>
         <AliveList pub={pub} meUid={meUid} />
@@ -140,7 +143,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
   // —— GŁOSOWANIE ——
   return (
     <div className="flex flex-col gap-3" style={{ ["--accent" as string]: accent }}>
-      <p className="text-center text-xl">🗳️ Głosowanie {left != null ? `· ${left}s` : ""}</p>
+      <p className="flex items-center justify-center gap-2 text-center text-xl"><Vote size={22} strokeWidth={2.5} aria-hidden /> Głosowanie {left != null ? `· ${left}s` : ""}</p>
       {narrator}
       {!iAmAlive ? <p className="text-center text-[var(--color-ink-muted)]">Martwi nie głosują.</p> : me?.voted || sent ? (
         <p className="text-center text-[var(--color-ink-muted)]">Zagłosowano. Czekamy…</p>
@@ -148,7 +151,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
         <div className="grid grid-cols-2 gap-2">
           {pub.players.filter((p) => p.alive && p.uid !== meUid).map((p) => (
             <button key={p.uid} className="btn" onClick={() => { markSent(); dispatch({ type: "VOTE", target: p.uid }); }}>
-              {p.avatar} {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}
+              <AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}
             </button>
           ))}
           <button className="btn col-span-2" onClick={() => { markSent(); dispatch({ type: "VOTE", target: "nikt" }); }}>Nikt</button>
@@ -168,7 +171,7 @@ function RoleCard({ priv, nickOf, accent }: { priv: Priv | null; nickOf: (u: str
       style={{ borderColor: accent, background: "var(--color-panel)" }}>
       {show && info ? (
         <>
-          <span className="text-6xl">{info.emoji}</span>
+          <info.Icon size={56} strokeWidth={2.5} aria-hidden />
           <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: role === "mafia" ? accent : "var(--color-ink)" }}>{info.name}</span>
           <span className="text-sm text-[var(--color-ink-muted)]">{info.desc}</span>
           {role === "mafia" && priv?.mafia && priv.mafia.length > 1 && (
@@ -176,7 +179,7 @@ function RoleCard({ priv, nickOf, accent }: { priv: Priv | null; nickOf: (u: str
           )}
         </>
       ) : (
-        <><span className="text-5xl">🃏</span><span className="text-[var(--color-ink-muted)]">Przytrzymaj palec, żeby zobaczyć rolę</span></>
+        <><Spade size={44} strokeWidth={2.5} aria-hidden /><span className="text-[var(--color-ink-muted)]">Przytrzymaj palec, żeby zobaczyć rolę</span></>
       )}
     </button>
   );
@@ -187,7 +190,7 @@ function AliveList({ pub, meUid }: { pub: Pub; meUid: string }) {
     <div className="flex flex-wrap justify-center gap-2">
       {pub.players.map((p) => (
         <span key={p.uid} className="rounded-lg px-2 py-1 text-sm" style={{ background: "var(--color-panel)", opacity: p.alive ? 1 : 0.4 }}>
-          {p.alive ? p.avatar : "💀"} {p.nick}{p.uid === meUid && " (Ty)"}
+          {p.alive ? <AvatarIcon avatar={p.avatar} size={18} /> : <Skull size={18} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden />} {p.nick}{p.uid === meUid && " (Ty)"}
         </span>
       ))}
     </div>
@@ -199,7 +202,7 @@ function RoleReveal({ pub, meUid, accent }: { pub: Pub; meUid: string; accent: s
     <ul className="w-full max-w-sm">
       {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
         <li key={p.uid} className="flex items-center justify-between px-2 py-1 text-sm">
-          <span>{p.avatar} {p.nick}{p.uid === meUid && " (Ty)"} — <b style={{ color: p.role === "mafia" ? accent : undefined }}>{p.role ? ROLE_INFO[p.role].name : "?"}</b></span>
+          <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"} — <b style={{ color: p.role === "mafia" ? accent : undefined }}>{p.role ? ROLE_INFO[p.role].name : "?"}</b></span>
           <span className="tabular font-bold">{p.score}</span>
         </li>
       ))}

@@ -1,4 +1,5 @@
 "use client";
+import { Smartphone, X } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
 // Prompt instalacji PWA (UPGRADE.md §B3).
@@ -101,7 +102,7 @@ export function InstallPrompt() {
           className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-lg text-lg font-bold opacity-60 hover:bg-black/10 hover:opacity-100"
           aria-label="Zamknij"
         >
-          ✕
+          <X size={18} strokeWidth={3} aria-hidden />
         </button>
         <p className="font-display mb-2 pr-8 text-base font-bold uppercase tracking-[0.04em]">
           Zainstaluj Domówkę
@@ -139,9 +140,9 @@ export function InstallPrompt() {
         <button
           type="button"
           onClick={handleInstall}
-          className="font-display rounded-[14px] border-[3px] border-white/60 bg-primary px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_3px_0_var(--color-primary-deep)] transition-transform duration-75 active:translate-y-[3px] active:shadow-none"
+          className="font-display inline-flex items-center gap-2 rounded-[14px] border-[3px] border-white/60 bg-primary px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_3px_0_var(--color-primary-deep)] transition-transform duration-75 active:translate-y-[3px] active:shadow-none"
         >
-          📲 Dodaj
+          <Smartphone size={18} strokeWidth={2.5} aria-hidden /> Dodaj
         </button>
         <button
           type="button"
@@ -149,7 +150,7 @@ export function InstallPrompt() {
           className="flex size-9 items-center justify-center rounded-lg text-lg font-bold opacity-60 hover:bg-black/10 hover:opacity-100"
           aria-label="Zamknij"
         >
-          ✕
+          <X size={18} strokeWidth={3} aria-hidden />
         </button>
       </div>
     </div>

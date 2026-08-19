@@ -1,7 +1,9 @@
 "use client";
+import { Flag, VenetianMask } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { useSent } from "@/games/useOptimistic";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface Pub {
   round: number; totalRounds: number;
@@ -59,7 +61,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         {header}
         <p className="text-2xl font-bold" style={{ color: civWin ? "#4ade80" : accent }}>
-          {pub.phase === "koniec" ? "Koniec gry 🏁" : civWin ? "Cywile wygrywają!" : pub.byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!"}
+          {pub.phase === "koniec" ? <>Koniec gry <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : civWin ? "Cywile wygrywają!" : pub.byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!"}
         </p>
         <p>Hasło: <b>{pub.word}</b> {pub.category && <span className="text-[var(--color-ink-muted)]">({pub.category})</span>}</p>
         <p className="text-sm text-[var(--color-ink-muted)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
@@ -101,7 +103,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
           <div className="grid grid-cols-2 gap-2">
             {pub.players.filter((p) => p.uid !== meUid).map((p) => (
               <button key={p.uid} onClick={() => { markSent(); dispatch({ type: "VOTE", targetUid: p.uid }); }}
-                className="btn disabled:opacity-50">{p.avatar} {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}</button>
+                className="btn disabled:opacity-50"><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}</button>
             ))}
           </div>
         )}
@@ -181,7 +183,7 @@ function RoleCard({ priv, accent }: { priv: Priv | null; accent: string }) {
         )
       ) : (
         <>
-          <span className="text-5xl">🤫</span>
+          <VenetianMask size={44} strokeWidth={2.5} aria-hidden />
           <span className="text-[var(--color-ink-muted)]">Przytrzymaj palec, żeby zobaczyć</span>
         </>
       )}
@@ -194,7 +196,7 @@ function RoleReminder({ priv, accent }: { priv: Priv | null; accent: string }) {
   return (
     <button onPointerDown={() => setShow(true)} onPointerUp={() => setShow(false)} onPointerLeave={() => setShow(false)}
       className="mx-auto rounded-full border px-4 py-1 text-sm" style={{ borderColor: accent }}>
-      {show ? (priv?.role === "impostor" ? `IMPOSTOR${priv?.hint ? ` · ${priv.hint}` : ""}` : `Hasło: ${priv?.word}`) : "Przytrzymaj: twoja rola 🤫"}
+      {show ? (priv?.role === "impostor" ? `IMPOSTOR${priv?.hint ? ` · ${priv.hint}` : ""}` : `Hasło: ${priv?.word}`) : "Przytrzymaj: twoja rola"}
     </button>
   );
 }
@@ -224,7 +226,7 @@ function ScoreList({ pub, meUid, accent }: { pub: Pub; meUid: string; accent: st
     <ul className="w-full max-w-sm">
       {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
         <li key={p.uid} className="flex justify-between px-2 py-1 text-sm">
-          <span>{p.avatar} {p.nick}{p.uid === meUid && " (Ty)"}{pub.impostors.includes(p.uid) && " 🕵️"}</span>
+          <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"}{pub.impostors.includes(p.uid) && <> <VenetianMask size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}</span>
           <span className="tabular"><b>{p.score}</b>{p.roundDelta > 0 && <span className="ml-2" style={{ color: accent }}>+{p.roundDelta}</span>}</span>
         </li>
       ))}

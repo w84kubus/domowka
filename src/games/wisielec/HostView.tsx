@@ -1,6 +1,8 @@
 "use client";
+import { Skull, X } from "lucide-react";
 import type { GameHostViewProps } from "@/games/view";
 import { Hangman, MaskedWord } from "./ui";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 type Cell = { ch: string | null; kind: "letter" | "space" | "punct" };
 interface Pub {
@@ -38,7 +40,7 @@ export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
                 <span className="relative h-4 flex-1 overflow-hidden rounded-full bg-[var(--color-panel)]">
                   <span className="absolute inset-y-0 left-0" style={{ width: `${pr.percent}%`, background: pr.solved ? "#4ade80" : accent }} />
                 </span>
-                <span className="tabular w-16 text-right text-base text-[var(--color-ink-muted)]">{pr.solved ? "META" : `${pr.wrong}✗`}</span>
+                <span className="tabular w-16 text-right text-base text-[var(--color-ink-muted)]">{pr.solved ? "META" : <>{pr.wrong}<X size={14} strokeWidth={3} className="inline-block align-[-0.18em]" aria-hidden /></>}</span>
               </li>
             ))}
           </ul>
@@ -55,14 +57,14 @@ export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
 
       {(pub.phase === "wynik" || pub.phase === "koniec") && (
         <p className="text-3xl font-bold" style={{ color: pub.result === "wygrana" ? "#4ade80" : "var(--color-czerwien)" }}>
-          {pub.result === "wygrana" ? `Wygrywają: ${pub.winners.map(nickOf).join(", ")}` : "Wisielec zawisł 💀"}
+          {pub.result === "wygrana" ? `Wygrywają: ${pub.winners.map(nickOf).join(", ")}` : <>Wisielec zawisł <Skull size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}
         </p>
       )}
 
       <div className="mt-2 flex flex-wrap justify-center gap-4">
         {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
           <div key={p.uid} className="flex items-center gap-2 text-lg">
-            <span className="text-2xl">{p.avatar}</span>
+            <AvatarIcon avatar={p.avatar} size={26} />
             <span>{p.nick}</span>
             <span className="tabular font-bold" style={{ color: accent }}>{p.score}</span>
           </div>

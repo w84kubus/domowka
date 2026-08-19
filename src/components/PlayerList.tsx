@@ -1,6 +1,8 @@
 "use client";
+import { Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DISCONNECT_AFTER_MS, type PlayerMap } from "@/lib/types/room";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 // Lista graczy na żywo. Status „połączony" liczymy LOKALNIE z lastSeenAt vs czas serwera
 // (SPEC §3.7) — rozłączony robi się szary, ale zostaje w grze. Lokalny ticker odświeża
@@ -43,7 +45,7 @@ export function PlayerList({
               className="flex size-11 flex-none items-center justify-center rounded-full border-[3px] border-white bg-panel-hi text-2xl"
               aria-hidden
             >
-              {p.avatar}
+              <AvatarIcon avatar={p.avatar} size={22} />
             </span>
             <span className="flex-1 truncate text-base font-bold text-ink">
               {p.nick}
@@ -54,7 +56,7 @@ export function PlayerList({
                 className="font-display rounded-md bg-mint px-2 py-0.5 text-xs font-bold uppercase text-sheet-ink"
                 title="Host"
               >
-                ★ host
+                <Star size={12} strokeWidth={3} className="inline-block align-[-0.1em]" fill="currentColor" aria-hidden /> host
               </span>
             )}
             <span
@@ -70,7 +72,7 @@ export function PlayerList({
                 aria-label={`Wyrzuć ${p.nick}`}
                 className="flex size-9 flex-none items-center justify-center rounded-lg text-base font-bold text-ink-muted transition-colors hover:bg-czerwien hover:text-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint"
               >
-                ✕
+                <X size={16} strokeWidth={3} aria-hidden />
               </button>
             )}
           </li>

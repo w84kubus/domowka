@@ -1,4 +1,5 @@
 "use client";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "@/lib/store/session";
 import { RoomCodeNeon } from "./RoomCodeNeon";
@@ -27,7 +28,7 @@ export function ReturnToRoom() {
           className="btn btn-ghost flex-none px-4 text-xl"
           aria-label="Odrzuć aktywny pokój"
         >
-          ✕
+          <X size={18} strokeWidth={3} aria-hidden />
         </button>
       </div>
     </div>

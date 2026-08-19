@@ -1,9 +1,11 @@
 "use client";
+import { Check, Flag, PartyPopper, Skull, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { sfx, vibrate } from "@/lib/sound";
 import { Hangman, MaskedWord, PolishKeyboard } from "./ui";
 import { usePendingSet } from "@/games/useOptimistic";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 type Cell = { ch: string | null; kind: "letter" | "space" | "punct" };
 interface Pub {
@@ -74,13 +76,13 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
         {header}
         {pub.mask && <MaskedWord mask={pub.mask} accent={accent} big />}
         <p className="text-2xl font-bold" style={{ color: won ? "#4ade80" : "var(--color-czerwien)" }}>
-          {pub.phase === "koniec" ? "Koniec gry 🏁" : won ? "Odgadnięte! 🎉" : "Wisielec zawisł 💀"}
+          {pub.phase === "koniec" ? <>Koniec gry <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : won ? <>Odgadnięte! <PartyPopper size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : <>Wisielec zawisł <Skull size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}
         </p>
         {pub.winners.length > 0 && <p className="text-sm text-[var(--color-ink-muted)]">Wygrywają: {pub.winners.map(nickOf).join(", ")}</p>}
         <ul className="w-full max-w-sm">
           {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
             <li key={p.uid} className="flex justify-between px-2 py-1 text-sm">
-              <span>{p.avatar} {p.nick}{p.uid === meUid && " (Ty)"}</span>
+              <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"}</span>
               <span className="tabular"><b>{p.score}</b>{p.roundDelta > 0 && <span className="ml-2" style={{ color: accent }}>+{p.roundDelta}</span>}</span>
             </li>
           ))}
@@ -201,7 +203,7 @@ function ProgressBars({ pub, nickOf, accent }: { pub: Pub; nickOf: (u: string) =
             <span className="relative h-2 flex-1 overflow-hidden rounded bg-[var(--color-panel)]">
               <span className="absolute inset-y-0 left-0 rounded" style={{ width: `${pr.percent}%`, background: pr.solved ? "#4ade80" : accent }} />
             </span>
-            <span className="tabular text-xs text-[var(--color-ink-muted)]">{pr.solved ? "✓" : `${pr.wrong}✗`}</span>
+            <span className="tabular text-xs text-[var(--color-ink-muted)]">{pr.solved ? <Check size={14} strokeWidth={3} className="inline-block align-[-0.18em]" aria-hidden /> : <>{pr.wrong}<X size={14} strokeWidth={3} className="inline-block align-[-0.18em]" aria-hidden /></>}</span>
           </li>
         ))}
       </ul>

@@ -1,4 +1,5 @@
 "use client";
+import { Check } from "lucide-react";
 import { useCallback, useState } from "react";
 import { vibrate } from "@/hooks/useVibrate";
 
@@ -68,7 +69,7 @@ export function RoomCodeNeon({
       </button>
       {copied && (
         <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-mint animate-[fadeIn_0.2s_ease]">
-          Skopiowano ✓
+          <Check size={13} strokeWidth={3} className="inline-block align-[-0.15em]" aria-hidden /> Skopiowano
         </span>
       )}
     </div>

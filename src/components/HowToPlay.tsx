@@ -1,8 +1,9 @@
+import { Gamepad2, Link2, Smartphone } from "lucide-react";
 // Sekcja „JAK GRAĆ" na landingu (mockup): trzy kroki z numerem w kółku.
 const STEPS = [
-  { icon: "📱", text: "Załóż pokój na telefonie" },
-  { icon: "🔗", text: "Podaj kod znajomym" },
-  { icon: "🎮", text: "Wybierz grę i grajcie!" },
+  { Icon: Smartphone, text: "Załóż pokój na telefonie" },
+  { Icon: Link2, text: "Podaj kod znajomym" },
+  { Icon: Gamepad2, text: "Wybierz grę i grajcie!" },
 ];
 
 export function HowToPlay() {
@@ -20,9 +21,7 @@ export function HowToPlay() {
             <span className="font-display flex size-8 items-center justify-center rounded-full border-2 border-white bg-primary text-sm font-bold text-white">
               {i + 1}
             </span>
-            <span className="text-4xl" aria-hidden>
-              {s.icon}
-            </span>
+            <s.Icon size={38} strokeWidth={2.5} className="text-mint" aria-hidden />
             <span className="text-base font-bold leading-snug text-ink">{s.text}</span>
           </li>
         ))}

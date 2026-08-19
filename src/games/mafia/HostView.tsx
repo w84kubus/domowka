@@ -1,6 +1,8 @@
 "use client";
+import { Flag, Moon, Skull, Spade, Sun, Sunrise, Vote } from "lucide-react";
 import type { GameHostViewProps } from "@/games/view";
 import type { Role } from "./engine";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
@@ -16,17 +18,20 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent, filter: night ? "brightness(0.85)" : undefined }}>
-      <p className="text-2xl">
-        {pub.phase === "noc" ? `🌙 Noc ${pub.night}` : pub.phase === "dzien" ? `☀️ Dzień ${pub.night}` :
-         pub.phase === "glosowanie" ? "🗳️ Głosowanie" : pub.phase === "switt" ? "🌅 Świt" :
-         pub.phase === "koniec" ? "🏁 Koniec" : "🃏 Rozdanie"}
+      <p className="flex items-center justify-center gap-2 text-2xl">
+        {pub.phase === "noc" ? <><Moon size={26} strokeWidth={2.5} aria-hidden /> Noc {pub.night}</> :
+         pub.phase === "dzien" ? <><Sun size={26} strokeWidth={2.5} aria-hidden /> Dzień {pub.night}</> :
+         pub.phase === "glosowanie" ? <><Vote size={26} strokeWidth={2.5} aria-hidden /> Głosowanie</> :
+         pub.phase === "switt" ? <><Sunrise size={26} strokeWidth={2.5} aria-hidden /> Świt</> :
+         pub.phase === "koniec" ? <><Flag size={26} strokeWidth={2.5} aria-hidden /> Koniec</> :
+         <><Spade size={26} strokeWidth={2.5} aria-hidden /> Rozdanie</>}
       </p>
       <p className="max-w-2xl text-center text-xl italic text-[var(--color-ink-muted)]">{pub.narrator}</p>
 
       {pub.phase === "switt" && (
         <div className="text-center">
           {pub.deaths.length ? pub.deaths.map((d) => (
-            <p key={d} className="text-3xl font-bold">💀 {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_NAME[pub.players.find((p) => p.uid === d)!.role!]}` : ""}</p>
+            <p key={d} className="text-3xl font-bold"><Skull size={30} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /> {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_NAME[pub.players.find((p) => p.uid === d)!.role!]}` : ""}</p>
           )) : <p className="text-2xl text-[var(--color-ink-muted)]">Noc minęła spokojnie.</p>}
         </div>
       )}
@@ -39,7 +44,7 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
           <div className="flex flex-wrap justify-center gap-3">
             {pub.players.map((p) => (
               <div key={p.uid} className="card px-4 py-2 text-center">
-                <div className="text-2xl">{p.avatar}</div><div>{p.nick}</div>
+                <div><AvatarIcon avatar={p.avatar} size={26} /></div><div>{p.nick}</div>
                 <div className="text-sm" style={{ color: p.role === "mafia" ? accent : "var(--color-ink-muted)" }}>{p.role ? ROLE_NAME[p.role] : "?"}</div>
               </div>
             ))}
@@ -49,7 +54,7 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
         <div className="flex flex-wrap justify-center gap-3">
           {pub.players.map((p) => (
             <div key={p.uid} className="card flex flex-col items-center px-4 py-2" style={{ opacity: p.alive ? 1 : 0.35 }}>
-              <span className="text-3xl">{p.alive ? p.avatar : "💀"}</span>
+              <span>{p.alive ? <AvatarIcon avatar={p.avatar} size={30} /> : <Skull size={30} strokeWidth={2.5} className="inline-block" aria-hidden />}</span>
               <span>{p.nick}</span>
               {pub.phase === "glosowanie" && <span className="tabular text-sm" style={{ color: accent }}>{"●".repeat(pub.votesTally[p.uid] ?? 0)}</span>}
             </div>

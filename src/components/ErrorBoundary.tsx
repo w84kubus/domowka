@@ -1,4 +1,5 @@
 "use client";
+import { Zap } from "lucide-react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
 // F1 (UPGRADE.md §F): Error boundary per trasa gry — awaria jednej gry nie wywala całej aplikacji.
@@ -31,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="arcade-bg screen relative items-center justify-center gap-5 overflow-hidden text-center">
           <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
-          <span className="relative text-6xl" aria-hidden>💥</span>
+          <Zap size={56} strokeWidth={2.5} className="relative" aria-hidden />
           <h2 className="font-display relative text-2xl font-bold uppercase tracking-wide text-ink">
             Coś się zepsuło
           </h2>

@@ -1,4 +1,6 @@
 "use client";
+import { GameIcon } from "@/components/GameIcon";
+import { Lightbulb, X } from "lucide-react";
 import { useState } from "react";
 import { GAME_RULES } from "@/games/rules";
 import type { GameManifest } from "@/games/types";
@@ -52,7 +54,7 @@ export function GameRulesCard({
 
             <div className="arcade-pop flex max-h-[85dvh] flex-col overflow-hidden rounded-[20px] bg-sheet shadow-[0_18px_40px_rgb(0_0_0/0.35)]">
               <header className="flex items-center gap-3 bg-primary px-5 py-4">
-                <span className="text-3xl" aria-hidden>{manifest.emoji}</span>
+                <GameIcon gameId={manifest.id} size={34} className="flex-none text-white" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-display truncate text-lg font-bold uppercase tracking-[0.04em] text-white">
                     {manifest.name}
@@ -65,7 +67,7 @@ export function GameRulesCard({
                   className="flex size-11 flex-none items-center justify-center rounded-lg text-xl font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint"
                   aria-label="Zamknij"
                 >
-                  ✕
+                  <X size={20} strokeWidth={3} aria-hidden />
                 </button>
               </header>
 
@@ -88,7 +90,7 @@ export function GameRulesCard({
 
                 {rules.tip && (
                   <p className="rounded-[14px] border-2 border-black/10 bg-black/5 px-4 py-3 text-sm font-semibold">
-                    💡 {rules.tip}
+                    <Lightbulb size={16} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /> {rules.tip}
                   </p>
                 )}
 

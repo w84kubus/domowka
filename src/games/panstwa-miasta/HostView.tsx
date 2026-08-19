@@ -1,5 +1,6 @@
 "use client";
 import type { GameHostViewProps } from "@/games/view";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface Pub {
   round: number;
@@ -73,7 +74,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
             {[...pub.players].sort((a, b) => b.score - a.score).map((p, i) => (
               <li key={p.uid} className="card flex items-center gap-3 px-4 py-2 text-lg">
                 <span className="tabular w-6 text-center font-bold text-[var(--color-ink-muted)]">{i + 1}</span>
-                <span className="flex-1">{p.avatar} {p.nick}</span>
+                <span className="flex-1"><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}</span>
                 <span className="tabular font-bold">{p.score}</span>
                 {p.roundDelta > 0 && <span className="tabular text-sm" style={{ color: accent }}>+{p.roundDelta}</span>}
               </li>

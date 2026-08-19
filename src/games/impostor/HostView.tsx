@@ -1,5 +1,6 @@
 "use client";
 import type { GameHostViewProps } from "@/games/view";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface Pub {
   round: number; totalRounds: number; phase: string;
@@ -50,7 +51,7 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
           <ul className="flex flex-col gap-2">
             {pub.players.map((p) => (
               <li key={p.uid} className="flex items-center justify-between text-lg">
-                <span>{p.avatar} {p.nick}</span>
+                <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}</span>
                 <span className="tabular" style={{ color: accent }}>{"●".repeat(pub.votesTally[p.uid] ?? 0)}</span>
               </li>
             ))}
@@ -71,7 +72,7 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
       <div className="mt-2 flex flex-wrap justify-center gap-4">
         {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
           <div key={p.uid} className="flex items-center gap-2 text-lg">
-            <span className="text-2xl">{p.avatar}</span><span>{p.nick}</span>
+            <AvatarIcon avatar={p.avatar} size={26} /><span>{p.nick}</span>
             <span className="tabular font-bold" style={{ color: accent }}>{p.score}</span>
           </div>
         ))}

@@ -1,5 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
+import { LoaderCircle } from "lucide-react";
 import type { ComponentType } from "react";
 import type { GameHostViewProps, GameSettingsProps, GameViewProps } from "./view";
 
@@ -14,7 +15,7 @@ export interface GameComponents {
 
 const Loading = () => (
   <div className="flex flex-1 items-center justify-center p-8">
-    <span className="text-2xl animate-pulse">⏳</span>
+    <LoaderCircle size={32} strokeWidth={2.5} className="animate-spin text-mint" aria-label="Ładowanie gry" />
   </div>
 );
 

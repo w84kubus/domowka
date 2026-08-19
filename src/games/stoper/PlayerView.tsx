@@ -1,8 +1,10 @@
 "use client";
+import { Flag, Target, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import { sfx, vibrate } from "@/lib/sound";
 import { useSent } from "@/games/useOptimistic";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PublicState {
   mode: string;
@@ -97,7 +99,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     return (
       <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
         <h2 className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink">
-          {pub.phase === "koniec" ? "Koniec gry 🏁" : `Runda ${pub.round} — wyniki`}
+          {pub.phase === "koniec" ? <>Koniec gry <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : `Runda ${pub.round} — wyniki`}
         </h2>
         <ol className="flex flex-col gap-2">
           {(pub.reveal ?? []).map((r, i) => (
@@ -110,7 +112,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
               <span className="flex-1 truncate font-bold text-ink">
                 {nickOf(r.uid)}
                 {r.uid === meUid && " (Ty)"}
-                {r.suspicious && <span title="podejrzany wynik"> ⚠</span>}
+                {r.suspicious && <span title="podejrzany wynik"> <TriangleAlert size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></span>}
               </span>
               <span className="tabular text-right text-sm">
                 {r.valueMs == null ? (
@@ -133,7 +135,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
           <ul className="flex flex-col gap-1">
             {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
               <li key={p.uid} className="flex justify-between px-1 text-base font-semibold">
-                <span>{p.avatar} {p.nick}</span>
+                <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}</span>
                 <span className="tabular font-bold">{p.score}</span>
               </li>
             ))}
@@ -142,7 +144,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
         {iWon && (
           <p className="font-display text-center text-lg font-bold uppercase" style={{ color: accent }}>
-            Idealne trafienie! 🎯
+            Idealne trafienie! <Target size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden />
           </p>
         )}
 
@@ -178,7 +180,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
           <p className="tabular text-4xl text-ink-muted">●●:●●.●●</p>
           {invalidated && (
             <p className="rounded-[14px] border-2 border-czerwien/50 bg-czerwien/20 px-3 py-2 text-sm font-bold text-white">
-              Nie zmieniaj karty 😉 — próba unieważniona.
+              Nie zmieniaj karty — próba unieważniona.
             </p>
           )}
           {!measuring ? (
