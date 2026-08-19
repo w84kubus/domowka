@@ -58,16 +58,6 @@
   --shadow-hard:    0 4px 0 var(--color-primary-deep);
   --shadow-hard-sm: 0 3px 0 rgb(0 0 0 / 0.35);
   --shadow-lift:    0 18px 40px rgb(0 0 0 / 0.35);
-
-  /* Aliasy zgodności — stare nazwy z SPEC §6.2 zmapowane na paletę Arcade.
-     Używane jeszcze przez UI gier; nie stosuj ich w nowym kodzie. */
-  --color-tlo:           var(--color-frame);
-  --color-powierzchnia:  var(--color-panel);
-  --color-uniesione:     var(--color-panel-hi);
-  --color-obramowanie:   var(--color-stroke);
-  --color-tekst:         var(--color-ink);
-  --color-tekst-drugi:   var(--color-ink-muted);
-  --color-stal:          #94a3b8;
 }
 
 /* === Reset i higiena mobilna === */
@@ -281,30 +271,6 @@ body {
   border: 3px solid rgb(255 255 255 / 0.6);
   box-shadow: 0 3px 0 var(--color-primary-deep);
   text-shadow: var(--code-shadow, 0 2px 4px rgb(0 0 0 / 0.3));
-}
-
-/* === CRT: ekran hosta (TV) === */
-.crt {
-  position: relative;
-  background:
-    radial-gradient(ellipse at center, rgb(109 59 245 / 0.08), transparent 70%),
-    linear-gradient(135deg, var(--color-bg-1) 0%, var(--color-bg-2) 45%, var(--color-bg-3) 100%);
-}
-.crt-scanlines {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0,
-    rgba(0, 0, 0, 0) 2px,
-    rgba(0, 0, 0, 0.12) 3px
-  );
-  mix-blend-mode: multiply;
-}
-@media (prefers-reduced-motion: reduce) {
-  .crt-scanlines { display: none; }
 }
 
 /* === Animacje UI === */

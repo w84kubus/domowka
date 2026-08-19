@@ -53,7 +53,7 @@ export function GameShell({
   useGameTick(room.code, room.phaseEndsAt, room.status === "playing", serverNow);
 
   if (!manifest || !comps) {
-    return <p className="p-6 text-center text-[var(--color-tekst-drugi)]">Nieznana gra: {gameId}</p>;
+    return <p className="p-6 text-center font-semibold text-ink-muted">Nieznana gra: {gameId}</p>;
   }
   const { PlayerView } = comps;
 

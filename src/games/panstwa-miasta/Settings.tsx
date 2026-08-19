@@ -15,7 +15,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
         onChange={(v) => set({ categorySet: v as PmSettings["categorySet"], customCategories: undefined })}
         options={Object.entries(CATEGORY_SETS).map(([id, s]) => ({ v: id, l: s.name }))}
       />
-      <p className="text-xs text-[var(--color-tekst-drugi)]">{cats.join(" · ")}</p>
+      <p className="text-xs font-semibold text-ink-muted">{cats.join(" · ")}</p>
 
       <SegmentPicker
         label="Koniec rundy"
