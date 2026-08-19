@@ -1,21 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
+import { Baloo_2, Nunito, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { ConnectionBar } from "@/components/ConnectionBar";
 
-// Wszystkie trzy fonty mają subset latin-ext (Ą Ć Ę Ł Ń Ó Ś Ź Ż) — SPEC §6.2.
-const chakraPetch = Chakra_Petch({
-  variable: "--font-chakra-petch",
-  subsets: ["latin-ext"],
-  weight: ["400", "500", "600", "700"],
+// Arcade Party (DESIGN.md §1). Wszystkie fonty z latin-ext (Ą Ć Ę Ł Ń Ó Ś Ź Ż).
+// Display: Baloo 2, nie Fredoka. Fredoka ma glify latin-ext, ale rysuje ogonek (Ą Ę)
+// cienkim włosem i odsuwa kreskę (Ź Ć Ń Ś) — diakrytyki nie trzymają wagi pisma.
+const baloo = Baloo_2({
+  variable: "--font-baloo",
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700", "800"],
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin-ext"],
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700", "800"],
   display: "swap",
 });
 
@@ -48,8 +51,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // theme-color z media query dodane w <head> ręcznie (patrz poniżej).
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0B0A12" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B0A12" },
+    { media: "(prefers-color-scheme: light)", color: "#140A24" },
+    { media: "(prefers-color-scheme: dark)", color: "#140A24" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -64,10 +67,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl">
-      <body
-        className={`${chakraPetch.variable} ${inter.variable} ${jetbrainsMono.variable}`}
-      >
+    // Zmienne fontów muszą siedzieć na <html>: @theme deklaruje --font-display
+    // na :root, więc var(--font-baloo) musi się tam podstawić.
+    <html
+      lang="pl"
+      className={`${baloo.variable} ${nunito.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="bg-frame text-ink font-body">
         <ConnectionBar />
         {children}
         <InstallPrompt />
