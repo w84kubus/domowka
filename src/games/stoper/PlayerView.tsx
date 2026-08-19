@@ -5,12 +5,14 @@ import type { GameViewProps } from "@/games/view";
 import { sfx, vibrate } from "@/lib/sound";
 import { useSent } from "@/games/useOptimistic";
 import { AvatarIcon } from "@/components/AvatarIcon";
+import { ZgadnijView, type ZgadnijPublic } from "./ZgadnijView";
 
 interface PublicState {
   mode: string;
   round: number;
   totalRounds: number;
-  phase: "pomiar" | "odsloniecie" | "koniec";
+  phase: "pomiar" | "oczekiwanie" | "bieg" | "typowanie" | "odsloniecie" | "koniec";
+  actualMs?: number | null;
   target: number;
   submitted: string[];
   players: { uid: string; nick: string; avatar: string; score: number }[];
@@ -30,7 +32,7 @@ function signed(ms: number) {
 
 export function StoperPlayerView({ publicState, privateState, meUid, isHost, dispatch, accent }: GameViewProps) {
   const pub = publicState as PublicState;
-  const priv = privateState as { submitted: boolean; myValueMs: number | null } | null;
+  const priv = privateState as { submitted: boolean; myValueMs: number | null; myGuessMs: number | null } | null;
 
   const [measuring, setMeasuring] = useState(false);
   const [invalidated, setInvalidated] = useState(false);
@@ -106,6 +108,19 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pub.phase, submitted, measuring]);
 
+  // Tryb B ma własne fazy przed odsłonięciem; wyniki są wspólne dla obu trybów.
+  if (pub.mode === "zgadnij" && (pub.phase === "oczekiwanie" || pub.phase === "bieg" || pub.phase === "typowanie")) {
+    return (
+      <ZgadnijView
+        pub={pub as unknown as ZgadnijPublic}
+        meUid={meUid}
+        myGuessMs={priv?.myGuessMs ?? null}
+        dispatch={dispatch}
+        accent={accent}
+      />
+    );
+  }
+
   // ODSŁONIĘCIE / KONIEC
   if (pub.phase !== "pomiar") {
     const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
@@ -115,6 +130,15 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
         <h2 className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink">
           {pub.phase === "koniec" ? <>Koniec gry <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : `Runda ${pub.round} — wyniki`}
         </h2>
+        {pub.mode === "zgadnij" && pub.actualMs != null && (
+          <p className="text-center">
+            <span className="font-display block text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
+              Rzeczywisty czas
+            </span>
+            <span className="tabular text-4xl font-bold" style={{ color: accent }}>{fmt(pub.actualMs)}</span>
+          </p>
+        )}
+
         <ol className="flex flex-col gap-2">
           {(pub.reveal ?? []).map((r, i) => (
             <li

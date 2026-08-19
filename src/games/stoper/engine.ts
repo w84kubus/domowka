@@ -16,7 +16,13 @@ const MIN_TARGET_MS = 2000;
 const MIN_VALID_MS = 50; // < 50 ms = przypadkowy klik (SPEC §5.2)
 const PERFECT_MS = 50; // błąd < 0,05 s = idealne trafienie
 
-type Phase = "pomiar" | "odsloniecie" | "koniec";
+type Phase =
+  | "pomiar" // tryb A: każdy mierzy u siebie
+  | "oczekiwanie" // tryb B: czekamy aż Biegacz ruszy
+  | "bieg" // tryb B: Biegacz biegnie, reszta słucha
+  | "typowanie" // tryb B: wszyscy wpisują typ
+  | "odsloniecie"
+  | "koniec";
 
 interface Result {
   valueMs: number; // zmierzony czas gracza
@@ -37,12 +43,26 @@ export interface StoperState extends WithEvents {
   results: Record<string, Result>;
   scores: Record<string, number>;
   perfectHits: string[]; // uid z idealnym trafieniem w tej rundzie
+
+  // --- tryb B „ZGADNIJ CZAS" ---
+  runnerUid: string | null; // czyja kolej biec (rotacja wg seatOrder)
+  runStartedAt: number | null; // czas serwera startu biegu — do sanity checku
+  /**
+   * Zmierzony czas biegu. TAJNY do odsłonięcia — publicView go nie oddaje,
+   * inaczej każdy odczytałby odpowiedź z DevToolsów (SPEC §3.1).
+   */
+  actualMs: number | null;
+  guesses: Record<string, number>; // typy graczy, też tajne do odsłonięcia
 }
 
 export const stoperActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("SUBMIT"), valueMs: z.number().finite() }),
   z.object({ type: z.literal("NEXT") }), // host: dalej z odsłonięcia
   z.object({ type: z.literal("FINISH") }), // host: zakończ grę (potrzebne przy rundach bez limitu)
+  // tryb B
+  z.object({ type: z.literal("RUN_START") }), // Biegacz rusza
+  z.object({ type: z.literal("RUN_STOP"), valueMs: z.number().finite() }), // Biegacz staje
+  z.object({ type: z.literal("GUESS"), valueMs: z.number().finite() }), // typ gracza
 ]);
 export type StoperAction = z.infer<typeof stoperActionSchema>;
 
@@ -64,6 +84,27 @@ function beginRound(state: StoperState, round: number, now: number, rng: () => n
   // tak działało to zawsze i taka jest wartość domyślna. Ustawiony termin domyka rundę sam,
   // więc pojedynczy gracz, który odłożył telefon, nie blokuje reszty w nieskończoność.
   const limit = state.settings.roundTimeoutMs;
+
+  // Tryb B: Biegacz rotuje wg seatOrder, nikt nie zna czasu z góry — cel dopiero powstanie.
+  if (state.settings.mode === "zgadnij") {
+    const runnerUid = state.playerUids[(round - 1) % state.playerUids.length];
+    return {
+      ...state,
+      round,
+      phase: "oczekiwanie",
+      target: 0,
+      roundStartedAt: now,
+      phaseEndsAt: null,
+      results: {},
+      perfectHits: [],
+      runnerUid,
+      runStartedAt: null,
+      actualMs: null,
+      guesses: {},
+      pendingEvents: [{ type: "runda", text: `Runda ${round}: biegnie kolejna osoba` }],
+    };
+  }
+
   return {
     ...state,
     round,
@@ -73,6 +114,10 @@ function beginRound(state: StoperState, round: number, now: number, rng: () => n
     phaseEndsAt: limit > 0 ? now + limit : null,
     results: {},
     perfectHits: [],
+    runnerUid: null,
+    runStartedAt: null,
+    actualMs: null,
+    guesses: {},
     pendingEvents: [{ type: "runda", text: `Runda ${round}: cel ${fmt(target)}` }],
   };
 }
@@ -84,7 +129,7 @@ function fmt(ms: number): string {
 /** W wariancie „bez przekroczenia" przekroczenie celu pali wynik. */
 function busted(state: StoperState, uid: string): boolean {
   const r = state.results[uid];
-  return !!r && state.settings.noOvershoot && r.signedMs > 0;
+  return !!r && state.settings.mode === "cel" && state.settings.noOvershoot && r.signedMs > 0;
 }
 
 /**
@@ -147,6 +192,30 @@ function toReveal(state: StoperState, now: number): StoperState {
   };
 }
 
+/**
+ * Tryb B → odsłonięcie. Typy przeliczamy na `results` w formacie trybu A
+ * (valueMs = typ, signedMs = typ − rzeczywisty), a `target` ustawiamy na zmierzony czas.
+ * Dzięki temu ranking, punktacja i cały ekran wyników są wspólne dla obu trybów.
+ */
+function toRevealZgadnij(state: StoperState, now: number): StoperState {
+  const actual = state.actualMs ?? 0;
+  const results: Record<string, Result> = {};
+  for (const [uid, guess] of Object.entries(state.guesses)) {
+    const signedMs = guess - actual;
+    results[uid] = { valueMs: guess, errorMs: Math.abs(signedMs), signedMs, suspicious: false };
+  }
+  const perfectHits = Object.keys(results).filter((uid) => results[uid].errorMs < PERFECT_MS);
+  const withResults: StoperState = { ...state, target: actual, results, perfectHits };
+  const { scores, events } = applyScoring(withResults);
+  return {
+    ...withResults,
+    phase: "odsloniecie",
+    phaseEndsAt: state.settings.revealMs > 0 ? now + state.settings.revealMs : null,
+    scores,
+    pendingEvents: [{ type: "wynik", text: `Rzeczywisty czas: ${fmt(actual)}` }, ...events],
+  };
+}
+
 function advanceOrFinish(state: StoperState, now: number, rng: () => number): StoperState {
   const total = state.settings.rounds;
   const isLast = total !== 0 && state.round >= total;
@@ -180,6 +249,10 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
       scores: {},
       perfectHits: [],
       pendingEvents: [],
+      runnerUid: null,
+      runStartedAt: null,
+      actualMs: null,
+      guesses: {},
     };
     return beginRound(base, 1, ctx.now, ctx.rng);
   },
@@ -212,7 +285,46 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
       return state;
     }
 
-    // SUBMIT
+    // ——— TRYB B „ZGADNIJ CZAS" ———
+    if (action.type === "RUN_START") {
+      if (state.phase !== "oczekiwanie") throw new GameError("Nie teraz.");
+      if (ctx.uid !== state.runnerUid) throw new GameError("Teraz biegnie kto inny.", 403);
+      return {
+        ...state,
+        phase: "bieg",
+        runStartedAt: ctx.now,
+        phaseEndsAt: null,
+        pendingEvents: [{ type: "start", text: "Start!" }],
+      };
+    }
+
+    if (action.type === "RUN_STOP") {
+      if (state.phase !== "bieg") throw new GameError("Nie teraz.");
+      if (ctx.uid !== state.runnerUid) throw new GameError("Teraz biegnie kto inny.", 403);
+      if (action.valueMs < MIN_VALID_MS) throw new GameError("Za szybko — to był przypadkowy klik?");
+      return {
+        ...state,
+        phase: "typowanie",
+        actualMs: action.valueMs,
+        phaseEndsAt: null,
+        pendingEvents: [{ type: "stop", text: "Stop! Zgadujcie." }],
+      };
+    }
+
+    if (action.type === "GUESS") {
+      if (state.phase !== "typowanie") throw new GameError("Nie ma czego zgadywać.");
+      if (!state.playerUids.includes(ctx.uid)) throw new GameError("Nie jesteś w tej rundzie.", 403);
+      if (state.guesses[ctx.uid] != null) throw new GameError("Już podałeś swój typ.");
+      if (action.valueMs < 0) throw new GameError("Czas nie może być ujemny.");
+
+      const guesses = { ...state.guesses, [ctx.uid]: action.valueMs };
+      const next: StoperState = { ...state, guesses, pendingEvents: [] };
+      // Wszyscy wpisali → odsłonięcie. Biegacz też typuje (SPEC §5.2).
+      const allIn = state.playerUids.every((uid) => guesses[uid] != null);
+      return allIn ? toRevealZgadnij(next, ctx.now) : next;
+    }
+
+    // SUBMIT (tryb A)
     if (state.phase !== "pomiar") throw new GameError("Runda już zamknięta.");
     if (!state.playerUids.includes(ctx.uid)) throw new GameError("Nie jesteś w tej rundzie.", 403);
     if (state.results[ctx.uid]) throw new GameError("Już zatrzymałeś stoper w tej rundzie.");
@@ -243,14 +355,20 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
   },
 
   publicView(state, players: PlayerMap) {
-    const reveal = state.phase !== "pomiar";
+    const reveal = state.phase === "odsloniecie" || state.phase === "koniec";
     return {
-      mode: "cel",
+      mode: state.settings.mode,
+      runnerUid: state.runnerUid,
+      // Kto już podał typ — same uid, BEZ wartości (analogicznie do `submitted` w trybie A).
+      guessed: Object.keys(state.guesses),
+      // actualMs wychodzi na zewnątrz DOPIERO przy odsłonięciu. Wcześniej byłby
+      // odpowiedzią leżącą w publicState do odczytania z DevToolsów (SPEC §3.1).
+      actualMs: reveal ? state.actualMs : null,
       round: state.round,
       totalRounds: state.settings.rounds,
       scoring: state.settings.scoring,
       phase: state.phase,
-      target: state.target,
+      target: state.settings.mode === "zgadnij" && !reveal ? 0 : state.target,
       // W pomiarze pokazujemy TYLKO kto już zatrzymał (bez wartości) — wyniki tajne do końca.
       submitted: state.playerUids.filter((uid) => state.results[uid]),
       players: state.playerUids.map((uid) => ({
@@ -280,6 +398,7 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
     return {
       submitted: !!r,
       myValueMs: r?.valueMs ?? null,
+      myGuessMs: state.guesses[uid] ?? null,
     };
   },
 

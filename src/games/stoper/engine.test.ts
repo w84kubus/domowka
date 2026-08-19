@@ -209,3 +209,110 @@ describe("stoper — wariant bez przekroczenia", () => {
     expect(s.scores.a).toBe(1); // mniejszy błąd wygrywa
   });
 });
+
+describe("stoper — tryb B ZGADNIJ CZAS", () => {
+  const initB = (o: Partial<StoperSettings> = {}) => init({ mode: "zgadnij", rounds: 3, ...o });
+  const pub = (s: StoperState) =>
+    stoperEngine.publicView(s, players) as Record<string, unknown> & {
+      actualMs: number | null;
+      target: number;
+      runnerUid: string | null;
+      guessed: string[];
+    };
+
+  it("startuje w oczekiwaniu, Biegacz to pierwszy z seatOrder", () => {
+    const s = initB();
+    expect(s.phase).toBe("oczekiwanie");
+    expect(s.runnerUid).toBe("host");
+    expect(s.actualMs).toBeNull();
+  });
+
+  it("Biegacz rotuje co rundę wg seatOrder", () => {
+    let s = initB();
+    const kolejni: (string | null)[] = [s.runnerUid];
+    for (let i = 0; i < 2; i++) {
+      s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx(s.runnerUid!, 2000));
+      s = stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 5000 }, ctx(s.runnerUid!, 7000));
+      for (const uid of ["host", "a", "b"]) {
+        s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 5000 }, ctx(uid, 8000));
+      }
+      s = stoperEngine.reduce(s, { type: "NEXT" }, ctx("host", 9000));
+      kolejni.push(s.runnerUid);
+    }
+    expect(kolejni).toEqual(["host", "a", "b"]);
+  });
+
+  it("tylko Biegacz może wystartować i zatrzymać", () => {
+    let s = initB();
+    expect(() => stoperEngine.reduce(s, { type: "RUN_START" }, ctx("a", 2000))).toThrow();
+    s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx("host", 2000));
+    expect(s.phase).toBe("bieg");
+    expect(() => stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 5000 }, ctx("b", 7000))).toThrow();
+  });
+
+  it("BEZPIECZEŃSTWO: zmierzony czas nie wycieka do publicState przed odsłonięciem", () => {
+    let s = initB();
+    s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx("host", 2000));
+    s = stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 7345 }, ctx("host", 9345));
+    expect(s.actualMs).toBe(7345); // silnik zna
+
+    const widok = pub(s);
+    expect(widok.actualMs).toBeNull(); // klient NIE zna
+    expect(widok.target).toBe(0);
+    expect(JSON.stringify(widok)).not.toContain("7345");
+  });
+
+  it("BEZPIECZEŃSTWO: cudze typy nie wyciekają przed odsłonięciem", () => {
+    let s = initB();
+    s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx("host", 2000));
+    s = stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 5000 }, ctx("host", 7000));
+    s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 4321 }, ctx("a", 8000));
+
+    const widok = pub(s);
+    expect(widok.guessed).toEqual(["a"]); // wiadomo ŻE zgadł
+    expect(JSON.stringify(widok)).not.toContain("4321"); // ale nie CO
+  });
+
+  it("gracz widzi własny typ w private, ale nie cudze", () => {
+    let s = initB();
+    s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx("host", 2000));
+    s = stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 5000 }, ctx("host", 7000));
+    s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 4321 }, ctx("a", 8000));
+    const priv = stoperEngine.privateView(s, "a") as { myGuessMs: number | null };
+    const privB = stoperEngine.privateView(s, "b") as { myGuessMs: number | null };
+    expect(priv.myGuessMs).toBe(4321);
+    expect(privB.myGuessMs).toBeNull();
+  });
+
+  it("po typach wszystkich odsłania czas i punktuje wg błędu", () => {
+    let s = initB({ scoring: "zwyciestwa" });
+    s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx("host", 2000));
+    s = stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 6000 }, ctx("host", 8000));
+    s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 6100 }, ctx("host", 9000)); // błąd 100
+    s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 5000 }, ctx("a", 9000));    // błąd 1000
+    expect(s.phase).toBe("typowanie"); // b jeszcze nie
+    s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 6010 }, ctx("b", 9000));    // błąd 10
+
+    expect(s.phase).toBe("odsloniecie");
+    const widok = pub(s);
+    expect(widok.actualMs).toBe(6000); // dopiero teraz jawny
+    expect(s.scores.b).toBe(1); // najbliżej
+    expect(s.scores.host ?? 0).toBe(0);
+  });
+
+  it("nie da się zgadywać dwa razy ani przed zatrzymaniem biegu", () => {
+    let s = initB();
+    expect(() => stoperEngine.reduce(s, { type: "GUESS", valueMs: 1000 }, ctx("a", 2000))).toThrow();
+    s = stoperEngine.reduce(s, { type: "RUN_START" }, ctx("host", 2000));
+    s = stoperEngine.reduce(s, { type: "RUN_STOP", valueMs: 5000 }, ctx("host", 7000));
+    s = stoperEngine.reduce(s, { type: "GUESS", valueMs: 4000 }, ctx("a", 8000));
+    expect(() => stoperEngine.reduce(s, { type: "GUESS", valueMs: 4500 }, ctx("a", 8100))).toThrow();
+  });
+
+  it("tryb A działa bez zmian (regresja)", () => {
+    const s = init();
+    expect(s.phase).toBe("pomiar");
+    expect(s.runnerUid).toBeNull();
+    expect((stoperEngine.publicView(s, players) as { mode: string }).mode).toBe("cel");
+  });
+});

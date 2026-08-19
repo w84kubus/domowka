@@ -1,8 +1,10 @@
 import { z } from "zod";
 import type { GameManifest } from "@/games/types";
 
-// Ustawienia Stopera (SPEC §5.2). Tryb A „CEL"; tryb B „ZGADNIJ" nadal do zrobienia.
+// Ustawienia Stopera (SPEC §5.2). Oba tryby: A „CEL" i B „ZGADNIJ CZAS".
 export const stoperSettingsSchema = z.object({
+  /** Tryb gry (SPEC §5.2): „cel" — trafiasz w zadany czas; „zgadnij" — typujesz cudzy bieg. */
+  mode: z.enum(["cel", "zgadnij"]).default("cel"),
   scoring: z.enum(["zwyciestwa", "precyzja"]).default("precyzja"),
   rounds: z
     .union([z.literal(1), z.literal(3), z.literal(5), z.literal(7), z.literal(10), z.literal(0)])

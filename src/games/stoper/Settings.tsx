@@ -8,6 +8,22 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
   return (
     <div className="flex flex-col gap-5">
       <SegmentPicker
+        label="Tryb gry"
+        value={value.mode}
+        onChange={(v) => set({ mode: v as StoperSettings["mode"] })}
+        hint={
+          value.mode === "cel"
+            ? "Wszyscy trafiają w ten sam zadany czas."
+            : "Jeden biegnie, reszta zgaduje ile to trwało — ze słuchu."
+        }
+        options={[
+          { v: "cel", l: "Cel" },
+          { v: "zgadnij", l: "Zgadnij czas" },
+        ]}
+      />
+      {value.mode === "cel" && (
+        <>
+      <SegmentPicker
         label="Cel"
         value={value.targetMode}
         onChange={(v) => set({ targetMode: v })}
@@ -40,6 +56,8 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           ]}
         />
       )}
+        </>
+      )}
       <SegmentPicker
         label="Rundy"
         value={value.rounds}
@@ -53,6 +71,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           { v: 0, l: "∞" },
         ]}
       />
+      {value.mode === "cel" && (
       <SegmentPicker
         label="Auto-zamknięcie rundy"
         value={value.roundTimeoutMs}
@@ -65,6 +84,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           { v: 120000, l: "2 min" },
         ]}
       />
+      )}
       <SegmentPicker
         label="Ekran wyników"
         value={value.revealMs}
@@ -78,6 +98,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           { v: 0, l: "Ręcznie" },
         ]}
       />
+      {value.mode === "cel" && (
       <SegmentPicker
         label="Bez przekroczenia"
         value={value.noOvershoot}
@@ -88,6 +109,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
           { v: true, l: "Tak" },
         ]}
       />
+      )}
       <SegmentPicker
         label="Punktacja"
         value={value.scoring}
