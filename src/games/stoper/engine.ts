@@ -15,7 +15,6 @@ import { type StoperSettings } from "./manifest";
 const MIN_TARGET_MS = 2000;
 const MIN_VALID_MS = 50; // < 50 ms = przypadkowy klik (SPEC §5.2)
 const PERFECT_MS = 50; // błąd < 0,05 s = idealne trafienie
-const REVEAL_MS = 9000;
 
 type Phase = "pomiar" | "odsloniecie" | "koniec";
 
@@ -43,6 +42,7 @@ export interface StoperState extends WithEvents {
 export const stoperActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("SUBMIT"), valueMs: z.number().finite() }),
   z.object({ type: z.literal("NEXT") }), // host: dalej z odsłonięcia
+  z.object({ type: z.literal("FINISH") }), // host: zakończ grę (potrzebne przy rundach bez limitu)
 ]);
 export type StoperAction = z.infer<typeof stoperActionSchema>;
 
@@ -60,13 +60,17 @@ function roundLimitMs(target: number): number {
 
 function beginRound(state: StoperState, round: number, now: number, rng: () => number): StoperState {
   const target = generateTarget(state.settings, rng);
+  // Termin rundy (SPEC §5.2). Przy 0 runda trwa aż wszyscy klikną STOP albo host ją zamknie —
+  // tak działało to zawsze i taka jest wartość domyślna. Ustawiony termin domyka rundę sam,
+  // więc pojedynczy gracz, który odłożył telefon, nie blokuje reszty w nieskończoność.
+  const limit = state.settings.roundTimeoutMs;
   return {
     ...state,
     round,
     phase: "pomiar",
     target,
     roundStartedAt: now,
-    phaseEndsAt: null, // bez licznika na START — runda trwa aż wszyscy klikną STOP albo host ją zamknie
+    phaseEndsAt: limit > 0 ? now + limit : null,
     results: {},
     perfectHits: [],
     pendingEvents: [{ type: "runda", text: `Runda ${round}: cel ${fmt(target)}` }],
@@ -77,19 +81,34 @@ function fmt(ms: number): string {
   return (ms / 1000).toFixed(2).replace(".", ",") + " s";
 }
 
-/** Ranking rosnąco wg błędu; gracze bez wyniku na końcu. */
+/** W wariancie „bez przekroczenia" przekroczenie celu pali wynik. */
+function busted(state: StoperState, uid: string): boolean {
+  const r = state.results[uid];
+  return !!r && state.settings.noOvershoot && r.signedMs > 0;
+}
+
+/**
+ * Ranking rosnąco wg błędu. Kolejność: najpierw ważne wyniki, potem spaleni
+ * (przekroczyli cel w wariancie „bez przekroczenia"), na końcu ci bez wyniku.
+ */
 function ranked(state: StoperState): string[] {
+  const rank = (uid: string) => {
+    const r = state.results[uid];
+    if (!r) return 2;
+    return busted(state, uid) ? 1 : 0;
+  };
   return [...state.playerUids].sort((a, b) => {
-    const ea = state.results[a]?.errorMs ?? Infinity;
-    const eb = state.results[b]?.errorMs ?? Infinity;
-    return ea - eb;
+    const ga = rank(a);
+    const gb = rank(b);
+    if (ga !== gb) return ga - gb;
+    return (state.results[a]?.errorMs ?? Infinity) - (state.results[b]?.errorMs ?? Infinity);
   });
 }
 
-/** Punktacja rundy dodawana do scores (SPEC §5.2). */
+/** Punktacja rundy dodawana do scores (SPEC §5.2). Spaleni nie punktują. */
 function applyScoring(state: StoperState): { scores: Record<string, number>; events: GameEvent[] } {
   const order = ranked(state);
-  const withResult = order.filter((uid) => state.results[uid]);
+  const withResult = order.filter((uid) => state.results[uid] && !busted(state, uid));
   const scores = { ...state.scores };
   const events: GameEvent[] = [];
 
@@ -121,7 +140,8 @@ function toReveal(state: StoperState, now: number): StoperState {
   return {
     ...state,
     phase: "odsloniecie",
-    phaseEndsAt: now + REVEAL_MS,
+    // 0 = bez auto-przejścia; wtedy rundę domyka host przyciskiem „Dalej".
+    phaseEndsAt: state.settings.revealMs > 0 ? now + state.settings.revealMs : null,
     scores,
     pendingEvents: events,
   };
@@ -171,6 +191,20 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
       return state;
     }
 
+    if (action.type === "FINISH") {
+      // Bez tego przy rundach „∞" gry nie da się skończyć inaczej niż wyjściem z pokoju.
+      if (ctx.uid !== state.hostUid) throw new GameError("Tylko host może zakończyć grę.", 403);
+      if (state.phase === "koniec") return state;
+      // Z pomiaru najpierw rozliczamy to, co gracze zdążyli zgłosić.
+      const settled = state.phase === "pomiar" ? toReveal(state, ctx.now) : state;
+      return {
+        ...settled,
+        phase: "koniec",
+        phaseEndsAt: null,
+        pendingEvents: [...(settled.pendingEvents ?? []), { type: "koniec", text: "Koniec gry!" }],
+      };
+    }
+
     if (action.type === "NEXT") {
       if (ctx.uid !== state.hostUid) throw new GameError("Tylko host może przejść dalej.", 403);
       if (state.phase === "odsloniecie") return advanceOrFinish(state, ctx.now, ctx.rng);
@@ -192,7 +226,9 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
     const suspicious = value > wallClock + 800;
 
     const results = { ...state.results, [ctx.uid]: { valueMs: value, errorMs, signedMs, suspicious } };
-    const perfectHits = errorMs < PERFECT_MS ? [...state.perfectHits, ctx.uid] : state.perfectHits;
+    const isBust = state.settings.noOvershoot && signedMs > 0;
+    const perfectHits =
+      errorMs < PERFECT_MS && !isBust ? [...state.perfectHits, ctx.uid] : state.perfectHits;
 
     const next: StoperState = {
       ...state,
@@ -232,6 +268,7 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
             signedMs: state.results[uid]?.signedMs ?? null,
             suspicious: state.results[uid]?.suspicious ?? false,
             perfect: state.perfectHits.includes(uid),
+            busted: busted(state, uid),
           }))
         : null,
       perfectHits: reveal ? state.perfectHits : [],

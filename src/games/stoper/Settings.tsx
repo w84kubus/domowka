@@ -45,10 +45,47 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
         value={value.rounds}
         onChange={(v) => set({ rounds: v as StoperSettings["rounds"] })}
         options={[
+          { v: 1, l: "1" },
           { v: 3, l: "3" },
           { v: 5, l: "5" },
           { v: 7, l: "7" },
+          { v: 10, l: "10" },
           { v: 0, l: "∞" },
+        ]}
+      />
+      <SegmentPicker
+        label="Auto-zamknięcie rundy"
+        value={value.roundTimeoutMs}
+        onChange={(v) => set({ roundTimeoutMs: v as StoperSettings["roundTimeoutMs"] })}
+        hint="Runda domknie się sama, gdy ktoś nie kliknie STOP."
+        options={[
+          { v: 0, l: "Nigdy" },
+          { v: 30000, l: "30 s" },
+          { v: 60000, l: "60 s" },
+          { v: 120000, l: "2 min" },
+        ]}
+      />
+      <SegmentPicker
+        label="Ekran wyników"
+        value={value.revealMs}
+        onChange={(v) => set({ revealMs: v as StoperSettings["revealMs"] })}
+        hint="Ręcznie = wyniki czekają, aż host kliknie Dalej."
+        options={[
+          { v: 5000, l: "5 s" },
+          { v: 9000, l: "9 s" },
+          { v: 15000, l: "15 s" },
+          { v: 30000, l: "30 s" },
+          { v: 0, l: "Ręcznie" },
+        ]}
+      />
+      <SegmentPicker
+        label="Bez przekroczenia"
+        value={value.noOvershoot}
+        onChange={(v) => set({ noOvershoot: v as boolean })}
+        hint="Kto przekroczy cel, przepada w tej rundzie."
+        options={[
+          { v: false, l: "Nie" },
+          { v: true, l: "Tak" },
         ]}
       />
       <SegmentPicker

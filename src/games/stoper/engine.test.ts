@@ -132,3 +132,80 @@ describe("stoper engine — tryb CEL", () => {
     expect(stoperEngine.scores(s).a).toBe(30); // 3× 1. miejsce
   });
 });
+
+describe("stoper — nowe ustawienia", () => {
+  it("domyślnie runda nie ma terminu (zachowanie jak dotąd)", () => {
+    const s = init();
+    expect(s.phaseEndsAt).toBeNull();
+  });
+
+  it("roundTimeoutMs ustawia termin rundy, więc nie wisi bez STOP-u", () => {
+    const s = init({ roundTimeoutMs: 30_000 }, 1000);
+    expect(s.phaseEndsAt).toBe(31_000);
+  });
+
+  it("PHASE_TIMEOUT po terminie zamyka rundę tym, którzy nie zdążyli", () => {
+    let s = init({ roundTimeoutMs: 30_000 }, 1000);
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 9800 }, ctx("a", 2000));
+    s = stoperEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("__system__", 31_000));
+    expect(s.phase).toBe("odsloniecie");
+    expect(s.results.a).toBeDefined();
+    expect(s.results.b).toBeUndefined(); // nie zdążył
+  });
+
+  it("revealMs steruje długością ekranu wyników", () => {
+    let s = init({ revealMs: 15_000 }, 1000);
+    for (const uid of ["host", "a", "b"]) {
+      s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 10_000 }, ctx(uid, 2000));
+    }
+    expect(s.phase).toBe("odsloniecie");
+    expect(s.phaseEndsAt).toBe(2000 + 15_000);
+  });
+
+  it("rundy przyjmują nowe wartości 1 i 10", () => {
+    expect(stoperSettingsSchema.parse({ rounds: 1 }).rounds).toBe(1);
+    expect(stoperSettingsSchema.parse({ rounds: 10 }).rounds).toBe(10);
+  });
+});
+
+describe("stoper — wariant bez przekroczenia", () => {
+  const overshoot = (o = {}) => init({ noOvershoot: true, scoring: "zwyciestwa", ...o });
+
+  it("przekroczenie celu nie punktuje, mimo mniejszego błędu", () => {
+    let s = overshoot();
+    // a przekracza o 100 ms (błąd mniejszy), b jest 500 ms przed celem
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 10_100 }, ctx("a", 2000));
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 9_500 }, ctx("b", 2000));
+    s = stoperEngine.reduce(s, { type: "NEXT" }, ctx("host", 3000));
+    expect(s.phase).toBe("odsloniecie");
+    expect(s.scores.b).toBe(1); // wygrywa mimo większego błędu
+    expect(s.scores.a ?? 0).toBe(0); // spalony
+  });
+
+  it("spalony ląduje w rankingu za tymi z ważnym wynikiem, ale przed tymi bez wyniku", () => {
+    let s = overshoot();
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 10_100 }, ctx("a", 2000)); // spalony
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 9_000 }, ctx("b", 2000)); // ważny
+    s = stoperEngine.reduce(s, { type: "NEXT" }, ctx("host", 3000));
+    const view = stoperEngine.publicView(s, players) as {
+      reveal: { uid: string; busted: boolean }[];
+    };
+    expect(view.reveal.map((r) => r.uid)).toEqual(["b", "a", "host"]);
+    expect(view.reveal.find((r) => r.uid === "a")!.busted).toBe(true);
+    expect(view.reveal.find((r) => r.uid === "b")!.busted).toBe(false);
+  });
+
+  it("spalony nie dostaje idealnego trafienia", () => {
+    let s = overshoot();
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 10_010 }, ctx("a", 2000)); // +10 ms
+    expect(s.perfectHits).not.toContain("a");
+  });
+
+  it("bez wariantu przekroczenie liczy się normalnie", () => {
+    let s = init({ scoring: "zwyciestwa" });
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 10_100 }, ctx("a", 2000));
+    s = stoperEngine.reduce(s, { type: "SUBMIT", valueMs: 9_500 }, ctx("b", 2000));
+    s = stoperEngine.reduce(s, { type: "NEXT" }, ctx("host", 3000));
+    expect(s.scores.a).toBe(1); // mniejszy błąd wygrywa
+  });
+});
