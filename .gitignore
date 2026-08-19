@@ -52,3 +52,6 @@ next-env.d.ts
 /design/refs/
 # Skille narzędziowe (7,9 MB paczek third-party)
 /.claude/skills/
+# Źródła pakietów ikon (PNG-i) — do repo idą przetworzone WebP z public/
+/emoji-pack/
+/emotki-gry/

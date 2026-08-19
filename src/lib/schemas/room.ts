@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AVATARS } from "@/lib/avatars";
+import { isValidAvatar } from "@/lib/avatars";
 import { isValidRoomCode } from "@/lib/room-code";
 
 export const MAX_NICK_LENGTH = 16;
@@ -20,7 +20,9 @@ const nickSchema = z
 
 const avatarSchema = z
   .string()
-  .refine((a) => AVATARS.includes(a), { message: "Nieznany awatar." });
+  // isValidAvatar, nie AVATARS.includes — przepuszcza też awatary sprzed przejścia
+  // na ikony, żeby gracz z aktywnego pokoju nie został odrzucony przy powrocie.
+  .refine(isValidAvatar, { message: "Nieznany awatar." });
 
 export const createRoomSchema = z.object({
   nick: nickSchema,

@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { DEFAULT_AVATAR } from "@/lib/avatars";
+import { AVATARS, DEFAULT_AVATAR } from "@/lib/avatars";
 
 // Lokalne preferencje gracza (nick, awatar) + aktywna sesja pokoju (UPGRADE.md §C1).
 // To NIE jest stan gry (SPEC §11) — tylko wygoda, żeby nie wpisywać nicku za każdym razem
@@ -27,6 +27,18 @@ export const useSession = create<SessionState>()(
       setAvatar: (avatar) => set({ avatar }),
       setActiveRoom: (activeRoom) => set({ activeRoom }),
     }),
-    { name: "domowka-session" },
+    {
+      name: "domowka-session",
+      // v1: awatary z emoji na identyfikatory ikon. Bez migracji wracający gracz
+      // ma w localStorage np. "🦊", nic nie jest zaznaczone w siatce i wybór
+      // wygląda na pusty. Serwer takie wartości nadal przyjmuje (isValidAvatar),
+      // ale UI musi pokazywać to, co faktycznie wyśle.
+      version: 1,
+      migrate: (persisted) => {
+        const prev = (persisted ?? {}) as Partial<SessionState>;
+        const known = (AVATARS as readonly string[]).includes(prev.avatar ?? "");
+        return { ...prev, avatar: known ? prev.avatar : DEFAULT_AVATAR } as SessionState;
+      },
+    },
   ),
 );
