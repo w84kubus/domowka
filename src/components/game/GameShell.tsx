@@ -36,6 +36,7 @@ export function GameShell({
   const { supported: wakeSupported } = useWakeLock(true); // ekran nie gaśnie w grze
   useVisualViewport(); // --vvh, --vv-offset dla klawiatury na mobile
   const [muted, setMutedState] = useState(false);
+  const [confirmAbort, setConfirmAbort] = useState(false);
 
   useEffect(() => {
     unlockAudio();
@@ -66,12 +67,12 @@ export function GameShell({
 
   return (
     <main
-      className="arcade-bg screen relative gap-5 overflow-hidden"
+      className="arcade-bg screen relative items-center gap-5 overflow-hidden"
       style={{ ["--accent" as string]: accent }}
     >
       <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
 
-      <header className="relative flex items-center justify-between gap-3">
+      <header className="relative flex w-full max-w-3xl items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <GameIcon gameId={gameId} size={26} color={accent} />
           <RoomCodeNeon code={room.code} size="1.1rem" accent={accent} />
@@ -91,7 +92,7 @@ export function GameShell({
         </button>
       </header>
 
-      <div className="relative flex-1">
+      <div className="relative w-full max-w-3xl flex-1">
         <PlayerView
           room={room}
           publicState={room.publicState}
@@ -105,17 +106,39 @@ export function GameShell({
       </div>
 
       {!wakeSupported && (
-        <p className="relative text-center text-xs font-semibold text-ink-muted">
+        <p className="relative w-full max-w-3xl text-center text-xs font-semibold text-ink-muted">
           Ustaw wygaszanie ekranu na dłużej — Twoja przeglądarka nie utrzyma go sama.
         </p>
       )}
 
       {finished && isHost && (
         <button
-          className="btn relative"
+          type="button"
+          className="btn relative w-full max-w-3xl"
           onClick={() => apiPost(`/api/rooms/${room.code}/reset`).catch(() => {})}
         >
           Jeszcze raz
+        </button>
+      )}
+
+      {/* Awaryjne wyjście dla hosta w trakcie gry. Cztery gry mają tryb rund „∞",
+          w którym bez tego nie da się skończyć rozgrywki inaczej niż opuszczeniem
+          pokoju. Dwa kroki, bo przerywa grę wszystkim. */}
+      {!finished && isHost && (
+        <button
+          type="button"
+          className="btn btn-ghost relative w-full max-w-3xl text-sm"
+          onClick={() => {
+            if (!confirmAbort) {
+              setConfirmAbort(true);
+              return;
+            }
+            setConfirmAbort(false);
+            apiPost(`/api/rooms/${room.code}/reset`).catch(() => {});
+          }}
+          onBlur={() => setConfirmAbort(false)}
+        >
+          {confirmAbort ? "Na pewno? Wracamy do lobby" : "Przerwij i wróć do lobby"}
         </button>
       )}
     </main>

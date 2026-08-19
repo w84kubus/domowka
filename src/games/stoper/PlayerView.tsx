@@ -15,7 +15,7 @@ interface PublicState {
   submitted: string[];
   players: { uid: string; nick: string; avatar: string; score: number }[];
   reveal:
-    | { uid: string; valueMs: number | null; errorMs: number | null; signedMs: number | null; suspicious: boolean; perfect: boolean }[]
+    | { uid: string; valueMs: number | null; errorMs: number | null; signedMs: number | null; suspicious: boolean; perfect: boolean; busted: boolean }[]
     | null;
   perfectHits: string[];
 }
@@ -76,8 +76,12 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
   // Potwierdzenie zamknięcia rundy (akcja niszcząca dla całego pokoju).
   const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmFinish, setConfirmFinish] = useState(false);
   // Nowa runda albo zmiana fazy rozbraja potwierdzenie — nie może zostać „uzbrojone".
-  useEffect(() => setConfirmClose(false), [pub.round, pub.phase]);
+  useEffect(() => {
+    setConfirmClose(false);
+    setConfirmFinish(false);
+  }, [pub.round, pub.phase]);
 
   // Gra na laptopie: spacja = START, a potem STOP (SPEC §5.2 — duży przycisk, tu też klawisz).
   useEffect(() => {
@@ -127,6 +131,11 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
               <span className="tabular text-right text-sm">
                 {r.valueMs == null ? (
                   <span className="text-[var(--color-ink-muted)]">brak</span>
+                ) : r.busted ? (
+                  <>
+                    <div className="text-czerwien">{fmt(r.valueMs)}</div>
+                    <div className="font-display text-xs font-bold uppercase text-czerwien">spalone</div>
+                  </>
                 ) : (
                   <>
                     <div>{fmt(r.valueMs)}</div>
@@ -159,9 +168,32 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
         )}
 
         {isHost && pub.phase === "odsloniecie" && (
-          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>
-            Dalej →
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              className="btn btn-accent"
+              style={{ ["--accent" as string]: accent }}
+              onClick={() => dispatch({ type: "NEXT" })}
+            >
+              Dalej →
+            </button>
+            {/* Przy rundach „∞" to jedyne wyjście z gry poza opuszczeniem pokoju. */}
+            <button
+              type="button"
+              className="btn btn-ghost text-sm"
+              onClick={() => {
+                if (!confirmFinish) {
+                  setConfirmFinish(true);
+                  return;
+                }
+                setConfirmFinish(false);
+                dispatch({ type: "FINISH" });
+              }}
+              onBlur={() => setConfirmFinish(false)}
+            >
+              {confirmFinish ? "Na pewno zakończyć?" : "Zakończ grę"}
+            </button>
+          </div>
         )}
       </div>
     );
