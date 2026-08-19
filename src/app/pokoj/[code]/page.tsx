@@ -133,12 +133,12 @@ export default function LobbyPage() {
   const playerCount = Object.keys(room.players).length;
 
   return (
-    <main className="arcade-bg screen relative gap-5 overflow-hidden">
+    <main className="arcade-bg screen relative items-center gap-5 overflow-hidden">
       <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
 
       {/* Nagłówek: wielki tytuł „POKÓJ XXXX" + QR w rogu (mockup) */}
-      <header className="relative flex items-start justify-between gap-3">
-        <h1 className="font-display text-outline min-w-0 flex-1 text-[2.75rem] font-bold uppercase leading-[1.05] tracking-wide text-ink">
+      <header className="relative flex w-full max-w-3xl items-start justify-between gap-4 sm:items-center sm:justify-center">
+        <h1 className="font-display text-outline min-w-0 flex-1 text-[2.75rem] font-bold uppercase leading-[1.05] tracking-wide text-ink sm:flex-none">
           Pokój{" "}
           <span className="text-limonka">{room.code}</span>
         </h1>
@@ -149,7 +149,7 @@ export default function LobbyPage() {
       </header>
 
       {/* Pasek gracza */}
-      <section className="relative flex flex-col gap-3">
+      <section className="relative flex w-full max-w-3xl flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">
             Gracze ({playerCount})
@@ -177,11 +177,11 @@ export default function LobbyPage() {
         )}
       </section>
 
-      <section className="relative flex flex-col gap-3">
+      <section className="relative flex w-full max-w-3xl flex-col gap-3">
         <LobbyGames code={room.code} isHost={isHost} playerCount={playerCount} />
       </section>
 
-      <section className="relative mt-auto pt-2">
+      <section className="relative mt-auto w-full max-w-3xl pt-2">
         <button type="button" onClick={leave} className="btn btn-ghost w-full">
           Wyjdź z pokoju
         </button>

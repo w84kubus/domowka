@@ -1,4 +1,6 @@
 "use client";
+import { GameIcon } from "@/components/GameIcon";
+import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
@@ -13,6 +15,7 @@ import { DISCONNECT_AFTER_MS } from "@/lib/types/room";
 import { GAME_MANIFESTS } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AvatarIcon } from "@/components/AvatarIcon";
 
 // Ekran hosta (SPEC §3.9): wspólny ekran na TV/laptop.
 // Duża typografia czytelna z 3 metrów, osobny layout — nie skalowany telefon.
@@ -63,7 +66,7 @@ export default function EkranPage() {
         <main className="arcade-bg relative flex min-h-[100dvh] flex-col items-center justify-center gap-8 overflow-hidden p-8 text-center">
           <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative flex items-center gap-4">
-            <span className="text-4xl">{manifest?.emoji}</span>
+            <GameIcon gameId={room.gameId} size={48} color={accent} />
             <RoomCodeNeon code={code} size="3rem" accent={accent} />
           </div>
           <div className="relative w-full">
@@ -116,14 +119,14 @@ export default function EkranPage() {
                     style={{ opacity: connected ? 1 : 0.35 }}
                   >
                     <span className="flex size-20 items-center justify-center rounded-full border-[5px] border-white bg-panel-hi text-5xl">
-                      {p.avatar}
+                      <AvatarIcon avatar={p.avatar} size={40} />
                     </span>
                     <span className="font-display max-w-full truncate text-lg font-bold text-ink">
                       {p.nick}
                     </span>
                     {p.uid === room?.hostUid && (
                       <span className="font-display rounded-md bg-mint px-2 py-0.5 text-xs font-bold uppercase text-sheet-ink">
-                        ★ host
+                        <Star size={13} strokeWidth={3} className="inline-block align-[-0.1em]" fill="currentColor" aria-hidden /> host
                       </span>
                     )}
                   </li>

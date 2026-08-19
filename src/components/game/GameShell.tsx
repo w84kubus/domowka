@@ -1,5 +1,7 @@
 "use client";
+import { GameIcon } from "@/components/GameIcon";
 import { useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { GAME_COMPONENTS } from "@/games/components";
 import { GAME_MANIFESTS } from "@/games/manifests";
 import { usePrivate } from "@/hooks/usePrivate";
@@ -71,7 +73,7 @@ export function GameShell({
 
       <header className="relative flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="text-2xl" aria-hidden>{manifest.emoji}</span>
+          <GameIcon gameId={gameId} size={26} color={accent} />
           <RoomCodeNeon code={room.code} size="1.1rem" accent={accent} />
         </div>
         <button
@@ -85,7 +87,7 @@ export function GameShell({
           }}
           className="flex size-11 flex-none items-center justify-center rounded-[14px] border-[3px] border-stroke bg-panel text-lg shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint active:translate-y-[3px] active:shadow-none"
         >
-          {muted ? "🔇" : "🔊"}
+          {muted ? <VolumeX size={20} strokeWidth={2.5} aria-hidden /> : <Volume2 size={20} strokeWidth={2.5} aria-hidden />}
         </button>
       </header>
 

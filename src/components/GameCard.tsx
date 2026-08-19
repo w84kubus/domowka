@@ -1,3 +1,4 @@
+import { GameIcon } from "@/components/GameIcon";
 import type { GameManifest } from "@/games/types";
 
 // Karta gry na landingu (mockup „SEKCJA GIER"): ramka w kolorze akcentu gry,
@@ -14,9 +15,7 @@ export function GameCard({
       style={{ ["--accent" as string]: manifest.accentColor }}
     >
       <h3 className="font-display flex items-center gap-2 text-lg font-bold uppercase tracking-[0.04em]">
-        <span className="text-2xl" aria-hidden>
-          {manifest.emoji}
-        </span>
+        <GameIcon gameId={manifest.id} size={30} color={manifest.accentColor} />
         {manifest.name}
       </h3>
       <p className="text-sm font-semibold leading-snug">{manifest.tagline}</p>
