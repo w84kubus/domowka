@@ -14,9 +14,10 @@ import { GAME_MANIFESTS } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Ekran hosta (SPEC §3.9, UPGRADE.md §D7): wspólny ekran na TV/laptop.
+// Ekran hosta (SPEC §3.9): wspólny ekran na TV/laptop.
 // Duża typografia czytelna z 3 metrów, osobny layout — nie skalowany telefon.
-// CRT efekt (scanlines + poświata) — to jest ekran, na który patrzy cały pokój.
+// Język wizualny Arcade Party — ten sam gradient i halftone co reszta aplikacji.
+// Scanlines CRT zdjęte: DESIGN.md §0 wyklucza cienkie kreski jako element stylu.
 export default function EkranPage() {
   const params = useParams<{ code: string }>();
   const code = normalizeRoomCode(params.code ?? "");
@@ -40,9 +41,9 @@ export default function EkranPage() {
 
   if (notFound) {
     return (
-      <main className="crt flex min-h-[100dvh] flex-col items-center justify-center">
-        <div className="crt-scanlines" aria-hidden />
-        <p className="font-display text-4xl font-bold uppercase text-ink-muted">
+      <main className="arcade-bg relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden">
+        <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+        <p className="font-display relative text-4xl font-bold uppercase text-ink-muted">
           Nie ma takiego pokoju.
         </p>
       </main>
@@ -59,13 +60,15 @@ export default function EkranPage() {
     const accent = manifest?.accentColor ?? "#22d3ee";
     return (
       <ErrorBoundary context={`ekran:${room.gameId} room:${code}`}>
-        <main className="crt flex min-h-[100dvh] flex-col items-center justify-center gap-8 p-8 text-center">
-          <div className="crt-scanlines" aria-hidden />
-          <div className="flex items-center gap-4">
+        <main className="arcade-bg relative flex min-h-[100dvh] flex-col items-center justify-center gap-8 overflow-hidden p-8 text-center">
+          <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+          <div className="relative flex items-center gap-4">
             <span className="text-4xl">{manifest?.emoji}</span>
             <RoomCodeNeon code={code} size="3rem" accent={accent} />
           </div>
-          {HostView && <HostView room={room} publicState={room.publicState} serverNow={serverNow} accent={accent} />}
+          <div className="relative w-full">
+            {HostView && <HostView room={room} publicState={room.publicState} serverNow={serverNow} accent={accent} />}
+          </div>
         </main>
       </ErrorBoundary>
     );
@@ -73,63 +76,64 @@ export default function EkranPage() {
 
   // Lobby hosta — duży kod, QR, lista graczy czytelna z dystansu.
   return (
-    <main className="crt flex min-h-[100dvh] flex-col items-center gap-12 p-8 pt-12 text-center">
-      <div className="crt-scanlines" aria-hidden />
+    <main className="arcade-bg relative flex h-[100dvh] flex-col overflow-hidden p-6 text-center">
+      <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
 
-      {/* Header: wielki kod pokoju */}
-      <header className="flex flex-col items-center gap-5">
-        <span className="font-display text-2xl font-bold uppercase tracking-[0.4em] text-mint">
-          Dołącz do pokoju
-        </span>
-        <RoomCodeNeon code={code} size="8rem" />
-      </header>
+      {/* Układ poziomy: TV jest szeroki i nikt go nie przewija — wszystko musi
+          zmieścić się na jednym ekranie. Lewa kolumna: jak dołączyć. Prawa: kto już jest. */}
+      <div className="relative flex min-h-0 flex-1 items-center gap-8 xl:gap-12">
+        {/* Lewa: kod + QR */}
+        <section className="flex flex-none flex-col items-center gap-4">
+          <span className="font-display text-xl font-bold uppercase tracking-[0.3em] text-mint">
+            Dołącz do pokoju
+          </span>
+          <RoomCodeNeon code={code} size="clamp(3.5rem, 9vh, 7rem)" />
+          <div className="rounded-[20px] border-[3px] border-stroke bg-panel p-3 shadow-[0_5px_0_rgb(0_0_0/0.35)]">
+            <RoomQr code={code} size={180} />
+          </div>
+          <span className="font-display text-base font-bold uppercase tracking-[0.06em] text-ink-muted">
+            domowka.vercel.app
+          </span>
+        </section>
 
-      {/* QR — duży, czytelny ze skanem z dystansu */}
-      <RoomQr code={code} size={280} />
+        {/* Prawa: gracze */}
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+          <h2 className="font-display flex-none text-left text-2xl font-bold uppercase tracking-widest text-mint">
+            Gracze ({players.length})
+          </h2>
+          {players.length === 0 ? (
+            <p className="flex flex-1 items-center justify-center text-2xl font-semibold text-ink-muted">
+              Zaproś znajomych i zaczynajcie.
+            </p>
+          ) : (
+            <ul className="grid min-h-0 flex-1 auto-rows-min grid-cols-[repeat(auto-fill,minmax(150px,1fr))] content-start gap-4 overflow-y-auto">
+              {players.map((p) => {
+                const connected = now - p.lastSeenAt < DISCONNECT_AFTER_MS;
+                return (
+                  <li
+                    key={p.uid}
+                    className="flex flex-col items-center gap-2 rounded-[20px] border-[3px] border-stroke bg-panel px-4 py-4 shadow-[0_4px_0_rgb(0_0_0/0.35)] animate-[slideIn_0.3s_ease]"
+                    style={{ opacity: connected ? 1 : 0.35 }}
+                  >
+                    <span className="flex size-20 items-center justify-center rounded-full border-[5px] border-white bg-panel-hi text-5xl">
+                      {p.avatar}
+                    </span>
+                    <span className="font-display max-w-full truncate text-lg font-bold text-ink">
+                      {p.nick}
+                    </span>
+                    {p.uid === room?.hostUid && (
+                      <span className="font-display rounded-md bg-mint px-2 py-0.5 text-xs font-bold uppercase text-sheet-ink">
+                        ★ host
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </div>
 
-      {/* Gracze — duże kafelki */}
-      <section className="w-full max-w-4xl">
-        <h2 className="font-display mb-6 text-2xl font-bold uppercase tracking-widest text-mint">
-          Gracze ({players.length})
-        </h2>
-        <ul className="flex flex-wrap justify-center gap-6">
-          {players.map((p) => {
-            const connected = now - p.lastSeenAt < DISCONNECT_AFTER_MS;
-            return (
-              <li
-                key={p.uid}
-                className="flex flex-col items-center gap-3 rounded-[20px] border-[3px] border-stroke bg-panel px-8 py-6 shadow-[0_4px_0_rgb(0_0_0/0.35)] animate-[slideIn_0.3s_ease]"
-                style={{ opacity: connected ? 1 : 0.35 }}
-              >
-                <span className="flex size-24 items-center justify-center rounded-full border-[6px] border-white bg-panel-hi text-6xl">
-                  {p.avatar}
-                </span>
-                <span className="font-display text-xl font-bold text-ink">{p.nick}</span>
-                {p.uid === room?.hostUid && (
-                  <span className="font-display rounded-md bg-mint px-2 py-0.5 text-sm font-bold uppercase text-sheet-ink">
-                    ★ host
-                  </span>
-                )}
-                <span
-                  className="inline-block size-3 rounded-full border-2 border-white/50"
-                  style={{ background: connected ? "var(--color-online)" : "var(--color-offline)" }}
-                  aria-label={connected ? "połączony" : "rozłączony"}
-                />
-              </li>
-            );
-          })}
-        </ul>
-        {players.length === 0 && (
-          <p className="text-2xl font-semibold text-ink-muted">
-            Zaproś znajomych i zaczynajcie.
-          </p>
-        )}
-      </section>
-
-      {/* URL do wpisania na telefonie */}
-      <footer className="font-display text-xl font-bold uppercase tracking-[0.06em] text-ink-muted">
-        domowka.vercel.app
-      </footer>
     </main>
   );
 }
