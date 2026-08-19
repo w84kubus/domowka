@@ -33,7 +33,7 @@ export function useRoom(code: string | null, authReady: boolean): RoomState {
     let unsub: () => void = () => {};
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
     let retries = 0;
-    const MAX_RETRIES = 6;
+    const MAX_RETRIES = 8;
 
     const subscribe = () => {
       const ref = doc(getDb(), "rooms", code);
@@ -53,8 +53,14 @@ export function useRoom(code: string | null, authReady: boolean): RoomState {
           unsub(); // martwy listener — trzeba założyć nowy
           if (retries < MAX_RETRIES) {
             retries++;
-            // C4: wykładniczy backoff — 0,5s, 1s, 2s, 4s, 8s, 16s
-            retryTimer = setTimeout(subscribe, Math.min(500 * Math.pow(2, retries - 1), 16_000));
+            // Backoff 0,3 → 0,6 → 1,2 → 2 s (sufit). Wcześniej drabinka sięgała 16 s,
+            // co w grze realtime oznaczało, że klient przez kilkanaście sekund nie
+            // dostawał ŻADNEGO snapshotu i pokazywał nieaktualny stan — a host, ze
+            // stabilnym łączem, wyglądał jakby był kilka sekund do przodu.
+            // Firestore SDK i tak ponawia we własnym zakresie; ta warstwa ma tylko
+            // odbudować listener po twardym błędzie, nie dublować jego backoffu.
+            const delay = Math.min(300 * Math.pow(2, retries - 1), 2_000);
+            retryTimer = setTimeout(subscribe, delay);
           } else {
             setState({ room: null, loading: false, error: err.message, notFound: false });
           }
