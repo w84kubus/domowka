@@ -195,6 +195,18 @@ export async function tickGame(code: string, now: number): Promise<boolean> {
   const db = getAdminDb();
   const ref = db.doc(`rooms/${code}`);
 
+  // Tani odczyt PRZED transakcją: zdecydowana większość ticków trafia w fazę, która
+  // jeszcze nie wygasła. Otwieranie dla nich transakcji brało blokady na gorącym
+  // dokumencie pokoju i wpychało nas ponad limit ~1 zapisu/s, przez co PRAWDZIWE
+  // przejścia faz czekały w kolejce na ponowienia. Zwykły get() blokad nie bierze.
+  const peek = await ref.get();
+  if (!peek.exists) return false;
+  const peeked = peek.data() as Room;
+  if (peeked.status !== "playing" || !peeked.gameId) return false;
+  if (peeked.phaseEndsAt == null || now < peeked.phaseEndsAt) return false;
+
+  // Faza faktycznie wygasła — dopiero teraz transakcja (stan sprawdzamy w niej ponownie,
+  // bo między peekiem a transakcją inny klient mógł już przestawić fazę).
   return db.runTransaction(async (t) => {
     const [roomSnap, secretSnap] = await Promise.all([
       t.get(ref),
