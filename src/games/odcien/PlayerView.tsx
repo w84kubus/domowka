@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n/provider";
+import { Podium } from "@/components/game/Podium";
 import { vibrate } from "@/hooks/useVibrate";
 import type { GameViewProps } from "@/games/view";
 import { hexOf, hslToRgb, rgbToHsl, type Rgb } from "./color";
@@ -167,10 +168,15 @@ export function OdcienPlayerView({ publicState, meUid, isHost, dispatch }: GameV
 
   // ——— ODSŁONIĘCIE / KONIEC ———
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
+  const koniec = pub.phase === "koniec";
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Po ostatniej rundzie liczy się CAŁA partia, nie sama ostatnia runda —
+          bez tego po konfetti nie było wiadomo, kto właściwie wygrał. */}
+      {koniec && <Podium players={pub.players} meUid={meUid} />}
+
       <p className="font-display text-lg font-bold uppercase tracking-wide text-ink">
-        {t("common.round")} {pub.round} — {t("common.results")}
+        {koniec ? t("odcien.lastRound") : `${t("common.round")} ${pub.round} — ${t("common.results")}`}
       </p>
 
       <div className="flex w-full max-w-md flex-col items-center gap-1">

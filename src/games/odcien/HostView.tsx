@@ -1,5 +1,6 @@
 "use client";
 import { useT } from "@/lib/i18n/provider";
+import { Podium } from "@/components/game/Podium";
 import type { GameHostViewProps } from "@/games/view";
 
 interface Pub {
@@ -42,6 +43,18 @@ export function OdcienHostView({ publicState }: GameHostViewProps) {
         <p className="font-display text-6xl font-bold text-mint">
           {t("odcien.submittedCount", { done: pub.submitted.length, all: pub.players.length })}
         </p>
+      </div>
+    );
+  }
+
+  // Po ostatniej rundzie na TV liczy się podsumowanie partii — to na ten ekran
+  // patrzy cały pokój, gdy lecą konfetti.
+  if (pub.phase === "koniec") {
+    return (
+      <div className="flex w-full flex-col items-center gap-6">
+        <div className="scale-125">
+          <Podium players={pub.players} meUid="" />
+        </div>
       </div>
     );
   }
