@@ -5,7 +5,11 @@
 <h1 align="center">Domówka</h1>
 
 <p align="center">
-  Imprezowe gry multiplayer w przeglądarce. Każdy na swoim telefonie, jeden wspólny pokój.
+  <b>English</b> · <a href="README.pl.md">Polski</a>
+</p>
+
+<p align="center">
+  Multiplayer party games in the browser. Everyone on their own phone, one shared room.
   <br />
   <a href="https://domowka.vercel.app"><strong>🔗 domowka.vercel.app</strong></a>
 </p>
@@ -16,179 +20,186 @@
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript strict" />
   <img src="https://img.shields.io/badge/Firebase-Firestore+Auth-FFCA28?logo=firebase&logoColor=black" alt="Firebase" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind v4" />
-  <img src="https://img.shields.io/badge/PWA-instalowalna-5A0FC8?logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/multiplayer-realtime-E4002B" alt="Multiplayer Realtime" />
-  <img src="https://img.shields.io/badge/testy-134-7CF0AE?logo=vitest&logoColor=black" alt="134 testy" />
+  <img src="https://img.shields.io/badge/tests-134-7CF0AE?logo=vitest&logoColor=black" alt="134 tests" />
 </p>
 
 ---
 
-## O aplikacji
+> **Note:** the app's interface is in **Polish** — it's built for house parties in Poland.
+> This README is in English so the architecture is readable to everyone.
 
-**Domówka** to zestaw imprezowych gier multiplayer, w które gracie na jednym spotkaniu — każdy na swoim telefonie. Bez kont, bez pobierania, bez tłumaczenia zasad. Jedna osoba zakłada pokój, reszta wpisuje 4-znakowy kod i za **15 sekund gracie**.
+## About
 
-### Jak to działa?
+**Domówka** ("house party" in Polish) is a set of multiplayer party games you play in a single sitting — everyone on their own phone. No accounts, no downloads, no explaining the rules. One person creates a room, everyone else types a 4-character code, and **you're playing in 15 seconds**.
 
-1. 🏠 **Host zakłada pokój** — dostaje 4-literowy kod + QR
-2. 📱 **Gracze dołączają** — wpisują kod na swoim telefonie (lub skanują QR)
-3. 🎮 **Host wybiera grę** — ustawienia, start, gramy!
-4. 🔄 **Kolejna runda** — po zakończeniu wracasz do lobby i wybierasz następną
+### How it works
 
-## Gry
+1. 🏠 **Host creates a room** — gets a 4-letter code + QR
+2. 📱 **Players join** — type the code on their phone (or scan the QR)
+3. 🎮 **Host picks a game** — settings, start, play!
+4. 🔄 **Next round** — when it ends you're back in the lobby to pick another
 
-| Gra | Emoji | Opis | Gracze |
+## Games
+
+| Game | Icon | Description | Players |
 |---|---|---|---|
-| **Stoper** | ⏱️ | Zatrzymaj w idealnym momencie. Bez patrzenia na cyfry. 2 tryby: **CEL** i **ZGADNIJ CZAS**. | 1–16 |
-| **Państwa-miasta** | ✍️ | Litera pada, długopisy w ruch. Kto pierwszy, ten lepszy. | 1–16 |
-| **Wisielec** | 🪢 | Zgadnij hasło, zanim ludzik zawiśnie. 3 tryby: wyścig, kooperacja, zadający. | 1–16 |
-| **Impostor** | 🕵️ | Wszyscy znają hasło. Prawie wszyscy. Znajdź kreta albo giń. | 3–16 |
-| **Mafia** | 🔪 | Miasto śpi. Mafia nie. Auto-narrator, role: detektyw, lekarz, mafia. | 4–16 |
+| **Stopwatch** | ⏱️ | Stop at the perfect moment. Without looking at the digits. 2 modes: **TARGET** and **GUESS THE TIME**. | 1–16 |
+| **Categories** | ✍️ | A letter drops, pens start moving. First one done wins. | 1–16 |
+| **Hangman** | 🪢 | Guess the phrase before the figure hangs. 3 modes: race, co-op, setter. | 1–16 |
+| **Impostor** | 🕵️ | Everyone knows the password. Almost everyone. Find the mole or lose. | 3–16 |
+| **Mafia** | 🔪 | The town sleeps. The Mafia doesn't. Auto-narrator, roles: detective, doctor, mafia. | 4–16 |
 
-> **Stoper ma dwa tryby.** W **CEL** wszyscy dostają ten sam czas do trafienia i zatrzymują stoper
-> u siebie — cyfry są zamaskowane, liczysz w głowie. W **ZGADNIJ CZAS** jeden gracz jest Biegaczem
-> (rotacja co rundę): startuje i zatrzymuje kiedy chce, a **nikt nie widzi cyfr — łącznie z nim**.
-> START i STOP lecą do wszystkich telefonów jako dźwięk, więc reszta szacuje ze słuchu i wpisuje typ.
+> **Stopwatch has two modes.** In **TARGET**, everyone gets the same time to hit and stops the
+> clock on their own device — the digits are masked, so you count in your head. In **GUESS THE
+> TIME**, one player is the Runner (rotating each round): they start and stop whenever they want,
+> and **nobody sees the digits — not even them**. START and STOP are broadcast as sound to every
+> phone, so the rest estimate by ear and type in their guess.
 
-## Funkcje
+## Features
 
-### Pokój i lobby
-- **4-znakowy kod pokoju** — klocowate litery, kliknij żeby skopiować
-- **QR code** — skan z telefonu, zero wpisywania
-- **Deep link** — `domowka.vercel.app/?kod=XYZW` wchodzi prosto do pokoju
-- **Udostępnianie** — przycisk Share (native share / clipboard fallback)
-- **Ekran hosta (TV)** — osobny układ poziomy na laptop/TV, czytelny z kanapy
-- **Awatary** — 30 ilustrowanych ikon w kolorowych kafelkach
-- **Zasady gier** — modal z krokami dla każdej gry
-- **Rekordy pokoju** — kto ile wygrał i lista wyczynów, trwałe przez cały czas życia pokoju
+### Room and lobby
+- **4-character room code** — chunky letters, click to copy
+- **QR code** — scan from a phone, no typing
+- **Deep link** — `domowka.vercel.app/?kod=XYZW` goes straight into the room
+- **Sharing** — Share button (native share / clipboard fallback)
+- **Host screen (TV)** — separate landscape layout for a laptop/TV, readable from the couch
+- **Avatars** — 30 illustrated icons on colored tiles
+- **Game rules** — modal with steps for each game
+- **Room records** — who won how many times plus a list of feats, persistent for the room's lifetime
 
 ### Realtime multiplayer
-- **Anonimowa autoryzacja** — Firebase Anonymous Auth, zero rejestracji
-- **Presence** — zielona/szara kropka, kto jest online
-- **Reconnect** — powrót do pokoju po odświeżeniu/zamknięciu (localStorage)
-- **Migracja hosta** — gdy host zniknie na >30s, inny gracz przejmuje
-- **Idempotencja** — actionId (UUID) zapobiega podwójnym akcjom
-- **Pasek połączenia** — czerwony "Brak połączenia", zielony "✓ Połączono"
-- **Wykładniczy backoff** — 500ms → 1s → 2s → ... → 16s max
+- **Anonymous auth** — Firebase Anonymous Auth, zero sign-up
+- **Presence** — green/grey dot showing who's online
+- **Reconnect** — return to the room after a refresh or close (localStorage)
+- **Host migration** — if the host disappears for >30s, another player takes over
+- **Idempotency** — actionId (UUID) prevents duplicate actions
+- **Connection bar** — red "no connection", green "connected"
+- **Exponential backoff** — 500ms → 1s → 2s → … → 16s max
 
-### Bezpieczeństwo
-- **Klient NIGDY nie zapisuje stanu gry** — wszystkie zapisy przez Route Handlery + `firebase-admin`
-- **Role i hasła tajne** — żyją w `rooms/{kod}/secret/state` (Firestore: `allow read: if false`)
-- **Dane prywatne per gracz** — `rooms/{kod}/private/{uid}` (tylko Twoje)
-- **Zero wycieków w DevToolsach** — role Mafii i hasło Impostora niewidoczne po stronie klienta
+### Security
+- **The client NEVER writes game state** — every write goes through Route Handlers + `firebase-admin`
+- **Roles and passwords are secret** — they live in `rooms/{code}/secret/state` (Firestore: `allow read: if false`)
+- **Per-player private data** — `rooms/{code}/private/{uid}` (yours only)
+- **No leaks in DevTools** — Mafia roles and the Impostor password are invisible client-side
 
-### PWA i mobile
-- **Instalowalna** — manifest + Service Worker (Serwist), prompt instalacji, iOS hint
-- **Offline** — dedykowana strona offline, NetworkOnly dla API i Firebase
-- **Wake Lock** — ekran nie gaśnie w trakcie gry
-- **Wibracje** — haptic feedback na akcjach (z opcją wyłączenia)
-- **Visual Viewport** — `--vvh` dla klawiatur mobilnych
-- **Safe areas** — `env(safe-area-inset-*)` na notch/dynamic island
+### PWA and mobile
+- **Installable** — manifest + Service Worker (Serwist), install prompt, iOS hint
+- **Offline** — dedicated offline page, NetworkOnly for the API and Firebase
+- **Wake Lock** — the screen doesn't dim mid-game
+- **Vibration** — haptic feedback on actions (with an opt-out)
+- **Visual Viewport** — `--vvh` for mobile keyboards
+- **Safe areas** — `env(safe-area-inset-*)` for notch/dynamic island
 
-### Wygląd i UX
-- **Styl „Arcade Party"** — fioletowo-różowy gradient, klocowate przyciski z twardym cieniem, panele jak naklejki. Pełna specyfikacja w [`DESIGN.md`](DESIGN.md)
-- **Wciśnięcie przycisku** — element sygnaturowy: każdy przycisk zapada się o 4 px przy kliknięciu
-- **Animacje** — slideIn, fadeIn, timer pulse, arcade-pop
-- **SFX** — WebAudio: join, phase change, urgent tick, fanfara, defeat, neon buzz
-- **Konfetti** — canvas-confetti na wygraną z kolorami gry
-- **Skeleton loader** — animowany placeholder w lobby
-- **prefers-reduced-motion** — pełne wsparcie
+### Look and UX
+- **"Arcade Party" style** — purple-to-pink gradient, chunky buttons with hard shadows, sticker-like panels. Full spec in [`DESIGN.md`](DESIGN.md)
+- **Button press** — the signature detail: every button sinks 4px when clicked
+- **Animations** — slideIn, fadeIn, timer pulse, arcade-pop
+- **SFX** — Web Audio: join, phase change, urgent tick, fanfare, defeat, neon buzz
+- **Confetti** — canvas-confetti on a win, in the game's colors
+- **Skeleton loader** — animated placeholder in the lobby
+- **prefers-reduced-motion** — fully respected
 
-## Stack technologiczny
+## Tech stack
 
-| Warstwa | Technologia |
+| Layer | Technology |
 |---|---|
 | Framework | Next.js 15 (App Router) |
 | UI | React 19, Tailwind CSS v4 |
-| Język | TypeScript (strict, zero `any`) |
-| Baza danych | Cloud Firestore (realtime `onSnapshot`) |
-| Autoryzacja | Firebase Anonymous Auth |
-| Serwer | Route Handlers + `firebase-admin` |
+| Language | TypeScript (strict, zero `any`) |
+| Database | Cloud Firestore (realtime `onSnapshot`) |
+| Auth | Firebase Anonymous Auth |
+| Server | Route Handlers + `firebase-admin` |
 | PWA | Serwist (Service Worker, manifest, offline) |
-| Testy | Vitest (134 testy — pełne partie, bezpieczeństwo, kontrakty rdzenia) |
-| Deploy | Vercel (auto-deploy z GitHub) |
-| Dźwięki | Web Audio API (zero plików audio) |
-| QR | `qrcode` (generowanie SVG) |
-| Czcionki | Baloo 2 (display), Nunito (body), JetBrains Mono (liczby) |
-| Ikony | Lucide (interfejs) + własny pakiet ilustracji (awatary, gry) |
+| Tests | Vitest (134 tests — full playthroughs, security, core contracts) |
+| Deploy | Vercel (auto-deploy from GitHub) |
+| Sound | Web Audio API (zero audio files) |
+| QR | `qrcode` (SVG generation) |
+| Fonts | Baloo 2 (display), Nunito (body), JetBrains Mono (numbers) |
+| Icons | Lucide (interface) + a custom illustration pack (avatars, games) |
 
-## Architektura
+## Architecture
+
+Directory and route names are in Polish, matching the app's language — `nowy` = new,
+`dolacz` = join, `pokoj` = room, `ekran` = screen.
 
 ```
 src/
 ├── app/                        # Next.js App Router
-│   ├── layout.tsx              # root layout, fonty, PWA, ConnectionBar
+│   ├── layout.tsx              # root layout, fonts, PWA, ConnectionBar
 │   ├── page.tsx                # landing page + deep link /?kod=
-│   ├── nowy/                   # zakładanie pokoju
-│   ├── dolacz/                 # dołączanie do pokoju
-│   ├── pokoj/[code]/           # ekran gracza (lobby + gra)
-│   │   └── ekran/              # ekran hosta na TV (CRT efekt)
-│   ├── ~offline/               # strona offline (PWA)
-│   └── api/rooms/              # Route Handlers (jedyne miejsce zapisu!)
-│       ├── route.ts            # POST — tworzenie pokoju
+│   ├── nowy/                   # create a room
+│   ├── dolacz/                 # join a room
+│   ├── pokoj/[code]/           # player screen (lobby + game)
+│   │   └── ekran/              # host screen for TV (landscape layout)
+│   ├── ~offline/               # offline page (PWA)
+│   └── api/rooms/              # Route Handlers (the ONLY place that writes!)
+│       ├── route.ts            # POST — create room
 │       └── [code]/
-│           ├── join/           # dołączanie
-│           ├── leave/          # wyjście
-│           ├── ping/           # presence + migracja hosta
-│           ├── start/          # start gry
-│           ├── action/         # akcja gracza (idempotentna)
-│           ├── tick/           # tick fazy (timer)
-│           ├── reset/          # powrót do lobby (transakcja)
-│           └── observe/        # tryb obserwatora (ekran hosta)
+│           ├── join/           # joining
+│           ├── leave/          # leaving
+│           ├── ping/           # presence + host migration
+│           ├── start/          # start the game
+│           ├── action/         # player action (idempotent)
+│           ├── tick/           # phase tick (timer)
+│           ├── reset/          # back to lobby (transaction)
+│           └── observe/        # observer mode (host screen)
 │
-├── games/                      # Silniki i UI gier (plugin architecture)
-│   ├── registry.ts             # rejestr silników (serwer)
-│   ├── manifests.ts            # manifesty gier (klient — bez silników)
-│   ├── icons.tsx               # ikony zapasowe gier (Lucide)
-│   ├── finish.test.ts          # kontrakt „Zakończ grę" dla całego rejestru
-│   ├── components.tsx          # UI gier (dynamic imports)
-│   ├── types.ts                # interfejsy GameEngine, GameManifest
-│   ├── view.ts                 # interfejsy GameViewProps
-│   ├── stoper/                 # ⏱️ Stoper
-│   │   ├── engine.ts           # czysta funkcja: init → action → state
+├── games/                      # Game engines and UI (plugin architecture)
+│   ├── registry.ts             # engine registry (server)
+│   ├── manifests.ts            # game manifests (client — without engines)
+│   ├── icons.tsx               # fallback game icons (Lucide)
+│   ├── finish.test.ts          # "end game" contract across the whole registry
+│   ├── components.tsx          # game UI (dynamic imports)
+│   ├── types.ts                # GameEngine, GameManifest interfaces
+│   ├── view.ts                 # GameViewProps interfaces
+│   ├── stoper/                 # ⏱️ Stopwatch
+│   │   ├── engine.ts           # pure function: init → action → state
 │   │   ├── manifest.ts         # metadata + settings schema (Zod)
-│   │   ├── Settings.tsx        # panel ustawień
-│   │   ├── PlayerView.tsx      # widok gracza
-│   │   └── HostView.tsx        # widok na TV
-│   ├── panstwa-miasta/         # ✍️ Państwa-miasta
-│   ├── wisielec/               # 🪢 Wisielec
+│   │   ├── Settings.tsx        # settings panel
+│   │   ├── PlayerView.tsx      # player view
+│   │   └── HostView.tsx        # TV view
+│   ├── panstwa-miasta/         # ✍️ Categories
+│   ├── wisielec/               # 🪢 Hangman
 │   ├── impostor/               # 🕵️ Impostor
 │   └── mafia/                  # 🔪 Mafia
 │
-├── components/                 # Komponenty React
+├── components/                 # React components
 │   ├── game/                   # GameShell, LobbyGames, GameRulesCard
-│   ├── AvatarIcon.tsx          # ilustracja awatara + kolor kafelka
-│   ├── AvatarPicker.tsx        # siatka 30 awatarów
-│   ├── GameIcon.tsx            # ilustracja gry (fallback: ikona Lucide)
-│   ├── GameCard.tsx            # karta gry na landingu
-│   ├── GameRow.tsx             # wiersz gry w lobby
-│   ├── SegmentPicker.tsx       # arcade segment buttons (ustawienia gier)
-│   ├── HowToPlay.tsx           # sekcja „Jak grać" na landingu
-│   ├── RoomRecords.tsx         # rekordy pokoju
-│   ├── RoomCodeNeon.tsx        # klocowaty kod pokoju (click-to-copy)
-│   ├── RoomQr.tsx              # QR code pokoju
-│   ├── PlayerList.tsx          # lista graczy z presence
-│   ├── ShareButton.tsx         # udostępnianie (navigator.share)
-│   ├── ConnectionBar.tsx       # pasek online/offline
-│   ├── InstallPrompt.tsx       # prompt instalacji PWA
-│   ├── ErrorBoundary.tsx       # error boundary per gra
+│   ├── AvatarIcon.tsx          # avatar illustration + tile color
+│   ├── AvatarPicker.tsx        # grid of 30 avatars
+│   ├── GameIcon.tsx            # game illustration (fallback: Lucide icon)
+│   ├── GameCard.tsx            # game card on the landing page
+│   ├── GameRow.tsx             # game row in the lobby
+│   ├── SegmentPicker.tsx       # arcade segment buttons (game settings)
+│   ├── HowToPlay.tsx           # "how to play" section on the landing page
+│   ├── RoomRecords.tsx         # room records
+│   ├── RoomCodeNeon.tsx        # chunky room code (click-to-copy)
+│   ├── RoomQr.tsx              # room QR code
+│   ├── PlayerList.tsx          # player list with presence
+│   ├── ShareButton.tsx         # sharing (navigator.share)
+│   ├── ConnectionBar.tsx       # online/offline bar
+│   ├── InstallPrompt.tsx       # PWA install prompt
+│   ├── ErrorBoundary.tsx       # error boundary per game
 │   └── LobbySkeleton.tsx       # skeleton loader
 │
 ├── hooks/                      # Custom hooks
 │   ├── useRoom.ts              # Firestore onSnapshot + backoff
-│   ├── usePresence.ts          # ping co 10s (debounce)
-│   ├── useServerClock.ts       # synchronizacja zegara (NTP-like)
+│   ├── usePresence.ts          # ping every 10s (debounced)
+│   ├── useServerClock.ts       # clock sync (NTP-like)
 │   ├── usePrivate.ts           # private/{uid} listener
-│   ├── useGameTick.ts          # auto-tick gdy faza wygasa
+│   ├── useGameTick.ts          # auto-tick when a phase expires
 │   ├── useAnonAuth.ts          # Firebase Anonymous Auth
 │   ├── useWakeLock.ts          # Screen Wake Lock API
-│   ├── useVibrate.ts           # Vibration API (z opt-out)
+│   ├── useVibrate.ts           # Vibration API (with opt-out)
 │   └── useVisualViewport.ts    # Visual Viewport API (--vvh)
 │
-├── lib/                        # Infrastruktura
-│   ├── server/game-runner.ts   # applyAction, persist, idempotencja
-│   ├── server/records.ts       # rekordy pokoju (czyste funkcje, testowalne)
-│   ├── client/api.ts           # apiPost z obsługą błędów
-│   ├── sound.ts                # WebAudio SFX (10 dźwięków)
+├── lib/                        # Infrastructure
+│   ├── server/game-runner.ts   # applyAction, persist, idempotency
+│   ├── server/records.ts       # room records (pure functions, testable)
+│   ├── client/api.ts           # apiPost with error handling
+│   ├── sound.ts                # Web Audio SFX (10 sounds)
 │   ├── confetti.ts             # canvas-confetti wrapper
 │   ├── action-id.ts            # crypto.randomUUID()
 │   ├── store/session.ts        # Zustand (activeRoom)
@@ -197,27 +208,27 @@ src/
 └── sw.ts                       # Service Worker (Serwist)
 ```
 
-### Kluczowe decyzje projektowe
+### Key design decisions
 
-- **Klient read-only** — klient NIGDY nie zapisuje do Firestore. Wszystko przez Route Handlery + `firebase-admin`. Złamanie tej zasady wycieka role w DevToolsach.
-- **Silniki to czyste funkcje** — zero `Date.now()`, zero `Math.random()`. Czas i losowość wchodzą przez `ctx.now` i `ctx.rng`. W pełni deterministyczne, w pełni testowalne.
-- **Plugin architecture** — dodanie nowej gry = nowy folder w `src/games/` + jedna linia w `registry.ts`. Zero zmian w rdzeniu.
-- **Dynamic imports** — komponenty gier ładowane dynamicznie (`next/dynamic`). Gracz pobiera tylko kod aktualnej gry, nie wszystkich pięciu.
-- **Tajne dane w trzech warstwach** — `publicState` (wszyscy widzą), `secret/state` (nikt nie czyta, `allow read: if false`), `private/{uid}` (tylko Twoje).
-- **Timer bez crona** — serwer pisze `phaseEndsAt`, klienci odliczają, a po upływie czasu ponagla serwer **wyłącznie host**. Reszta wchodzi jako zapas dopiero po 3 s, gdyby host wypadł. Wcześniej ponaglali wszyscy naraz, co przy 8 graczach dawało ~6,6 transakcji/s na jednym dokumencie przy limicie Firestore ~1/s — transakcje wchodziły w konflikt i faza spóźniała się o kilka sekund.
-- **Wszystko po polsku** — UI, nazwy, fonty z `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). Sama obecność glifów to jednak za mało: Fredoka je ma, ale rysuje ogonek w Ą/Ę cienkim włosem oderwanym od litery. Stąd Baloo 2 — szczegóły w [`DESIGN.md`](DESIGN.md).
-- **Rdzeń nie zna żadnej gry** — dwie funkcje działają przez opt-in silnika, nie przez wiedzę rdzenia. Gra bez opt-inu po prostu działa, tylko bez danej funkcji:
-  - **Rekordy** — silnik oznacza zdarzenie `meta: { uid, rekord: true }`, rdzeń zbiera i dopisuje do wyróżnień pokoju.
-  - **Zakończenie gry** — silnik wystawia `canFinish` w `publicView`, a `GameShell` pokazuje wtedy „Zakończ grę" zamiast awaryjnego przerwania. Zakończenie daje podium i zapisuje rekordy, przerwanie nie.
+- **Read-only client** — the client NEVER writes to Firestore. Everything goes through Route Handlers + `firebase-admin`. Breaking this rule leaks roles in DevTools.
+- **Engines are pure functions** — zero `Date.now()`, zero `Math.random()`. Time and randomness arrive via `ctx.now` and `ctx.rng`. Fully deterministic, fully testable.
+- **Plugin architecture** — adding a game = a new folder in `src/games/` + one line in `registry.ts`. Zero changes to the core.
+- **Dynamic imports** — game components load on demand (`next/dynamic`). A player downloads only the current game's code, not all five.
+- **Secrets in three layers** — `publicState` (everyone sees), `secret/state` (nobody reads, `allow read: if false`), `private/{uid}` (yours only).
+- **Timers without cron** — the server writes `phaseEndsAt`, clients count down, and once it passes **only the host** nudges the server. The rest step in as a fallback after 3s, in case the host drops. Previously everyone nudged at once, which with 8 players meant ~6.6 transactions/s against a single document versus Firestore's ~1/s limit — transactions collided, retried, and phase changes ran several seconds late.
+- **Everything in Polish** — UI, names, fonts with `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). Having the glyphs isn't enough though: Fredoka has them, but draws the ogonek in Ą/Ę as a thin hairline detached from the letter. Hence Baloo 2 — details in [`DESIGN.md`](DESIGN.md).
+- **The core knows no game** — two features work through engine opt-in rather than core knowledge. A game without the opt-in simply works, just without that feature:
+  - **Records** — an engine tags its event with `meta: { uid, rekord: true }`; the core collects it into the room's feats.
+  - **Ending a game** — an engine exposes `canFinish` in `publicView`, and `GameShell` then shows "End game" instead of the emergency abort. Ending gives you a podium and saves records; aborting doesn't.
 
-## Uruchomienie lokalne
+## Running locally
 
-### Wymagania
+### Requirements
 
 - Node.js 22+
-- Projekt Firebase z Firestore i Authentication (Anonymous)
+- A Firebase project with Firestore and Authentication (Anonymous)
 
-### Instalacja
+### Install
 
 ```bash
 git clone https://github.com/w84kubus/domowka.git
@@ -225,9 +236,9 @@ cd domowka
 npm install
 ```
 
-### Konfiguracja
+### Configuration
 
-Utwórz plik `.env.local`:
+Create a `.env.local` file:
 
 ```env
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
@@ -243,26 +254,26 @@ FIREBASE_ADMIN_CLIENT_EMAIL=your_service_account@...iam.gserviceaccount.com
 FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
-### Komendy
+### Commands
 
 ```bash
-npm run dev        # serwer deweloperski (localhost:3000)
-npm run build      # produkcyjny build
+npm run dev        # dev server (localhost:3000)
+npm run build      # production build
 npm run lint       # eslint
-npm run test       # vitest run (134 testy)
+npm run test       # vitest run (134 tests)
 ```
 
-## Instalacja na telefonie (PWA)
+## Installing on a phone (PWA)
 
-Aplikacja jest w pełni instalowalna jako PWA:
+The app is fully installable as a PWA:
 
-| Platforma | Instrukcja |
+| Platform | How |
 |---|---|
-| **iOS** | Safari → Udostępnij (↑) → *Dodaj do ekranu początkowego* |
-| **Android** | Chrome → Menu (⋮) → *Zainstaluj aplikację* / automatyczny prompt |
+| **iOS** | Safari → Share (↑) → *Add to Home Screen* |
+| **Android** | Chrome → Menu (⋮) → *Install app* / automatic prompt |
 
-Po instalacji działa w pełnym ekranie z własną ikoną. Ekran hosta (TV) utrzymuje się aktywny dzięki Wake Lock.
+Once installed it runs full-screen with its own icon. The host screen (TV) stays awake thanks to Wake Lock.
 
-## Licencja
+## License
 
-Projekt prywatny. Kod źródłowy dostępny publicznie w celach edukacyjnych.
+Private project. Source code published for educational purposes.
