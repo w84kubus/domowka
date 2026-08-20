@@ -283,6 +283,19 @@ body {
   text-shadow: var(--code-shadow, 0 2px 4px rgb(0 0 0 / 0.3));
 }
 
+/* === Neutralne tło do oceny koloru === */
+/* Fioletowo-różowy gradient zniekształca postrzeganą barwę (kontrast jednoczesny):
+   ta sama próbka na fioletowym tle wygląda inaczej niż na szarym, więc gracz dopasowuje
+   się do czegoś, co tło przesuwa. Dlatego gry o kolorze dostają neutralną szarość.
+
+   Świadomie PŁASKA, nie gradient: przy gradiencie ta sama próbka czytałaby się inaczej
+   u góry i u dołu ekranu. I świadomie bez halftone — kropki tuż przy próbce też
+   zaburzają ocenę. Wartość #333 jest czysto neutralna (R=G=B), więc nie wnosi
+   żadnego zafarbu barwnego. */
+.neutral-bg {
+  background: #333333;
+}
+
 /* === Suwaki w grze Odcień === */
 /* Tor pokazuje gradient danej składowej — gracz widzi, w którą stronę idzie kolor,
    zamiast zgadywać po samej liczbie. */

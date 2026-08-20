@@ -61,10 +61,15 @@ export default function EkranPage() {
     const manifest = GAME_MANIFESTS[room.gameId];
     const HostView = GAME_COMPONENTS[room.gameId]?.HostView;
     const accent = manifest?.accentColor ?? "#22d3ee";
+    // Gra o kolorze prosi o neutralne tło (patrz .neutral-bg). Na TV to nawet ważniejsze
+    // niż na telefonie — tam wszyscy patrzą na TĘ SAMĄ próbkę i porównują ją między sobą.
+    const neutralBg = (room.publicState as { neutralBg?: boolean } | undefined)?.neutralBg === true;
     return (
       <ErrorBoundary context={`ekran:${room.gameId} room:${code}`}>
-        <main className="arcade-bg relative flex min-h-[100dvh] flex-col items-center justify-center gap-8 overflow-hidden p-8 text-center">
-          <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+        <main
+          className={`${neutralBg ? "neutral-bg" : "arcade-bg"} relative flex min-h-[100dvh] flex-col items-center justify-center gap-8 overflow-hidden p-8 text-center`}
+        >
+          {!neutralBg && <div className="halftone pointer-events-none absolute inset-0" aria-hidden />}
           <div className="relative flex items-center gap-4">
             <GameIcon gameId={room.gameId} size={48} color={accent} />
             <RoomCodeNeon code={code} size="3rem" accent={accent} />

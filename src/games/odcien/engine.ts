@@ -206,6 +206,10 @@ export const odcienEngine: GameEngine<OdcienState, OdcienAction, OdcienSettings>
       scoring: state.settings.scoring,
       // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
       canFinish: state.phase === "wynik",
+      // Konwencja dla rdzenia: ta gra wymaga neutralnego tła do oceny koloru.
+      // Kolorowy gradient przesuwa postrzeganą barwę i psuje sedno rozgrywki.
+      // Gra bez tej flagi dostaje zwykłe tło Arcade — zero zmian w rdzeniu (CLAUDE.md §4).
+      neutralBg: true,
       // Kto już wysłał — same uid, BEZ kolorów, żeby nikt się nie podpatrywał.
       submitted: Object.keys(state.guesses),
       players: state.playerUids.map((uid) => ({

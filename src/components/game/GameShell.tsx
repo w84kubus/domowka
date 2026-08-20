@@ -69,13 +69,15 @@ export function GameShell({
   const finished = room.status === "finished";
   // Gra zgłasza, że w tej fazie sama oferuje zakończenie rozgrywki (patrz niżej).
   const canFinish = (room.publicState as { canFinish?: boolean } | undefined)?.canFinish === true;
+  // Gra o kolorze prosi o neutralne tło — patrz .neutral-bg w globals.css.
+  const neutralBg = (room.publicState as { neutralBg?: boolean } | undefined)?.neutralBg === true;
 
   return (
     <main
-      className="arcade-bg screen relative items-center gap-5 overflow-hidden"
+      className={`${neutralBg ? "neutral-bg" : "arcade-bg"} screen relative items-center gap-5 overflow-hidden`}
       style={{ ["--accent" as string]: accent }}
     >
-      <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+      {!neutralBg && <div className="halftone pointer-events-none absolute inset-0" aria-hidden />}
 
       <header className="relative flex w-full max-w-3xl items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">

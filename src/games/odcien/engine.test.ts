@@ -109,6 +109,26 @@ function hexTarget(s: OdcienState): string {
   return "#" + [s.target.r, s.target.g, s.target.b].map((v) => v.toString(16).padStart(2, "0")).join("");
 }
 
+describe("odcień — neutralne tło", () => {
+  it("flaga jest w KAŻDEJ fazie, żeby tło nie migało między rundami", () => {
+    let s = game();
+    const fazy: string[] = [];
+    const sprawdz = (st: typeof s) => {
+      const v = odcienEngine.publicView(st, players) as { phase: string; neutralBg?: boolean };
+      fazy.push(v.phase);
+      expect(v.neutralBg).toBe(true);
+    };
+    sprawdz(s);                                                         // pokaz
+    s = odcienEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host"));  // zgadywanie
+    sprawdz(s);
+    for (const uid of ["host", "a", "b"]) s = odcienEngine.reduce(s, { type: "SUBMIT", color: s.target }, ctx(uid));
+    sprawdz(s);                                                         // wynik
+    s = odcienEngine.reduce(s, { type: "FINISH" }, ctx("host"));
+    sprawdz(s);                                                         // koniec
+    expect(fazy).toEqual(["pokaz", "zgadywanie", "wynik", "koniec"]);
+  });
+});
+
 describe("odcień — matematyka koloru", () => {
   it("identyczne kolory mają zerową różnicę", () => {
     expect(deltaE({ r: 10, g: 20, b: 30 }, { r: 10, g: 20, b: 30 })).toBeCloseTo(0);
