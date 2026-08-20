@@ -364,6 +364,10 @@ export const stoperEngine: GameEngine<StoperState, StoperAction, StoperSettings>
     return {
       mode: state.settings.mode,
       runnerUid: state.runnerUid,
+      // Konwencja dla rdzenia: gra sama oferuje hostowi porządne „Zakończ grę" w tej fazie,
+      // więc GameShell ma schować swoje awaryjne „Przerwij i wróć do lobby" (dublowałoby się,
+      // a jest gorsze — kasuje partię bez podium i bez zapisania rekordów).
+      canFinish: state.phase === "odsloniecie",
       // Kto już podał typ — same uid, BEZ wartości (analogicznie do `submitted` w trybie A).
       guessed: Object.keys(state.guesses),
       // actualMs wychodzi na zewnątrz DOPIERO przy odsłonięciu. Wcześniej byłby

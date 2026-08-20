@@ -37,6 +37,7 @@ export function GameShell({
   useVisualViewport(); // --vvh, --vv-offset dla klawiatury na mobile
   const [muted, setMutedState] = useState(false);
   const [confirmAbort, setConfirmAbort] = useState(false);
+  const [confirmFinish, setConfirmFinish] = useState(false);
 
   useEffect(() => {
     unlockAudio();
@@ -64,6 +65,8 @@ export function GameShell({
   const dispatch = (action: unknown): Promise<void> =>
     apiPost(`/api/rooms/${room.code}/action`, { action, actionId: newActionId() }).then(() => undefined);
   const finished = room.status === "finished";
+  // Gra zgłasza, że w tej fazie sama oferuje zakończenie rozgrywki (patrz niżej).
+  const canFinish = (room.publicState as { canFinish?: boolean } | undefined)?.canFinish === true;
 
   return (
     <main
@@ -121,10 +124,32 @@ export function GameShell({
         </button>
       )}
 
-      {/* Awaryjne wyjście dla hosta w trakcie gry. Cztery gry mają tryb rund „∞",
-          w którym bez tego nie da się skończyć rozgrywki inaczej niż opuszczeniem
-          pokoju. Dwa kroki, bo przerywa grę wszystkim. */}
-      {!finished && isHost && (
+      {/* Porządne zakończenie gry — jedna implementacja dla wszystkich gier. Gra zgłasza
+          przez publicState.canFinish, że jest w fazie, z której wypada skończyć (zwykle
+          ekran wyników rundy). Pokazuje podium i zapisuje rekordy — inaczej niż przerwanie. */}
+      {!finished && isHost && canFinish && (
+        <button
+          type="button"
+          className="btn btn-ghost relative w-full max-w-3xl"
+          onClick={() => {
+            if (!confirmFinish) {
+              setConfirmFinish(true);
+              return;
+            }
+            setConfirmFinish(false);
+            dispatch({ type: "FINISH" }).catch(() => {});
+          }}
+          onBlur={() => setConfirmFinish(false)}
+        >
+          {confirmFinish ? "Na pewno zakończyć?" : "Zakończ grę"}
+        </button>
+      )}
+
+      {/* Awaryjne wyjście dla hosta. Zostaje tylko tam, gdzie gra nie oferuje własnego
+          zakończenia — czyli w środku rundy. Kasuje partię bez podium i bez rekordów,
+          więc jest gorsze i nie powinno konkurować z „Zakończ grę". Dwa kroki, bo
+          przerywa grę wszystkim. */}
+      {!finished && isHost && !canFinish && (
         <button
           type="button"
           className="btn btn-ghost relative w-full max-w-3xl text-sm"

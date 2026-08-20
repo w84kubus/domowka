@@ -47,6 +47,7 @@ export const mafiaActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("PROTECT"), target: z.string() }),
   z.object({ type: z.literal("VOTE"), target: z.string() }),
   z.object({ type: z.literal("NEXT") }),
+  z.object({ type: z.literal("FINISH") }), // host: zakończ grę (tryb rund „∞")
 ]);
 export type MafiaAction = z.infer<typeof mafiaActionSchema>;
 
@@ -157,7 +158,9 @@ function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
     revealed: { ...s.roles }, // na końcu odsłaniamy wszystkie role
     scores,
     narrator: winner === "mafia" ? "Mafia przejęła miasto." : "Miasto oczyszczone. Mafia pokonana.",
-    pendingEvents: [{ type: "koniec", text: winner === "mafia" ? "Mafia wygrywa!" : "Miasto wygrywa!" }],
+    pendingEvents: [
+      { type: "koniec", text: winner === "mafia" ? "Mafia wygrywa!" : "Miasto wygrywa!" },
+    ],
   };
 }
 
@@ -218,6 +221,19 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
       if (state.phase === "dzien") return toVoting(state, ctx.now, ctx.rng);
       if (state.phase === "glosowanie") return resolveVote(state, ctx.now, ctx.rng);
       return state;
+    }
+
+    if (action.type === "FINISH") {
+      requireHost(state, ctx.uid);
+      // Kończy natychmiast, z dotychczasową punktacją. Bez tego przy rundach „∞"
+      // jedynym wyjściem było przerwanie partii, które nie zapisuje rekordów.
+      if (state.phase === "koniec") return state;
+      return {
+        ...state,
+        phase: "koniec",
+        phaseEndsAt: null,
+        pendingEvents: [...(state.pendingEvents ?? []), { type: "koniec", text: "Koniec gry!" }],
+      };
     }
 
     if (action.type === "NEXT") {
@@ -286,6 +302,8 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
       score: state.scores[uid] ?? 0,
     }));
     return {
+      // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
+      canFinish: state.phase === "switt",
       phase: state.phase, night: state.night, narrator: state.narrator,
       deaths: state.deaths, winner: state.winner, afterReveal: state.afterReveal,
       players: view,

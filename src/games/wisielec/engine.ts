@@ -49,6 +49,7 @@ export const wisielecActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("GUESS"), letter: z.string().min(1).max(2) }),
   z.object({ type: z.literal("SOLVE"), word: z.string().min(1).max(60) }),
   z.object({ type: z.literal("NEXT") }),
+  z.object({ type: z.literal("FINISH") }), // host: zakończ grę (tryb rund „∞")
 ]);
 export type WisielecAction = z.infer<typeof wisielecActionSchema>;
 
@@ -221,6 +222,19 @@ export const wisielecEngine: GameEngine<WisielecState, WisielecAction, WisielecS
       return state;
     }
 
+    if (action.type === "FINISH") {
+      if (ctx.uid !== state.hostUid) throw new GameError("Tylko host.", 403);
+      // Kończy natychmiast, z dotychczasową punktacją. Bez tego przy rundach „∞"
+      // jedynym wyjściem było przerwanie partii, które nie zapisuje rekordów.
+      if (state.phase === "koniec") return state;
+      return {
+        ...state,
+        phase: "koniec",
+        phaseEndsAt: null,
+        pendingEvents: [...(state.pendingEvents ?? []), { type: "koniec", text: "Koniec gry!" }],
+      };
+    }
+
     if (action.type === "NEXT") {
       if (ctx.uid !== state.hostUid) throw new GameError("Tylko host.", 403);
       if (state.phase === "wynik") return advance(state, ctx.now, ctx.rng);
@@ -319,6 +333,8 @@ export const wisielecEngine: GameEngine<WisielecState, WisielecAction, WisielecS
       mode: state.mode, round: state.round, totalRounds: state.settings.rounds, phase: state.phase,
       category: state.category, maxWrong: state.settings.lives, result: state.result, winners: state.winners,
       players: playersView, extraLetters: state.settings.extraLetters, ignoreOgonki: state.settings.ignoreOgonki,
+      // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
+      canFinish: state.phase === "wynik",
     };
 
     if (state.mode === "wyscig") {

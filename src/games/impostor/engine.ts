@@ -44,6 +44,7 @@ export const impostorActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("VOTE"), targetUid: z.string() }),
   z.object({ type: z.literal("GUESS_WORD"), word: z.string().min(1).max(40) }),
   z.object({ type: z.literal("NEXT") }),
+  z.object({ type: z.literal("FINISH") }), // host: zakończ grę (tryb rund „∞")
 ]);
 export type ImpostorAction = z.infer<typeof impostorActionSchema>;
 
@@ -128,7 +129,9 @@ function toResult(state: ImpostorState, now: number, result: "cywile" | "imposto
     byGuess,
     roundScores,
     scores,
-    pendingEvents: [{ type: "wynik", text: result === "cywile" ? "Cywile wykryli impostora!" : byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!" }],
+    pendingEvents: [
+      { type: "wynik", text: result === "cywile" ? "Cywile wykryli impostora!" : byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!" },
+    ],
   };
 }
 
@@ -196,6 +199,19 @@ export const impostorEngine: GameEngine<ImpostorState, ImpostorAction, ImpostorS
       if (state.phase === "zgadywanie") return toResult(state, ctx.now, "cywile", false); // impostor nie zdążył
       if (state.phase === "wynik") return advance(state, ctx.now, ctx.rng);
       return state;
+    }
+
+    if (action.type === "FINISH") {
+      requireHost(state, ctx.uid);
+      // Kończy natychmiast, z dotychczasową punktacją. Bez tego przy rundach „∞"
+      // jedynym wyjściem było przerwanie partii, które nie zapisuje rekordów.
+      if (state.phase === "koniec") return state;
+      return {
+        ...state,
+        phase: "koniec",
+        phaseEndsAt: null,
+        pendingEvents: [...(state.pendingEvents ?? []), { type: "koniec", text: "Koniec gry!" }],
+      };
     }
 
     if (action.type === "NEXT") {
@@ -274,6 +290,8 @@ export const impostorEngine: GameEngine<ImpostorState, ImpostorAction, ImpostorS
       confirmed: state.confirmed.includes(uid), voted: state.votes[uid] != null,
     }));
     return {
+      // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
+      canFinish: state.phase === "wynik",
       round: state.round, totalRounds: state.settings.rounds, phase: state.phase,
       speakMode: state.settings.speakMode, clueRound: state.clueRound, totalClueRounds: state.settings.clueRounds,
       speakingOrder: state.speakingOrder,

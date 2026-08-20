@@ -66,6 +66,7 @@ export const pmActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("JUSTIFY"), text: z.string().max(200) }),
   z.object({ type: z.literal("VOTE"), verdict: z.enum(["uznaje", "odrzucam"]) }),
   z.object({ type: z.literal("NEXT") }),
+  z.object({ type: z.literal("FINISH") }), // host: zakończ grę (tryb rund „∞")
 ]);
 export type PmAction = z.infer<typeof pmActionSchema>;
 
@@ -268,6 +269,19 @@ export const pmEngine: GameEngine<PmState, PmAction, PmSettings> = {
       return state;
     }
 
+    if (action.type === "FINISH") {
+      requireHost(state, ctx.uid);
+      // Kończy natychmiast, z dotychczasową punktacją. Bez tego przy rundach „∞"
+      // jedynym wyjściem było przerwanie partii, które nie zapisuje rekordów.
+      if (state.phase === "koniec") return state;
+      return {
+        ...state,
+        phase: "koniec",
+        phaseEndsAt: null,
+        pendingEvents: [...(state.pendingEvents ?? []), { type: "koniec", text: "Koniec gry!" }],
+      };
+    }
+
     if (action.type === "NEXT") {
       requireHost(state, ctx.uid);
       if (state.phase === "losowanie") return startWriting(state, ctx.now);
@@ -359,6 +373,8 @@ export const pmEngine: GameEngine<PmState, PmAction, PmSettings> = {
       letter: state.letter,
       categories: state.categories,
       players: playersView,
+      // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
+      canFinish: state.phase === "wyniki",
     };
 
     if (state.phase === "pisanie") {

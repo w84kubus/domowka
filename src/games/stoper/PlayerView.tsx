@@ -78,11 +78,9 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
   // Potwierdzenie zamknięcia rundy (akcja niszcząca dla całego pokoju).
   const [confirmClose, setConfirmClose] = useState(false);
-  const [confirmFinish, setConfirmFinish] = useState(false);
   // Nowa runda albo zmiana fazy rozbraja potwierdzenie — nie może zostać „uzbrojone".
   useEffect(() => {
     setConfirmClose(false);
-    setConfirmFinish(false);
   }, [pub.round, pub.phase]);
 
   // Gra na laptopie: spacja = START, a potem STOP (SPEC §5.2 — duży przycisk, tu też klawisz).
@@ -201,22 +199,8 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
             >
               Dalej →
             </button>
-            {/* Przy rundach „∞" to jedyne wyjście z gry poza opuszczeniem pokoju. */}
-            <button
-              type="button"
-              className="btn btn-ghost text-sm"
-              onClick={() => {
-                if (!confirmFinish) {
-                  setConfirmFinish(true);
-                  return;
-                }
-                setConfirmFinish(false);
-                dispatch({ type: "FINISH" });
-              }}
-              onBlur={() => setConfirmFinish(false)}
-            >
-              {confirmFinish ? "Na pewno zakończyć?" : "Zakończ grę"}
-            </button>
+            {/* „Zakończ grę" renderuje teraz GameShell dla wszystkich gier naraz —
+                Stoper zgłasza tylko canFinish w publicView. */}
           </div>
         )}
       </div>
