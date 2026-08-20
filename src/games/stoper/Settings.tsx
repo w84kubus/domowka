@@ -1,40 +1,42 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { SegmentPicker } from "@/components/SegmentPicker";
 import type { GameSettingsProps } from "@/games/view";
 import type { StoperSettings } from "./manifest";
 
 export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<StoperSettings>) {
+  const t = useT();
   const set = (patch: Partial<StoperSettings>) => onChange({ ...value, ...patch });
   return (
     <div className="flex flex-col gap-5">
       <SegmentPicker
-        label="Tryb gry"
+        label={t("set.stoper.mode")}
         value={value.mode}
         onChange={(v) => set({ mode: v as StoperSettings["mode"] })}
         hint={
           value.mode === "cel"
-            ? "Wszyscy trafiają w ten sam zadany czas."
-            : "Jeden biegnie, reszta zgaduje ile to trwało — ze słuchu."
+            ? t("hint.stoper.modeTarget")
+            : t("hint.stoper.modeGuess")
         }
         options={[
-          { v: "cel", l: "Cel" },
-          { v: "zgadnij", l: "Zgadnij czas" },
+          { v: "cel", l: t("opt.stoper.target") },
+          { v: "zgadnij", l: t("opt.stoper.guess") },
         ]}
       />
       {value.mode === "cel" && (
         <>
       <SegmentPicker
-        label="Cel"
+        label={t("set.stoper.target")}
         value={value.targetMode}
         onChange={(v) => set({ targetMode: v })}
         options={[
-          { v: "losowy", l: "Losowy" },
-          { v: "staly", l: "Stały" },
+          { v: "losowy", l: t("opt.random") },
+          { v: "staly", l: t("opt.fixed") },
         ]}
       />
       {value.targetMode === "losowy" ? (
         <SegmentPicker
-          label="Zakres celu (max)"
+          label={t("set.stoper.range")}
           value={value.targetMaxMs}
           onChange={(v) => set({ targetMaxMs: v as StoperSettings["targetMaxMs"] })}
           options={[
@@ -46,7 +48,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
         />
       ) : (
         <SegmentPicker
-          label="Stały cel"
+          label={t("set.stoper.fixed")}
           value={value.fixedTargetMs}
           onChange={(v) => set({ fixedTargetMs: v as number })}
           options={[
@@ -59,7 +61,7 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
         </>
       )}
       <SegmentPicker
-        label="Rundy"
+        label={t("set.rounds")}
         value={value.rounds}
         onChange={(v) => set({ rounds: v as StoperSettings["rounds"] })}
         options={[
@@ -73,12 +75,12 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
       />
       {value.mode === "cel" && (
       <SegmentPicker
-        label="Auto-zamknięcie rundy"
+        label={t("set.stoper.autoclose")}
         value={value.roundTimeoutMs}
         onChange={(v) => set({ roundTimeoutMs: v as StoperSettings["roundTimeoutMs"] })}
-        hint="Runda domknie się sama, gdy ktoś nie kliknie STOP."
+        hint={t("hint.stoper.autoclose")}
         options={[
-          { v: 0, l: "Nigdy" },
+          { v: 0, l: t("opt.never") },
           { v: 30000, l: "30 s" },
           { v: 60000, l: "60 s" },
           { v: 120000, l: "2 min" },
@@ -86,37 +88,37 @@ export function StoperSettingsPanel({ value, onChange }: GameSettingsProps<Stope
       />
       )}
       <SegmentPicker
-        label="Ekran wyników"
+        label={t("set.stoper.reveal")}
         value={value.revealMs}
         onChange={(v) => set({ revealMs: v as StoperSettings["revealMs"] })}
-        hint="Ręcznie = wyniki czekają, aż host kliknie Dalej."
+        hint={t("hint.stoper.reveal")}
         options={[
           { v: 5000, l: "5 s" },
           { v: 9000, l: "9 s" },
           { v: 15000, l: "15 s" },
           { v: 30000, l: "30 s" },
-          { v: 0, l: "Ręcznie" },
+          { v: 0, l: t("opt.manual") },
         ]}
       />
       {value.mode === "cel" && (
       <SegmentPicker
-        label="Bez przekroczenia"
+        label={t("set.stoper.noover")}
         value={value.noOvershoot}
         onChange={(v) => set({ noOvershoot: v as boolean })}
-        hint="Kto przekroczy cel, przepada w tej rundzie."
+        hint={t("hint.stoper.noover")}
         options={[
-          { v: false, l: "Nie" },
-          { v: true, l: "Tak" },
+          { v: false, l: t("opt.no") },
+          { v: true, l: t("opt.yes") },
         ]}
       />
       )}
       <SegmentPicker
-        label="Punktacja"
+        label={t("set.scoring")}
         value={value.scoring}
         onChange={(v) => set({ scoring: v })}
         options={[
-          { v: "precyzja", l: "Precyzja (10/7/5)" },
-          { v: "zwyciestwa", l: "Zwycięstwa (+1)" },
+          { v: "precyzja", l: t("opt.stoper.precision") },
+          { v: "zwyciestwa", l: t("opt.stoper.wins") },
         ]}
       />
     </div>

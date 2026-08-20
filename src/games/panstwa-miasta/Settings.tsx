@@ -1,16 +1,18 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { SegmentPicker } from "@/components/SegmentPicker";
 import type { GameSettingsProps } from "@/games/view";
 import type { PmSettings } from "./manifest";
 import { CATEGORY_SETS } from "./data/categories";
 
 export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSettings>) {
+  const t = useT();
   const set = (patch: Partial<PmSettings>) => onChange({ ...value, ...patch });
   const cats = CATEGORY_SETS[value.categorySet]?.categories ?? [];
   return (
     <div className="flex flex-col gap-5">
       <SegmentPicker
-        label="Zestaw kategorii"
+        label={t("set.pm.catset")}
         value={value.categorySet}
         onChange={(v) => set({ categorySet: v as PmSettings["categorySet"], customCategories: undefined })}
         options={Object.entries(CATEGORY_SETS).map(([id, s]) => ({ v: id, l: s.name }))}
@@ -18,18 +20,18 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
       <p className="text-xs font-semibold text-ink-muted">{cats.join(" · ")}</p>
 
       <SegmentPicker
-        label="Koniec rundy"
+        label={t("set.pm.endmode")}
         value={value.endMode}
         onChange={(v) => set({ endMode: v as PmSettings["endMode"] })}
         options={[
-          { v: "stop", l: "STOP (pierwszy)" },
-          { v: "czas", l: "Na czas" },
-          { v: "recznie", l: "Ręcznie (host)" },
+          { v: "stop", l: t("opt.pm.stopFirst") },
+          { v: "czas", l: t("opt.pm.timed") },
+          { v: "recznie", l: t("opt.pm.manualHost") },
         ]}
       />
       {value.endMode === "czas" && (
         <SegmentPicker
-          label="Czas"
+          label={t("set.pm.time")}
           value={value.timeLimitMs}
           onChange={(v) => set({ timeLimitMs: v as PmSettings["timeLimitMs"] })}
           options={[
@@ -42,7 +44,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
       )}
       {value.endMode === "stop" && (
         <SegmentPicker
-          label="Doliczka po STOP"
+          label={t("set.pm.grace")}
           value={value.graceMs}
           onChange={(v) => set({ graceMs: v as PmSettings["graceMs"] })}
           options={[
@@ -53,7 +55,7 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
         />
       )}
       <SegmentPicker
-        label="Rundy"
+        label={t("set.rounds")}
         value={value.rounds}
         onChange={(v) => set({ rounds: v as PmSettings["rounds"] })}
         options={[
@@ -64,12 +66,12 @@ export function PmSettingsPanel({ value, onChange }: GameSettingsProps<PmSetting
         ]}
       />
       <SegmentPicker
-        label="Tryb hardcore (litery z ogonkami)"
+        label={t("set.pm.hardcore")}
         value={value.hardcore}
         onChange={(v) => set({ hardcore: v as boolean })}
         options={[
-          { v: false, l: "Nie" },
-          { v: true, l: "Tak (Ą Ć Ę Ł…)" },
+          { v: false, l: t("opt.no") },
+          { v: true, l: t("opt.pm.hardcoreYes") },
         ]}
       />
     </div>
