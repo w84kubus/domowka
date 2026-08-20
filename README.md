@@ -18,6 +18,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind v4" />
   <img src="https://img.shields.io/badge/PWA-instalowalna-5A0FC8?logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/multiplayer-realtime-E4002B" alt="Multiplayer Realtime" />
+  <img src="https://img.shields.io/badge/testy-134-7CF0AE?logo=vitest&logoColor=black" alt="134 testy" />
 </p>
 
 ---
@@ -37,22 +38,28 @@
 
 | Gra | Emoji | Opis | Gracze |
 |---|---|---|---|
-| **Stoper** | ⏱️ | Zatrzymaj w idealnym momencie. Bez patrzenia na cyfry. | 1–16 |
+| **Stoper** | ⏱️ | Zatrzymaj w idealnym momencie. Bez patrzenia na cyfry. 2 tryby: **CEL** i **ZGADNIJ CZAS**. | 1–16 |
 | **Państwa-miasta** | ✍️ | Litera pada, długopisy w ruch. Kto pierwszy, ten lepszy. | 1–16 |
 | **Wisielec** | 🪢 | Zgadnij hasło, zanim ludzik zawiśnie. 3 tryby: wyścig, kooperacja, zadający. | 1–16 |
 | **Impostor** | 🕵️ | Wszyscy znają hasło. Prawie wszyscy. Znajdź kreta albo giń. | 3–16 |
-| **Mafia** | 🔪 | Miasto śpi. Mafia nie. Pełny auto-narrator z rolami specjalnymi. | 4–16 |
+| **Mafia** | 🔪 | Miasto śpi. Mafia nie. Auto-narrator, role: detektyw, lekarz, mafia. | 4–16 |
+
+> **Stoper ma dwa tryby.** W **CEL** wszyscy dostają ten sam czas do trafienia i zatrzymują stoper
+> u siebie — cyfry są zamaskowane, liczysz w głowie. W **ZGADNIJ CZAS** jeden gracz jest Biegaczem
+> (rotacja co rundę): startuje i zatrzymuje kiedy chce, a **nikt nie widzi cyfr — łącznie z nim**.
+> START i STOP lecą do wszystkich telefonów jako dźwięk, więc reszta szacuje ze słuchu i wpisuje typ.
 
 ## Funkcje
 
 ### Pokój i lobby
-- **4-znakowy kod pokoju** — neonowy szyld, kliknij żeby skopiować
+- **4-znakowy kod pokoju** — klocowate litery, kliknij żeby skopiować
 - **QR code** — skan z telefonu, zero wpisywania
 - **Deep link** — `domowka.vercel.app/?kod=XYZW` wchodzi prosto do pokoju
 - **Udostępnianie** — przycisk Share (native share / clipboard fallback)
-- **Ekran hosta (TV)** — duży ekran na laptopie/TV z kodem 8rem, QR 280px, efektem CRT
-- **Awatary** — 30 emoji do wyboru przy dołączaniu
+- **Ekran hosta (TV)** — osobny układ poziomy na laptop/TV, czytelny z kanapy
+- **Awatary** — 30 ilustrowanych ikon w kolorowych kafelkach
 - **Zasady gier** — modal z krokami dla każdej gry
+- **Rekordy pokoju** — kto ile wygrał i lista wyczynów, trwałe przez cały czas życia pokoju
 
 ### Realtime multiplayer
 - **Anonimowa autoryzacja** — Firebase Anonymous Auth, zero rejestracji
@@ -78,8 +85,9 @@
 - **Safe areas** — `env(safe-area-inset-*)` na notch/dynamic island
 
 ### Wygląd i UX
-- **Neonowy motyw** — ciemne tło z fioletowym podkładem, neonowe akcenty per gra
-- **Animacje** — slideIn, fadeIn, timer pulse, neon flicker
+- **Styl „Arcade Party"** — fioletowo-różowy gradient, klocowate przyciski z twardym cieniem, panele jak naklejki. Pełna specyfikacja w [`DESIGN.md`](DESIGN.md)
+- **Wciśnięcie przycisku** — element sygnaturowy: każdy przycisk zapada się o 4 px przy kliknięciu
+- **Animacje** — slideIn, fadeIn, timer pulse, arcade-pop
 - **SFX** — WebAudio: join, phase change, urgent tick, fanfara, defeat, neon buzz
 - **Konfetti** — canvas-confetti na wygraną z kolorami gry
 - **Skeleton loader** — animowany placeholder w lobby
@@ -96,11 +104,12 @@
 | Autoryzacja | Firebase Anonymous Auth |
 | Serwer | Route Handlers + `firebase-admin` |
 | PWA | Serwist (Service Worker, manifest, offline) |
-| Testy | Vitest (74 testy — pełne partie + bezpieczeństwo) |
+| Testy | Vitest (134 testy — pełne partie, bezpieczeństwo, kontrakty rdzenia) |
 | Deploy | Vercel (auto-deploy z GitHub) |
 | Dźwięki | Web Audio API (zero plików audio) |
 | QR | `qrcode` (generowanie SVG) |
-| Czcionki | Chakra Petch (display), Inter (body), JetBrains Mono (mono) |
+| Czcionki | Baloo 2 (display), Nunito (body), JetBrains Mono (liczby) |
+| Ikony | Lucide (interfejs) + własny pakiet ilustracji (awatary, gry) |
 
 ## Architektura
 
@@ -129,6 +138,8 @@ src/
 ├── games/                      # Silniki i UI gier (plugin architecture)
 │   ├── registry.ts             # rejestr silników (serwer)
 │   ├── manifests.ts            # manifesty gier (klient — bez silników)
+│   ├── icons.tsx               # ikony zapasowe gier (Lucide)
+│   ├── finish.test.ts          # kontrakt „Zakończ grę" dla całego rejestru
 │   ├── components.tsx          # UI gier (dynamic imports)
 │   ├── types.ts                # interfejsy GameEngine, GameManifest
 │   ├── view.ts                 # interfejsy GameViewProps
@@ -145,7 +156,15 @@ src/
 │
 ├── components/                 # Komponenty React
 │   ├── game/                   # GameShell, LobbyGames, GameRulesCard
-│   ├── RoomCodeNeon.tsx        # neonowy kod pokoju (click-to-copy)
+│   ├── AvatarIcon.tsx          # ilustracja awatara + kolor kafelka
+│   ├── AvatarPicker.tsx        # siatka 30 awatarów
+│   ├── GameIcon.tsx            # ilustracja gry (fallback: ikona Lucide)
+│   ├── GameCard.tsx            # karta gry na landingu
+│   ├── GameRow.tsx             # wiersz gry w lobby
+│   ├── SegmentPicker.tsx       # arcade segment buttons (ustawienia gier)
+│   ├── HowToPlay.tsx           # sekcja „Jak grać" na landingu
+│   ├── RoomRecords.tsx         # rekordy pokoju
+│   ├── RoomCodeNeon.tsx        # klocowaty kod pokoju (click-to-copy)
 │   ├── RoomQr.tsx              # QR code pokoju
 │   ├── PlayerList.tsx          # lista graczy z presence
 │   ├── ShareButton.tsx         # udostępnianie (navigator.share)
@@ -167,6 +186,7 @@ src/
 │
 ├── lib/                        # Infrastruktura
 │   ├── server/game-runner.ts   # applyAction, persist, idempotencja
+│   ├── server/records.ts       # rekordy pokoju (czyste funkcje, testowalne)
 │   ├── client/api.ts           # apiPost z obsługą błędów
 │   ├── sound.ts                # WebAudio SFX (10 dźwięków)
 │   ├── confetti.ts             # canvas-confetti wrapper
@@ -184,8 +204,11 @@ src/
 - **Plugin architecture** — dodanie nowej gry = nowy folder w `src/games/` + jedna linia w `registry.ts`. Zero zmian w rdzeniu.
 - **Dynamic imports** — komponenty gier ładowane dynamicznie (`next/dynamic`). Gracz pobiera tylko kod aktualnej gry, nie wszystkich pięciu.
 - **Tajne dane w trzech warstwach** — `publicState` (wszyscy widzą), `secret/state` (nikt nie czyta, `allow read: if false`), `private/{uid}` (tylko Twoje).
-- **Timer bez crona** — serwer pisze `phaseEndsAt`, klienci odliczają, pierwszy gracz po czasie odpala `/tick`. Zero cron jobów.
-- **Wszystko po polsku** — UI, nazwy, fonty z `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż).
+- **Timer bez crona** — serwer pisze `phaseEndsAt`, klienci odliczają, a po upływie czasu ponagla serwer **wyłącznie host**. Reszta wchodzi jako zapas dopiero po 3 s, gdyby host wypadł. Wcześniej ponaglali wszyscy naraz, co przy 8 graczach dawało ~6,6 transakcji/s na jednym dokumencie przy limicie Firestore ~1/s — transakcje wchodziły w konflikt i faza spóźniała się o kilka sekund.
+- **Wszystko po polsku** — UI, nazwy, fonty z `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). Sama obecność glifów to jednak za mało: Fredoka je ma, ale rysuje ogonek w Ą/Ę cienkim włosem oderwanym od litery. Stąd Baloo 2 — szczegóły w [`DESIGN.md`](DESIGN.md).
+- **Rdzeń nie zna żadnej gry** — dwie funkcje działają przez opt-in silnika, nie przez wiedzę rdzenia. Gra bez opt-inu po prostu działa, tylko bez danej funkcji:
+  - **Rekordy** — silnik oznacza zdarzenie `meta: { uid, rekord: true }`, rdzeń zbiera i dopisuje do wyróżnień pokoju.
+  - **Zakończenie gry** — silnik wystawia `canFinish` w `publicView`, a `GameShell` pokazuje wtedy „Zakończ grę" zamiast awaryjnego przerwania. Zakończenie daje podium i zapisuje rekordy, przerwanie nie.
 
 ## Uruchomienie lokalne
 
@@ -226,7 +249,7 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 npm run dev        # serwer deweloperski (localhost:3000)
 npm run build      # produkcyjny build
 npm run lint       # eslint
-npm run test       # vitest run (74 testy)
+npm run test       # vitest run (134 testy)
 ```
 
 ## Instalacja na telefonie (PWA)
