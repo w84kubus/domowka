@@ -56,3 +56,34 @@ describe("rekordy pokoju — wyróżnienia", () => {
     expect(buildHighlights([ev({ rekord: true }), ev({ uid: 42, rekord: true })], "stoper", 100)).toBeNull();
   });
 });
+
+describe("rekordy pokoju — zgłoszenia z silników", () => {
+  it("kształt zgłoszenia z Impostora przechodzi przez rdzeń", () => {
+    // Tak wygląda zdarzenie emitowane przez impostor/engine.ts przy trafionym haśle po wylocie.
+    const out = buildHighlights(
+      [{ type: "rekord", text: "Wyleciał i i tak odgadł hasło", meta: { uid: "imp", rekord: true } }],
+      "impostor",
+      50,
+    );
+    expect(out).toEqual([{ gameId: "impostor", uid: "imp", text: "Wyleciał i i tak odgadł hasło", at: 50 }]);
+  });
+
+  it("kształt zgłoszenia z Mafii przechodzi przez rdzeń", () => {
+    const out = buildHighlights(
+      [{ type: "rekord", text: "Wygrał dla mafii w pojedynkę", meta: { uid: "boss", rekord: true } }],
+      "mafia",
+      50,
+    );
+    expect(out).toHaveLength(1);
+    expect(out![0].uid).toBe("boss");
+  });
+
+  it("zwykłe zdarzenia rozgrywki nie zaśmiecają rekordów", () => {
+    const zwykle = [
+      { type: "koniec", text: "Mafia wygrywa!" },
+      { type: "wynik", text: "Cywile wykryli impostora!" },
+      { type: "runda", text: "Runda 2" },
+    ];
+    expect(buildHighlights(zwykle, "mafia", 50)).toBeNull();
+  });
+});

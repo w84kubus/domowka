@@ -131,6 +131,15 @@ function toResult(state: ImpostorState, now: number, result: "cywile" | "imposto
     scores,
     pendingEvents: [
       { type: "wynik", text: result === "cywile" ? "Cywile wykryli impostora!" : byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!" },
+      // Wylot i mimo to trafione hasło — to jest wyczyn, nie zwykła wygrana.
+      // meta.rekord === true → rdzeń dopisuje do „Rekordów pokoju" (UPGRADE.md §8).
+      ...(byGuess
+        ? state.impostors.map((uid) => ({
+            type: "rekord",
+            text: "Wyleciał i i tak odgadł hasło",
+            meta: { uid, rekord: true },
+          }))
+        : []),
     ],
   };
 }

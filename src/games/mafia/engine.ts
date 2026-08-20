@@ -150,6 +150,7 @@ function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
     const win = winner === "mafia" ? s.roles[u] === "mafia" : s.roles[u] !== "mafia";
     if (win) scores[u] = (scores[u] ?? 0) + 1;
   }
+  const zyjacaMafia = s.playerUids.filter((u) => s.alive[u] && s.roles[u] === "mafia");
   return {
     ...s,
     phase: "koniec",
@@ -160,6 +161,11 @@ function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
     narrator: winner === "mafia" ? "Mafia przejęła miasto." : "Miasto oczyszczone. Mafia pokonana.",
     pendingEvents: [
       { type: "koniec", text: winner === "mafia" ? "Mafia wygrywa!" : "Miasto wygrywa!" },
+      // Ostatni żyjący mafioso dowiózł wygraną sam — wyczyn wart zapamiętania.
+      // meta.rekord === true → rdzeń dopisuje do „Rekordów pokoju" (UPGRADE.md §8).
+      ...(winner === "mafia" && zyjacaMafia.length === 1
+        ? [{ type: "rekord", text: "Wygrał dla mafii w pojedynkę", meta: { uid: zyjacaMafia[0], rekord: true } }]
+        : []),
     ],
   };
 }
