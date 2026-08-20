@@ -149,6 +149,25 @@ describe("odcień — matematyka koloru", () => {
     expect(accuracyOf(999)).toBe(0);
   });
 
+  it("konwersja GUBI barwę przy zerowym nasyceniu — dlatego UI trzyma stan jako HSL", () => {
+    // Szarość nie ma barwy: hslToRgb(200, 0, 50) daje ten sam kolor co hslToRgb(0, 0, 50),
+    // a powrotna konwersja zwraca h = 0. Gdyby PlayerView trzymał stan jako RGB i przeliczał
+    // HSL w locie (tak było), suwak barwy sam wracałby na zero i wyglądał na zepsuty,
+    // dopóki gracz nie podniósłby nasycenia. Ten test pilnuje, żeby ktoś tego nie cofnął.
+    expect(hslToRgb(200, 0, 50)).toEqual(hslToRgb(0, 0, 50));
+    expect(rgbToHsl(hslToRgb(200, 0, 50)).h).toBe(0);
+    // Przy niezerowym nasyceniu barwa przeżywa konwersję bez szwanku.
+    expect(rgbToHsl(hslToRgb(200, 60, 50)).h).toBe(200);
+  });
+
+  it("skrajna jasność też gubi barwę i nasycenie", () => {
+    for (const l of [0, 100]) {
+      const back = rgbToHsl(hslToRgb(200, 80, l));
+      expect(back.s).toBe(0);
+      expect(back.h).toBe(0);
+    }
+  });
+
   it("HSL i RGB są wzajemnie odwracalne", () => {
     for (const [h, s, l] of [[0, 100, 50], [120, 60, 40], [240, 80, 70], [45, 55, 55]]) {
       const back = rgbToHsl(hslToRgb(h, s, l));

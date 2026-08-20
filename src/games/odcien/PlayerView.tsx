@@ -17,43 +17,59 @@ interface Pub {
   perfect?: string[];
 }
 
-const START: Rgb = { r: 128, g: 128, b: 128 };
+const START_RGB: Rgb = { r: 128, g: 128, b: 128 };
+/**
+ * Start w HSL ma NIEZEROWE nasycenie. Przy s = 0 kolor jest czystą szarością, a szarość
+ * nie ma barwy — matematycznie. Suwak H nie miałby wtedy żadnego widocznego efektu,
+ * dopóki gracz nie podniósłby nasycenia.
+ */
+const START_HSL = { h: 0, s: 50, l: 50 };
 
 export function OdcienPlayerView({ publicState, meUid, isHost, dispatch }: GameViewProps) {
   const t = useT();
   const pub = publicState as Pub;
-  const [rgb, setRgb] = useState<Rgb>(START);
+  const isHsl = pub.space === "hsl";
+
+  /**
+   * W trybie HSL stan trzymamy JAKO HSL, a nie jako RGB przeliczane w locie.
+   *
+   * Dlaczego: konwersja HSL → RGB → HSL gubi informację w punktach zdegenerowanych.
+   * Przy nasyceniu 0 (szarość) barwa przestaje istnieć, więc hslToRgb(200, 0, 50) daje
+   * ten sam szary co hslToRgb(0, 0, 50), a powrotne rgbToHsl zwraca h = 0. Suwak barwy
+   * sam wracał na zero i wyglądał na zepsuty, dopóki gracz nie ruszył nasycenia.
+   * To samo dotyczy jasności 0 i 100, gdzie ginie i barwa, i nasycenie.
+   */
+  const [rgb, setRgb] = useState<Rgb>(START_RGB);
+  const [hsl, setHslState] = useState(START_HSL);
   const [busy, setBusy] = useState(false);
 
   // Nowa runda zeruje suwaki — inaczej gracz zaczyna od poprzedniej odpowiedzi,
   // co przy podobnych kolorach daje niezasłużoną przewagę.
   useEffect(() => {
-    setRgb(START);
+    setRgb(START_RGB);
+    setHslState(START_HSL);
     setBusy(false);
   }, [pub.round]);
 
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const myHex = hexOf(rgb);
+  // Kolor do wysłania i do podglądu — z tej przestrzeni, w której gracz faktycznie pracuje.
+  const current: Rgb = useMemo(
+    () => (isHsl ? hslToRgb(hsl.h, hsl.s, hsl.l) : rgb),
+    [isHsl, hsl, rgb],
+  );
+  const myHex = hexOf(current);
   const sent = pub.submitted.includes(meUid);
 
-  // Aktualizacja FUNKCYJNA (prev => ...), nie z domknięcia. Ta aplikacja renderuje się
-  // bez przerwy (snapshoty Firestore, pingi obecności, tick fazy), a onChange suwaka leci
-  // wielokrotnie na sekundę. Handler domykający `rgb`/`hsl` zapisywał nieaktualne wartości
-  // pozostałych składowych i je cofał — wyglądało to jak „suwak nie działa, dopóki nie
-  // ruszę innego". Z prev takie wyścigi są niemożliwe.
-  const setHsl = (patch: Partial<{ h: number; s: number; l: number }>) => {
-    setRgb((prev) => {
-      const cur = rgbToHsl(prev);
-      const next = { ...cur, ...patch };
-      return hslToRgb(next.h, next.s, next.l);
-    });
-  };
+  // Aktualizacja FUNKCYJNA (prev => ...), nie z domknięcia: ta aplikacja renderuje się
+  // bez przerwy (snapshoty Firestore, pingi, tick fazy), a onChange suwaka leci wiele
+  // razy na sekundę — handler domykający stan mógłby zapisać nieaktualne wartości.
+  const setHsl = (patch: Partial<{ h: number; s: number; l: number }>) =>
+    setHslState((prev) => ({ ...prev, ...patch }));
 
   const send = async () => {
     setBusy(true);
     vibrate(15);
     try {
-      await dispatch({ type: "SUBMIT", color: rgb });
+      await dispatch({ type: "SUBMIT", color: current });
     } catch {
       setBusy(false);
     }
@@ -82,7 +98,7 @@ export function OdcienPlayerView({ publicState, meUid, isHost, dispatch }: GameV
   // ——— FAZA ZGADYWANIA ———
   if (pub.phase === "zgadywanie") {
     const sliders =
-      pub.space === "rgb"
+      !isHsl
         ? ([
             { key: "r", label: "R", max: 255, value: rgb.r, on: (v: number) => setRgb((prev) => ({ ...prev, r: v })), track: "linear-gradient(to right,#000,#f00)" },
             { key: "g", label: "G", max: 255, value: rgb.g, on: (v: number) => setRgb((prev) => ({ ...prev, g: v })), track: "linear-gradient(to right,#000,#0f0)" },
