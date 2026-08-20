@@ -7,6 +7,7 @@ import { GAMES } from "@/games/registry";
 import { mulberry32, randomSeed, shuffle } from "@/games/rng";
 import { GameError, type GameEngine } from "@/games/types";
 import type { Room } from "@/lib/types/room";
+import { buildHighlights, winnersOf } from "./records";
 
 // Runner gier (SPEC §3.1): JEDYNE miejsce, gdzie zapisuje się stan gry. Klient nigdy nie pisze.
 // Każda akcja: zweryfikuj → uruchom czysty reducer → zapisz public/private/secret/events.
@@ -100,6 +101,20 @@ function persist(
       if (players[uid]) update[`players.${uid}.totalScore`] = FieldValue.increment(score);
     }
   }
+
+  // —— Rekordy pokoju (UPGRADE.md §8) ——
+  // Rdzeń nie zna żadnej konkretnej gry: wygrane liczy z engine.scores(), a wyróżnienia
+  // bierze z tych zdarzeń, które silnik SAM oznaczył jako meta.rekord === true.
+  // Gra, która tego nie robi, po prostu nie ma wyróżnień — bez zmian w rdzeniu (CLAUDE.md §4).
+  if (finished) {
+    update["records.gamesPlayed"] = FieldValue.increment(1);
+    for (const uid of winnersOf(scores)) {
+      if (players[uid]) update[`records.wins.${uid}`] = FieldValue.increment(1);
+    }
+  }
+
+  const highlights = buildHighlights(events, room.gameId ?? "", now, room.records?.highlights);
+  if (highlights) update["records.highlights"] = highlights;
 
   t.update(ref, update);
 }

@@ -175,7 +175,12 @@ function applyScoring(state: StoperState): { scores: Record<string, number>; eve
   }
 
   for (const uid of state.perfectHits) {
-    events.push({ type: "idealnie", text: `Idealne trafienie! (${fmt(state.results[uid].valueMs)})`, meta: { uid } });
+    // meta.rekord === true → rdzeń dopisuje to do „Rekordów pokoju" (UPGRADE.md §8).
+    events.push({
+      type: "idealnie",
+      text: `Idealne trafienie — ${fmt(state.results[uid].valueMs)}`,
+      meta: { uid, rekord: true },
+    });
   }
   return { scores, events };
 }

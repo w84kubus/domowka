@@ -5,6 +5,7 @@ import Link from "next/link";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
 import { RoomQr } from "@/components/RoomQr";
 import { PlayerList } from "@/components/PlayerList";
+import { RoomRecords } from "@/components/RoomRecords";
 import { GameShell } from "@/components/game/GameShell";
 import { LobbyGames } from "@/components/game/LobbyGames";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -180,6 +181,8 @@ export default function LobbyPage() {
       <section className="relative flex w-full max-w-3xl flex-col gap-3">
         <LobbyGames code={room.code} isHost={isHost} playerCount={playerCount} />
       </section>
+
+      <RoomRecords records={room.records} players={room.players} />
 
       <section className="relative mt-auto w-full max-w-3xl pt-2">
         <button type="button" onClick={leave} className="btn btn-ghost w-full">

@@ -16,6 +16,26 @@ export interface Player {
 
 export type PlayerMap = Record<string, Player>;
 
+/** Wyróżnienie zgłoszone przez silnik gry (zdarzenie z meta.rekord === true). */
+export interface RoomHighlight {
+  gameId: string;
+  uid: string;
+  text: string;
+  at: number;
+}
+
+/**
+ * Rekordy pokoju (UPGRADE.md §8) — trwałe przez cały czas życia pokoju (TTL 8 h).
+ * Pisane WYŁĄCZNIE przez serwer w game-runnerze, jak każdy inny stan gry.
+ */
+export interface RoomRecords {
+  wins: Record<string, number>; // uid -> ile gier wygrał
+  gamesPlayed: number;
+  highlights: RoomHighlight[]; // ostatnie wyróżnienia, od najnowszego
+}
+
+export const MAX_HIGHLIGHTS = 20;
+
 export interface Room {
   code: string;
   createdAt: number;
@@ -34,6 +54,7 @@ export interface Room {
   phaseEndsAt: number | null;
   publicState: Record<string, unknown>;
   version: number; // optimistic lock (SPEC §8, pkt 11)
+  records?: RoomRecords;
 }
 
 // Ile ms bez pinga oznacza „rozłączony" (SPEC §3.7).
