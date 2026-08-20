@@ -18,6 +18,7 @@ const GAMES = {
   wisielec: "wisielec",
   impostor: "szpieg-1",   // szpieg = ten, który udaje; NIE impostor-*.png (postacie Among Us)
   mafia: "karty-2",       // karty ról: odznaka szeryfa, czaszka, znak zapytania
+  odcien: "paleta",       // paleta z kleksami — jedyna wielobarwna ikona w pakiecie
 };
 
 const OUT = "public/avatars";
@@ -70,4 +71,4 @@ for (const [id, file] of Object.entries(GAMES)) {
   await sharp(buf).toFile(`${GOUT}/${id}.webp`);
   gtotal += buf.length;
 }
-console.log(`gry: ${Object.keys(GAMES).length}/5 — ${(gtotal / 1024).toFixed(0)} kB`);
+console.log(`gry: ${Object.keys(GAMES).length} — ${(gtotal / 1024).toFixed(0)} kB`);

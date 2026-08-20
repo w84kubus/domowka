@@ -140,17 +140,70 @@ Nazwy: stoper.png, panstwa-miasta.png, wisielec.png, impostor.png, mafia.png
 
 ---
 
+## ETAP 7 — ikona szóstej gry: Odcień
+
+> **Załącz do rozmowy którąś z gotowych ikon gier** (np. `budzik.png` albo `wisielec.png`).
+> Bez wzorca pojedyncza nowa ikona wyjdzie w innym stylu i będzie odstawać od reszty —
+> to jedyny naprawdę krytyczny punkt tego etapu.
+
+```
+Załączam gotową ikonę z mojego pakietu jako wzorzec stylu.
+
+Wygeneruj JEDNĄ nową ikonę gry w DOKŁADNIE tym samym stylu: kreskówkowy 3D, bąbelkowy,
+gruby jednolity kontur w ciemnym fiolecie (#2A1758), miękki refleks świetlny z lewej góry,
+nasycone kolory, płaska czytelna sylwetka.
+
+WYMAGANIA TECHNICZNE (jak poprzednio):
+- Format kwadratowy 1:1, tło CAŁKOWICIE PRZEZROCZYSTE, bez cienia rzuconego na tło.
+- Motyw wyśrodkowany, margines ok. 10% z każdej strony.
+- Ta sama skala wizualna co ikona wzorcowa.
+- Bez tekstu, bez podpisów, bez ramek.
+- Minimum 512×512.
+
+GRA: „Odcień" — gracz widzi kolor przez kilka sekund, kolor znika, a potem odtwarza go
+z pamięci trzema suwakami. Gra jest O KOLORZE, więc to jedyna ikona w pakiecie, która
+MOŻE być wielobarwna — pozostałe mają jeden kolor dominujący, ta nie musi.
+
+MOTYW: paleta malarska (klasyczny owal z otworem na kciuk) z trzema albo czterema
+błyszczącymi kleksami farby. Korpus palety w ciepłym pomarańczu #FF8A3D — to kolor
+akcentu tej gry. Kleksy w wyraźnie różnych barwach (np. róż, turkus, limonka, żółć),
+każdy z własnym refleksem, jak krople gęstej farby.
+
+WAŻNE: ikona musi być rozpoznawalna po zmniejszeniu do 40 px. Kleksy mają być duże
+i wyraźnie oddzielone — nie rób drobnych plamek ani cienkich pędzelków.
+
+Nazwa pliku: odcien.png
+```
+
+### Wariant alternatywny (jeśli paleta nie wyjdzie)
+
+```
+Ten sam styl i te same wymagania techniczne co wyżej.
+
+Zamiast palety: trzy grube, poziome suwaki jeden pod drugim, każdy z pucołowatą
+okrągłą gałką w innym kolorze (róż, turkus, limonka). Tory suwaków w ciepłym
+pomarańczu #FF8A3D. To ma czytać się jak „regulujesz kolor", a nie jak zwykłe menu.
+
+Nazwa pliku: odcien.png
+```
+
+---
+
 ## Czego potrzebuję od Ciebie na końcu
 
-**35 plików PNG** o dokładnie tych nazwach (to są identyfikatory z kodu — nie zmieniaj ich):
+**36 plików PNG** o dokładnie tych nazwach (to są identyfikatory z kodu — nie zmieniaj ich):
 
 **Awatary (30):**
 `cat` `dog` `bird` `rabbit` `panda` `squirrel` `fish` `turtle` `bug` `rat`
 `snail` `worm` `shell` `feather` `egg` `paw` `pizza` `beer` `guitar` `rocket`
 `bot` `ghost` `skull` `flame` `gamepad` `crown` `diamond` `anchor` `bike` `zap`
 
-**Gry (5):**
-`stoper` `panstwa-miasta` `wisielec` `impostor` `mafia`
+**Gry (6):**
+`stoper` `panstwa-miasta` `wisielec` `impostor` `mafia` `odcien`
+
+> **Uwaga o nazwach:** nazwy plików są wygodne, ale nie krytyczne — przy poprzednim
+> pakiecie przyszły po polsku (`budzik.png`, `karty-2.png`) i po prostu je zmapowałem.
+> Ważniejsze, żeby styl się zgadzał.
 
 ### Jeśli coś nie wyjdzie idealnie — nie szkodzi
 

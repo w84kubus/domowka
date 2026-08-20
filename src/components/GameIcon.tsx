@@ -3,7 +3,7 @@ import { gameIcon } from "@/games/icons";
 
 // Gry z własną ilustracją w public/games/. Gra spoza tej listy dostaje ikonę Lucide,
 // więc dodanie nowej gry nadal nie wymaga zmian tutaj (CLAUDE.md, zasada 4).
-const ILLUSTRATED = new Set(["stoper", "panstwa-miasta", "wisielec", "impostor", "mafia"]);
+const ILLUSTRATED = new Set(["stoper", "panstwa-miasta", "wisielec", "impostor", "mafia", "odcien"]);
 
 export function GameIcon({
   gameId,
