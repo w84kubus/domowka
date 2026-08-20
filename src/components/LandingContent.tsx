@@ -62,8 +62,11 @@ export function LandingContent() {
 
       <HowToPlay />
 
-      <footer className="font-display relative mt-auto pt-4 text-center text-xs font-bold uppercase tracking-[0.06em] text-ink-muted opacity-70">
-        domowka.vercel.app
+      <footer className="font-display relative mt-auto flex flex-col items-center gap-2 pt-4 text-center text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">
+        <Link href="/prywatnosc" className="underline underline-offset-2 hover:text-ink">
+          {t("privacy.link")}
+        </Link>
+        <span className="opacity-70">domowka.vercel.app</span>
       </footer>
     </main>
   );

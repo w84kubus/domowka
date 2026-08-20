@@ -3,6 +3,7 @@ import { Baloo_2, Nunito, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { PrivacyNotice } from "@/components/PrivacyNotice";
 import { ConnectionBar } from "@/components/ConnectionBar";
 import { cookies } from "next/headers";
 import { I18nProvider } from "@/lib/i18n/provider";
@@ -86,6 +87,7 @@ export default async function RootLayout({
           <ConnectionBar />
           {children}
           <InstallPrompt />
+          <PrivacyNotice />
           <ServiceWorkerRegister />
         </I18nProvider>
       </body>
