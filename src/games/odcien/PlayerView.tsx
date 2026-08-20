@@ -36,9 +36,17 @@ export function OdcienPlayerView({ publicState, meUid, isHost, dispatch }: GameV
   const myHex = hexOf(rgb);
   const sent = pub.submitted.includes(meUid);
 
+  // Aktualizacja FUNKCYJNA (prev => ...), nie z domknięcia. Ta aplikacja renderuje się
+  // bez przerwy (snapshoty Firestore, pingi obecności, tick fazy), a onChange suwaka leci
+  // wielokrotnie na sekundę. Handler domykający `rgb`/`hsl` zapisywał nieaktualne wartości
+  // pozostałych składowych i je cofał — wyglądało to jak „suwak nie działa, dopóki nie
+  // ruszę innego". Z prev takie wyścigi są niemożliwe.
   const setHsl = (patch: Partial<{ h: number; s: number; l: number }>) => {
-    const next = { ...hsl, ...patch };
-    setRgb(hslToRgb(next.h, next.s, next.l));
+    setRgb((prev) => {
+      const cur = rgbToHsl(prev);
+      const next = { ...cur, ...patch };
+      return hslToRgb(next.h, next.s, next.l);
+    });
   };
 
   const send = async () => {
@@ -76,9 +84,9 @@ export function OdcienPlayerView({ publicState, meUid, isHost, dispatch }: GameV
     const sliders =
       pub.space === "rgb"
         ? ([
-            { key: "r", label: "R", max: 255, value: rgb.r, on: (v: number) => setRgb({ ...rgb, r: v }), track: "linear-gradient(to right,#000,#f00)" },
-            { key: "g", label: "G", max: 255, value: rgb.g, on: (v: number) => setRgb({ ...rgb, g: v }), track: "linear-gradient(to right,#000,#0f0)" },
-            { key: "b", label: "B", max: 255, value: rgb.b, on: (v: number) => setRgb({ ...rgb, b: v }), track: "linear-gradient(to right,#000,#00f)" },
+            { key: "r", label: "R", max: 255, value: rgb.r, on: (v: number) => setRgb((prev) => ({ ...prev, r: v })), track: "linear-gradient(to right,#000,#f00)" },
+            { key: "g", label: "G", max: 255, value: rgb.g, on: (v: number) => setRgb((prev) => ({ ...prev, g: v })), track: "linear-gradient(to right,#000,#0f0)" },
+            { key: "b", label: "B", max: 255, value: rgb.b, on: (v: number) => setRgb((prev) => ({ ...prev, b: v })), track: "linear-gradient(to right,#000,#00f)" },
           ] as const)
         : ([
             { key: "h", label: "H", max: 360, value: hsl.h, on: (v: number) => setHsl({ h: v }), track: "linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)" },
@@ -109,7 +117,7 @@ export function OdcienPlayerView({ publicState, meUid, isHost, dispatch }: GameV
                 value={s.value}
                 disabled={sent || busy}
                 onChange={(e) => s.on(Number(e.target.value))}
-                className="odcien-slider h-6 flex-1"
+                className="odcien-slider flex-1"
                 style={{ ["--track" as string]: s.track }}
                 aria-label={s.label}
               />

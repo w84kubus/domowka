@@ -304,6 +304,12 @@ body {
   appearance: none;
   background: transparent;
   cursor: pointer;
+  /* Bez tego przeglądarka może potraktować poziome przeciągnięcie po suwaku jako
+     przewijanie strony i odebrać je elementowi — na telefonie suwak „nie łapie". */
+  touch-action: none;
+  /* Wysokość musi pomieścić gałkę (1.75rem), inaczej wystaje poza pole trafienia
+     i część przeciągnięć ląduje obok inputa. */
+  height: 2rem;
 }
 .odcien-slider::-webkit-slider-runnable-track {
   height: 1.5rem;
@@ -322,7 +328,8 @@ body {
   appearance: none;
   width: 1.75rem;
   height: 1.75rem;
-  margin-top: -0.22rem;
+  /* (wysokość toru - wysokość gałki) / 2 — gałka wyśrodkowana na torze */
+  margin-top: -0.125rem;
   border-radius: 999px;
   border: 4px solid #fff;
   background: var(--color-primary);
