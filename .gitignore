@@ -57,3 +57,4 @@ next-env.d.ts
 /emotki-gry/
 # Zrzuty ekranu wrzucane do rootu na potrzeby rozmowy (10 MB) — nie należą do repo
 /*.jpg
+/domowka-icon/

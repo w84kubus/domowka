@@ -3,6 +3,7 @@
 // C1: propozycja powrotu do aktywnego pokoju.
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ReturnToRoom } from "@/components/ReturnToRoom";
 import { GameCard } from "@/components/GameCard";
 import { HowToPlay } from "@/components/HowToPlay";
@@ -29,6 +30,16 @@ export default async function Home({
       {/* w-full: w kolumnowym flexie z items-center dziecko rozpycha się do
           szerokości treści i wychodzi poza ekran na wąskich telefonach. */}
       <header className="relative flex w-full flex-col items-center gap-4 pt-4 text-center">
+        {/* Logo — priority, bo to największy element nad zgięciem (LCP). */}
+        <Image
+          src="/icon-512.png"
+          alt=""
+          width={132}
+          height={132}
+          priority
+          className="size-24 drop-shadow-[0_6px_0_rgb(0_0_0/0.28)] sm:size-32"
+          aria-hidden
+        />
         <h1 className="font-display text-5xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_4px_0_rgb(0_0_0/0.35)] sm:text-6xl">
           Domówka
         </h1>
