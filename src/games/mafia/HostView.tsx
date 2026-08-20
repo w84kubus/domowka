@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/lib/i18n/provider";
 import { Flag, Moon, Skull, Spade, Sun, Sunrise, Vote } from "lucide-react";
 import type { GameHostViewProps } from "@/games/view";
 import type { Role } from "./engine";
@@ -6,12 +7,13 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
-  phase: string; night: number; narrator: string; deaths: string[]; winner: "miasto" | "mafia" | null;
+  phase: string; night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | null;
   players: PlayerV[]; votesTally: Record<string, number>; aliveCount: number;
 }
 const ROLE_NAME: Record<Role, string> = { mafia: "Mafia", mieszkaniec: "Mieszkaniec", detektyw: "Detektyw", lekarz: "Lekarz" };
 
 export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
+  const { t } = useI18n();
   const pub = publicState as Pub;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
   const night = pub.phase === "noc" || (pub.phase === "switt" && pub.narrator);
@@ -26,7 +28,7 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
          pub.phase === "koniec" ? <><Flag size={26} strokeWidth={2.5} aria-hidden /> Koniec</> :
          <><Spade size={26} strokeWidth={2.5} aria-hidden /> Rozdanie</>}
       </p>
-      <p className="max-w-2xl text-center text-xl italic text-[var(--color-ink-muted)]">{pub.narrator}</p>
+      <p className="max-w-2xl text-center text-xl italic text-[var(--color-ink-muted)]">{pub.narratorKey ? t(pub.narratorKey as Parameters<typeof t>[0]) : pub.narrator}</p>
 
       {pub.phase === "switt" && (
         <div className="text-center">

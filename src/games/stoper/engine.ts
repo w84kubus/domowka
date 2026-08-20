@@ -179,6 +179,8 @@ function applyScoring(state: StoperState): { scores: Record<string, number>; eve
     events.push({
       type: "idealnie",
       text: `Idealne trafienie — ${fmt(state.results[uid].valueMs)}`,
+      key: "feat.stoper.perfect",
+      params: { time: fmt(state.results[uid].valueMs) },
       meta: { uid, rekord: true },
     });
   }

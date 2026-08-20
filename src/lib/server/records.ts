@@ -26,7 +26,13 @@ export function buildHighlights(
 ): RoomHighlight[] | null {
   const fresh: RoomHighlight[] = events
     .filter((ev) => ev.meta?.rekord === true && typeof ev.meta?.uid === "string")
-    .map((ev) => ({ gameId, uid: ev.meta!.uid as string, text: ev.text, at: now }));
+    .map((ev) => ({
+      gameId,
+      uid: ev.meta!.uid as string,
+      text: ev.text,
+      ...(ev.key ? { key: ev.key, params: ev.params } : {}),
+      at: now,
+    }));
   if (!fresh.length) return null; // nic nowego — nie ruszamy pola w Firestore
   return [...fresh, ...existing].slice(0, MAX_HIGHLIGHTS);
 }

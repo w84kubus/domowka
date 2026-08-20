@@ -137,6 +137,7 @@ function toResult(state: ImpostorState, now: number, result: "cywile" | "imposto
         ? state.impostors.map((uid) => ({
             type: "rekord",
             text: "Wyleciał i i tak odgadł hasło",
+            key: "feat.impostor.guessed",
             meta: { uid, rekord: true },
           }))
         : []),

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DISCONNECT_AFTER_MS, type PlayerMap } from "@/lib/types/room";
@@ -20,6 +21,7 @@ export function PlayerList({
   serverNow: () => number;
   onKick?: (uid: string) => void;
 }) {
+  const t = useT();
   const [, tick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => tick((n) => n + 1), 3000);
@@ -49,7 +51,7 @@ export function PlayerList({
             </span>
             <span className="flex-1 truncate text-base font-bold text-ink">
               {p.nick}
-              {isMe && <span className="font-semibold text-ink-muted"> (Ty)</span>}
+              {isMe && <span className="font-semibold text-ink-muted"> {t("common.you")}</span>}
             </span>
             {p.uid === hostUid && (
               <span

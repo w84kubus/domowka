@@ -20,7 +20,10 @@ export type PlayerMap = Record<string, Player>;
 export interface RoomHighlight {
   gameId: string;
   uid: string;
+  /** Polski tekst — używany, gdy silnik nie podał klucza tłumaczenia. */
   text: string;
+  key?: string;
+  params?: Record<string, string | number>;
   at: number;
 }
 

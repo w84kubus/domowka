@@ -36,6 +36,8 @@ export interface MafiaState extends WithEvents {
   revealed: Record<string, Role>;
   afterReveal: "dzien" | "noc";
   narrator: string;
+  /** Klucz tłumaczenia kwestii narratora; UI woli go od `narrator` (polski zapas). */
+  narratorKey: string | null;
   winner: "miasto" | "mafia" | null;
   scores: Record<string, number>;
 }
@@ -113,7 +115,7 @@ function startNight(s: MafiaState, now: number, rng: () => number): MafiaState {
     doctorSave: null,
     detectiveCheck: null,
     deaths: [],
-    narrator: narratorLine("noc", rng),
+    ...(({ text, key }) => ({ narrator: text, narratorKey: key }))(narratorLine("noc", rng)),
     pendingEvents: [{ type: "noc", text: `Noc ${s.night + 1}. Miasto zasypia.` }],
   };
 }
@@ -137,7 +139,7 @@ function toReveal(s: MafiaState, deaths: string[], after: "dzien" | "noc", now: 
     phase: "switt",
     afterReveal: after,
     phaseEndsAt: now + SWITT_MS,
-    narrator: narratorLine(after === "dzien" ? "switt" : "smierc", rng),
+    ...(({ text, key }) => ({ narrator: text, narratorKey: key }))(narratorLine(after === "dzien" ? "switt" : "smierc", rng)),
     pendingEvents: deaths.length
       ? deaths.map((d) => ({ type: "smierc", text: "Ktoś nie doczekał świtu…", meta: { uid: d } }))
       : [{ type: "spokoj", text: "Noc minęła spokojnie." }],
@@ -159,12 +161,18 @@ function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
     revealed: { ...s.roles }, // na końcu odsłaniamy wszystkie role
     scores,
     narrator: winner === "mafia" ? "Mafia przejęła miasto." : "Miasto oczyszczone. Mafia pokonana.",
+    narratorKey: winner === "mafia" ? "mafia.narrator.winMafia" : "mafia.narrator.winTown",
     pendingEvents: [
       { type: "koniec", text: winner === "mafia" ? "Mafia wygrywa!" : "Miasto wygrywa!" },
       // Ostatni żyjący mafioso dowiózł wygraną sam — wyczyn wart zapamiętania.
       // meta.rekord === true → rdzeń dopisuje do „Rekordów pokoju" (UPGRADE.md §8).
       ...(winner === "mafia" && zyjacaMafia.length === 1
-        ? [{ type: "rekord", text: "Wygrał dla mafii w pojedynkę", meta: { uid: zyjacaMafia[0], rekord: true } }]
+        ? [{
+            type: "rekord",
+            text: "Wygrał dla mafii w pojedynkę",
+            key: "feat.mafia.solo",
+            meta: { uid: zyjacaMafia[0], rekord: true },
+          }]
         : []),
     ],
   };
@@ -172,10 +180,10 @@ function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
 
 function toDay(s: MafiaState, now: number, rng: () => number): MafiaState {
   const ms = s.settings.discussionMs;
-  return { ...s, phase: "dzien", phaseEndsAt: ms ? now + ms : null, deaths: [], narrator: narratorLine("dzien", rng), pendingEvents: [] };
+  return { ...s, phase: "dzien", phaseEndsAt: ms ? now + ms : null, deaths: [], ...(({ text, key }) => ({ narrator: text, narratorKey: key }))(narratorLine("dzien", rng)), pendingEvents: [] };
 }
 function toVoting(s: MafiaState, now: number, rng: () => number): MafiaState {
-  return { ...s, phase: "glosowanie", votes: {}, phaseEndsAt: now + VOTE_MS, narrator: narratorLine("glosowanie", rng), pendingEvents: [] };
+  return { ...s, phase: "glosowanie", votes: {}, phaseEndsAt: now + VOTE_MS, ...(({ text, key }) => ({ narrator: text, narratorKey: key }))(narratorLine("glosowanie", rng)), pendingEvents: [] };
 }
 
 function resolveVote(s: MafiaState, now: number, rng: () => number): MafiaState {
@@ -212,7 +220,7 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
     for (const u of playerUids) alive[u] = true;
     return {
       settings: ctx.settings, hostUid, playerUids, roles, alive,
-      phase: "rozdanie", phaseEndsAt: null, night: 0, confirmed: [],
+      phase: "rozdanie", phaseEndsAt: null, night: 0, confirmed: [], narratorKey: null,
       mafiaVotes: {}, doctorSave: null, detectiveCheck: null, lastDoctorSave: null,
       detectiveHistory: {}, votes: {}, deaths: [], revealed: {}, afterReveal: "dzien",
       narrator: "Rozdanie ról… zapamiętajcie, kim jesteście.", winner: null, scores: {},
@@ -310,7 +318,7 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
     return {
       // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
       canFinish: state.phase === "switt",
-      phase: state.phase, night: state.night, narrator: state.narrator,
+      phase: state.phase, night: state.night, narrator: state.narrator, narratorKey: state.narratorKey,
       deaths: state.deaths, winner: state.winner, afterReveal: state.afterReveal,
       players: view,
       votesTally: state.phase === "glosowanie" && !state.settings.secretVoting

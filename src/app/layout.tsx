@@ -4,6 +4,9 @@ import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { ConnectionBar } from "@/components/ConnectionBar";
+import { cookies } from "next/headers";
+import { I18nProvider } from "@/lib/i18n/provider";
+import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from "@/lib/i18n/types";
 
 // Arcade Party (DESIGN.md §1). Wszystkie fonty z latin-ext (Ą Ć Ę Ł Ń Ó Ś Ź Ż).
 // Display: Baloo 2, nie Fredoka. Fredoka ma glify latin-ext, ale rysuje ogonek (Ą Ę)
@@ -60,23 +63,31 @@ export const viewport: Viewport = {
   viewportFit: "cover", // env(safe-area-inset-*) na notchu
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Język z ciasteczka — czytany na serwerze, żeby pierwszy render był już właściwy.
+  // Bez tego serwer dałby polski, klient natychmiast angielski: niezgodność hydratacji
+  // i mignięcie złym językiem u każdego, kto nie gra po polsku.
+  const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
+  const locale = isLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+
   return (
     // Zmienne fontów muszą siedzieć na <html>: @theme deklaruje --font-display
     // na :root, więc var(--font-baloo) musi się tam podstawić.
     <html
-      lang="pl"
+      lang={locale}
       className={`${baloo.variable} ${nunito.variable} ${jetbrainsMono.variable}`}
     >
       <body className="bg-frame text-ink font-body">
-        <ConnectionBar />
-        {children}
-        <InstallPrompt />
-        <ServiceWorkerRegister />
+        <I18nProvider initial={locale}>
+          <ConnectionBar />
+          {children}
+          <InstallPrompt />
+          <ServiceWorkerRegister />
+        </I18nProvider>
       </body>
     </html>
   );

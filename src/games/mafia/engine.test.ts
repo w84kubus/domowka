@@ -47,7 +47,14 @@ describe("mafia — bezpieczeństwo", () => {
     const s = confirmAll(game()); // noc
     const v = mafiaEngine.publicView(s, players) as { players: { uid: string; role: string | null }[] };
     for (const p of v.players) expect(p.role).toBeNull();
-    expect(JSON.stringify(v)).not.toContain("mafia");
+
+    // Szeroki bezpiecznik: NIGDZIE w publicView nie może paść słowo „mafia" jako rola.
+    // Wyjątkiem są pola narratora — narratorKey to klucz tłumaczenia z przedrostkiem nazwy
+    // gry ("mafia.narrator.noc.5"), identyczny dla wszystkich graczy niezależnie od roli,
+    // więc nic nie zdradza. Reszta widoku (gracze, głosy, liczniki) nadal jest sprawdzana
+    // dosłownie — to jest regresja na najważniejszą zasadę projektu (SPEC §3.1).
+    const { narrator: _n, narratorKey: _k, ...bezNarratora } = v as Record<string, unknown>;
+    expect(JSON.stringify(bezNarratora)).not.toContain("mafia");
     // detektyw widzi swoją rolę tylko w private
     expect((mafiaEngine.privateView(s, "host") as { role: string }).role).toBe("mafia");
     expect((mafiaEngine.privateView(s, "host") as { mafia: string[] }).mafia).toContain("host");

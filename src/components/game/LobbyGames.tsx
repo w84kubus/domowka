@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { useState } from "react";
 import { GAME_LIST } from "@/games/manifests";
 import { GAME_COMPONENTS } from "@/games/components";
@@ -17,6 +18,7 @@ export function LobbyGames({
   isHost: boolean;
   playerCount: number;
 }) {
+  const t = useT();
   const [gameId, setGameId] = useState(GAME_LIST[0]?.id ?? "");
   const manifest = GAME_LIST.find((g) => g.id === gameId);
   const [settings, setSettings] = useState<unknown>(manifest?.defaultSettings);
@@ -26,7 +28,7 @@ export function LobbyGames({
   if (!isHost) {
     return (
       <p className="card text-center text-base font-semibold leading-relaxed text-ink-muted">
-        Host wybiera grę i ustawienia. Za chwilę ruszamy…
+        {t("lobby.hostPicks")}
       </p>
     );
   }
@@ -47,7 +49,7 @@ export function LobbyGames({
     try {
       await apiPost(`/api/rooms/${code}/start`, { gameId, settings });
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Nie udało się zacząć.");
+      setError(err instanceof ApiClientError ? err.message : t("lobby.startFailed"));
       setBusy(false);
     }
   };
@@ -55,8 +57,8 @@ export function LobbyGames({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-3">
-        <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">Gra</h2>
-        <div className="flex flex-col gap-2" role="radiogroup" aria-label="Wybierz grę">
+        <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">{t("lobby.game")}</h2>
+        <div className="flex flex-col gap-2" role="radiogroup" aria-label={t("lobby.pickGame")}>
           {GAME_LIST.map((g) => (
             <GameRow
               key={g.id}
@@ -99,7 +101,7 @@ export function LobbyGames({
         disabled={!enoughPlayers || busy}
         onClick={start}
       >
-        {busy ? "Startuję…" : enoughPlayers ? "Zaczynamy!" : `Potrzeba min. ${manifest?.minPlayers} graczy`}
+        {busy ? t("lobby.starting") : enoughPlayers ? t("lobby.start") : t("lobby.needPlayers", { min: manifest?.minPlayers ?? 0 })}
       </button>
     </div>
   );

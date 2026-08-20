@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -24,11 +25,13 @@ export function ConnectionBar() {
 
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
-    return () => {
+  return () => {
       window.removeEventListener("online", goOnline);
       window.removeEventListener("offline", goOffline);
     };
   }, []);
+
+  const t = useT();
 
   if (online && !wasOffline) return null;
 
@@ -45,10 +48,10 @@ export function ConnectionBar() {
     >
       {online ? (
         <>
-          <Check size={14} strokeWidth={3} className="inline-block align-[-0.15em]" aria-hidden /> Połączono
+          <Check size={14} strokeWidth={3} className="inline-block align-[-0.15em]" aria-hidden /> {t("conn.online")}
         </>
       ) : (
-        "Brak połączenia — próbuję wrócić…"
+        t("conn.offline")
       )}
     </div>
   );

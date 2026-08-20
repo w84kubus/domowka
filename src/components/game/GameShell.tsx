@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { GameIcon } from "@/components/GameIcon";
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
@@ -26,6 +27,7 @@ export function GameShell({
   meUid: string;
   serverNow: () => number;
 }) {
+  const t = useT();
   const gameId = room.gameId!;
   const manifest = GAME_MANIFESTS[gameId];
   const comps = GAME_COMPONENTS[gameId];
@@ -57,7 +59,7 @@ export function GameShell({
   useGameTick(room.code, room.phaseEndsAt, room.status === "playing", serverNow, isHost);
 
   if (!manifest || !comps) {
-    return <p className="p-6 text-center font-semibold text-ink-muted">Nieznana gra: {gameId}</p>;
+    return <p className="p-6 text-center font-semibold text-ink-muted">{t("game.unknown", { id: gameId })}</p>;
   }
   const { PlayerView } = comps;
 
@@ -82,7 +84,7 @@ export function GameShell({
         </div>
         <button
           type="button"
-          aria-label={muted ? "Włącz dźwięk" : "Wycisz"}
+          aria-label={muted ? t("game.unmute") : t("game.mute")}
           onClick={() => {
             const m = !muted;
             setMuted(m);
@@ -110,7 +112,7 @@ export function GameShell({
 
       {!wakeSupported && (
         <p className="relative w-full max-w-3xl text-center text-xs font-semibold text-ink-muted">
-          Ustaw wygaszanie ekranu na dłużej — Twoja przeglądarka nie utrzyma go sama.
+          {t("game.wakeHint")}
         </p>
       )}
 
@@ -120,7 +122,7 @@ export function GameShell({
           className="btn relative w-full max-w-3xl"
           onClick={() => apiPost(`/api/rooms/${room.code}/reset`).catch(() => {})}
         >
-          Jeszcze raz
+          {t("game.again")}
         </button>
       )}
 
@@ -141,7 +143,7 @@ export function GameShell({
           }}
           onBlur={() => setConfirmFinish(false)}
         >
-          {confirmFinish ? "Na pewno zakończyć?" : "Zakończ grę"}
+          {confirmFinish ? t("game.finishConfirm") : t("game.finish")}
         </button>
       )}
 
@@ -163,7 +165,7 @@ export function GameShell({
           }}
           onBlur={() => setConfirmAbort(false)}
         >
-          {confirmAbort ? "Na pewno? Wracamy do lobby" : "Przerwij i wróć do lobby"}
+          {confirmAbort ? t("game.abortConfirm") : t("game.abort")}
         </button>
       )}
     </main>

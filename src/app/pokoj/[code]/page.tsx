@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import { normalizeRoomCode } from "@/lib/room-code";
 import { useSession } from "@/lib/store/session";
 
 export default function LobbyPage() {
+  const t = useT();
   const router = useRouter();
   const params = useParams<{ code: string }>();
   const code = normalizeRoomCode(params.code ?? "");
@@ -140,7 +142,7 @@ export default function LobbyPage() {
       {/* Nagłówek: wielki tytuł „POKÓJ XXXX" + QR w rogu (mockup) */}
       <header className="relative flex w-full max-w-3xl items-start justify-between gap-4 sm:items-center sm:justify-center">
         <h1 className="font-display text-outline min-w-0 flex-1 text-[2.75rem] font-bold uppercase leading-[1.05] tracking-wide text-ink sm:flex-none">
-          Pokój{" "}
+          {t("lobby.room")}{" "}
           <span className="text-limonka">{room.code}</span>
         </h1>
         <div className="flex flex-none flex-col items-center gap-1 rounded-[20px] border-[3px] border-stroke bg-panel p-2 shadow-[0_4px_0_rgb(0_0_0/0.35)]">
@@ -153,19 +155,19 @@ export default function LobbyPage() {
       <section className="relative flex w-full max-w-3xl flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">
-            Gracze ({playerCount})
+            {t("lobby.playersCount", { count: playerCount })}
           </h2>
           <Link
             href={`/pokoj/${room.code}/ekran`}
             target="_blank"
             className="font-display text-xs font-bold uppercase tracking-[0.06em] text-mint underline-offset-4 hover:underline"
           >
-            Ekran na TV ↗
+            {t("lobby.tvScreen")}
           </Link>
         </div>
         {playerCount === 0 ? (
           <p className="card text-center text-base font-semibold text-ink-muted">
-            Zaproś znajomych i zaczynajcie.
+            {t("lobby.noPlayers")}
           </p>
         ) : (
           <PlayerList
@@ -186,7 +188,7 @@ export default function LobbyPage() {
 
       <section className="relative mt-auto w-full max-w-3xl pt-2">
         <button type="button" onClick={leave} className="btn btn-ghost w-full">
-          Wyjdź z pokoju
+          {t("lobby.leave")}
         </button>
       </section>
     </main>

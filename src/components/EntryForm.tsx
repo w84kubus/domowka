@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -17,6 +18,7 @@ export function EntryForm({
   mode: "create" | "join";
   initialCode?: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const { nick, avatar, setNick, setAvatar, setActiveRoom } = useSession();
   const [code, setCode] = useState(normalizeRoomCode(initialCode));
@@ -45,7 +47,7 @@ export function EntryForm({
         router.push(`/pokoj/${code}`);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Coś poszło nie tak.");
+      setError(err instanceof Error ? err.message : t("entry.error"));
       setBusy(false);
     }
   };
@@ -62,7 +64,7 @@ export function EntryForm({
         {mode === "join" && (
           <div className="flex flex-col gap-2">
             <label className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-              Kod pokoju
+              {t("entry.code")}
             </label>
             <CodeInput value={code} onChange={setCode} />
           </div>
@@ -73,14 +75,14 @@ export function EntryForm({
             htmlFor="nick"
             className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint"
           >
-            Twój nick
+            {t("entry.nick")}
           </label>
           <input
             id="nick"
             value={nick}
             onChange={(e) => setNick(e.target.value.replace(/[\r\n]/g, ""))}
             maxLength={MAX_NICK_LENGTH * 2}
-            placeholder="np. Damian"
+            placeholder={t("entry.nickPlaceholder")}
             autoComplete="off"
             className="min-h-[56px] rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-lg font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi"
           />
@@ -88,7 +90,7 @@ export function EntryForm({
 
         <div className="flex flex-col gap-2">
           <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-            Awatar
+            {t("entry.avatar")}
           </span>
           <AvatarPicker value={avatar} onChange={setAvatar} />
         </div>
@@ -108,14 +110,14 @@ export function EntryForm({
         className={`btn ${mode === "create" ? "btn-coral" : ""}`}
         disabled={!canSubmit}
       >
-        {busy ? "Chwila…" : mode === "create" ? "Zakładam pokój" : "Dołączam"}
+        {busy ? t("common.loading") : t(mode === "create" ? "entry.creating" : "entry.joining")}
       </button>
 
       <Link
         href="/"
         className="font-display text-center text-sm font-bold uppercase tracking-[0.06em] text-ink-muted underline-offset-4 hover:text-ink hover:underline"
       >
-        ← wróć
+        {t("common.back")}
       </Link>
     </form>
   );

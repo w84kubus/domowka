@@ -6,7 +6,14 @@ import type { PlayerMap } from "@/lib/types/room";
 
 export interface GameEvent {
   type: string;
-  text: string; // gotowy polski tekst do feedu (SPEC §3.2)
+  /** Gotowy polski tekst do feedu w Firestore (SPEC §3.2) — czytelny przy debugowaniu. */
+  text: string;
+  /**
+   * Klucz tłumaczenia dla UI. Gdy jest, interfejs pokazuje przetłumaczoną wersję
+   * zamiast `text`. Opcjonalny: silnik bez klucza działa jak dotąd, po polsku.
+   */
+  key?: string;
+  params?: Record<string, string | number>;
   meta?: Record<string, unknown>;
 }
 

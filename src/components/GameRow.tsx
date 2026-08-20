@@ -1,5 +1,7 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 import { GameIcon } from "@/components/GameIcon";
+import { gameNameKey, gameTaglineKey } from "@/lib/i18n/game";
 import type { GameManifest } from "@/games/types";
 
 // Wiersz gry w lobby (mockup „POKÓJ FFLC"): pasek na pełną szerokość,
@@ -16,6 +18,7 @@ export function GameRow({
   enoughPlayers: boolean;
   onSelect: () => void;
 }) {
+  const t = useT();
   return (
     <button
       type="button"
@@ -31,10 +34,10 @@ export function GameRow({
       <GameIcon gameId={manifest.id} size={46} color={manifest.accentColor} className="flex-none" />
       <span className="min-w-0 flex-1">
         <span className="font-display block text-base font-bold uppercase tracking-[0.04em] text-ink">
-          {manifest.name}
+          {t(gameNameKey(manifest.id))}
         </span>
         <span className="block text-sm font-semibold leading-snug text-ink-muted">
-          {manifest.tagline}
+          {t(gameTaglineKey(manifest.id))}
         </span>
       </span>
       <span

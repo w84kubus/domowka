@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/lib/i18n/provider";
 import { Vote } from "lucide-react";
 import { Check, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; confirmed: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
   phase: "rozdanie" | "noc" | "switt" | "dzien" | "glosowanie" | "koniec";
-  night: number; narrator: string; deaths: string[]; winner: "miasto" | "mafia" | null; afterReveal: string;
+  night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | null; afterReveal: string;
   players: PlayerV[]; votesTally: Record<string, number>; aliveCount: number;
 }
 interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean }
@@ -26,6 +27,7 @@ function useTicker(ms = 400) { const [, s] = useState(0); useEffect(() => { cons
 const secLeft = (e: number | null, now: number) => (e == null ? null : Math.max(0, Math.ceil((e - now) / 1000)));
 
 export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost, dispatch, serverNow, accent }: GameViewProps) {
+  const { t } = useI18n();
   const pub = publicState as Pub;
   const priv = privateState as Priv | null;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
@@ -35,7 +37,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
   const iAmAlive = me?.alive ?? true;
   const [sent, markSent] = useSent(room.version); // natychmiastowy feedback na akcję/głos
 
-  const narrator = <p className="text-center text-sm italic text-[var(--color-ink-muted)]">{pub.narrator}</p>;
+  const narrator = <p className="text-center text-sm italic text-[var(--color-ink-muted)]">{pub.narratorKey ? t(pub.narratorKey as Parameters<typeof t>[0]) : pub.narrator}</p>;
 
   // —— ROZDANIE ——
   if (pub.phase === "rozdanie") {

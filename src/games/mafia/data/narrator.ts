@@ -1,4 +1,7 @@
 // Skrypt narratora (SPEC §5.6). Klimatyczne, losowane kwestie na fazę — 80% klimatu tej gry.
+// Silnik zapisuje KLUCZ (faza + indeks), nie gotowe zdanie: dzięki temu ta sama partia
+// czyta się po polsku u jednego gracza i po angielsku u drugiego, bo tłumaczenie
+// dzieje się na kliencie. `text` zostaje jako polski zapas do feedu w Firestore.
 export const NARRATOR: Record<string, string[]> = {
   noc: [
     "Miasto pogrąża się w ciszy… ktoś skrada się uliczkami.",
@@ -32,7 +35,9 @@ export const NARRATOR: Record<string, string[]> = {
   ],
 };
 
-export function narratorLine(phase: string, rng: () => number): string {
+/** Losuje kwestię i zwraca ją razem z kluczem tłumaczenia. */
+export function narratorLine(phase: string, rng: () => number): { text: string; key: string } {
   const lines = NARRATOR[phase] ?? [""];
-  return lines[Math.floor(rng() * lines.length)];
+  const i = Math.floor(rng() * lines.length);
+  return { text: lines[i] ?? "", key: `mafia.narrator.${phase}.${i}` };
 }
