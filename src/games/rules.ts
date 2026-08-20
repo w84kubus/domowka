@@ -8,6 +8,16 @@ export interface GameRules {
 }
 
 export const GAME_RULES: Record<string, GameRules> = {
+  odcien: {
+    howTo: "Kolor błyska na kilka sekund i znika. Odtwarzasz go z pamięci trzema suwakami — im bliżej, tym więcej punktów.",
+    steps: [
+      "Kolor wyświetla się przez kilka sekund",
+      "Znika — nikt go już nie widzi",
+      "Ustawiasz suwaki tak, żeby trafić w zapamiętany odcień",
+      "Odsłonięcie: oryginał obok wszystkich prób, ranking wg celności",
+    ],
+    tip: "Zapamiętuj słowami („ciepły róż, dość ciemny”), nie samym obrazem — pamięć na nazwy jest trwalsza.",
+  },
   stoper: {
     howTo: "Odmierzaj czas w głowie — zatrzymaj stoper jak najbliżej celu. Nie patrzysz na cyfry!",
     steps: [

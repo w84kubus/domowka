@@ -1,4 +1,4 @@
-import { Gamepad2, PenLine, Skull, Swords, Timer, VenetianMask, type LucideIcon } from "lucide-react";
+import { Gamepad2, Palette, PenLine, Skull, Swords, Timer, VenetianMask, type LucideIcon } from "lucide-react";
 
 // Ikony gier (Lucide, ISC). Trzymane osobno od manifestów, bo manifest jest czystymi
 // danymi i importuje go też serwer — komponent Reacta nie ma tam czego szukać.
@@ -11,6 +11,7 @@ const ICONS: Record<string, LucideIcon> = {
   wisielec: Skull,
   impostor: VenetianMask,
   mafia: Swords,
+  odcien: Palette,
 };
 
 export function gameIcon(gameId: string): LucideIcon {

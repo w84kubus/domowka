@@ -283,6 +283,49 @@ body {
   text-shadow: var(--code-shadow, 0 2px 4px rgb(0 0 0 / 0.3));
 }
 
+/* === Suwaki w grze Odcień === */
+/* Tor pokazuje gradient danej składowej — gracz widzi, w którą stronę idzie kolor,
+   zamiast zgadywać po samej liczbie. */
+.odcien-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.odcien-slider::-webkit-slider-runnable-track {
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 3px solid var(--color-stroke);
+  background: var(--track);
+}
+.odcien-slider::-moz-range-track {
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 3px solid var(--color-stroke);
+  background: var(--track);
+}
+.odcien-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: -0.22rem;
+  border-radius: 999px;
+  border: 4px solid #fff;
+  background: var(--color-primary);
+  box-shadow: 0 3px 0 var(--color-primary-deep);
+}
+.odcien-slider::-moz-range-thumb {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 4px solid #fff;
+  background: var(--color-primary);
+  box-shadow: 0 3px 0 var(--color-primary-deep);
+}
+.odcien-slider:disabled { opacity: 0.55; cursor: not-allowed; }
+.odcien-slider:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--color-mint); outline-offset: 2px; }
+
 /* === Animacje UI === */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(1rem); }

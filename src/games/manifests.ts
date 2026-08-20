@@ -6,6 +6,7 @@ import { pmManifest } from "./panstwa-miasta/manifest";
 import { wisielecManifest } from "./wisielec/manifest";
 import { impostorManifest } from "./impostor/manifest";
 import { mafiaManifest } from "./mafia/manifest";
+import { odcienManifest } from "./odcien/manifest";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const GAME_MANIFESTS: Record<string, GameManifest<any>> = {
@@ -14,6 +15,7 @@ export const GAME_MANIFESTS: Record<string, GameManifest<any>> = {
   [wisielecManifest.id]: wisielecManifest,
   [impostorManifest.id]: impostorManifest,
   [mafiaManifest.id]: mafiaManifest,
+  [odcienManifest.id]: odcienManifest,
 };
 
 /** Manifesty do wyboru gry w lobby (kolejność jak w SPEC §1). */

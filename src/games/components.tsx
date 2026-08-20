@@ -40,6 +40,11 @@ export const GAME_COMPONENTS: Record<string, GameComponents> = {
     PlayerView: dynamic(() => import("./impostor/PlayerView").then((m) => m.ImpostorPlayerView), { loading: Loading }),
     HostView: dynamic(() => import("./impostor/HostView").then((m) => m.ImpostorHostView), { loading: Loading }),
   },
+  odcien: {
+    Settings: dynamic(() => import("./odcien/Settings").then((m) => m.OdcienSettingsPanel)),
+    PlayerView: dynamic(() => import("./odcien/PlayerView").then((m) => m.OdcienPlayerView), { loading: Loading }),
+    HostView: dynamic(() => import("./odcien/HostView").then((m) => m.OdcienHostView), { loading: Loading }),
+  },
   mafia: {
     Settings: dynamic(() => import("./mafia/Settings").then((m) => m.MafiaSettingsPanel)),
     PlayerView: dynamic(() => import("./mafia/PlayerView").then((m) => m.MafiaPlayerView), { loading: Loading }),
