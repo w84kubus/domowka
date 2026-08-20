@@ -53,12 +53,12 @@ firebase deploy --only firestore:rules
 - [x] Faza 0 — setup, Firebase, auth, deploy hello-world na Vercel
 - [x] Faza 1 — pokoje, lobby, presence, reconnect, QR, ekran hosta
 - [x] Faza 2 — silnik gier + registry (walidacja na Stoperze; kółko i krzyżyk pominięte na życzenie Jakuba)
-- [~] Faza 3 — Stoper: tryb A „CEL" gotowy i zweryfikowany na produkcji; tryb B „ZGADNIJ CZAS" do zrobienia
+- [x] Faza 3 — Stoper: oba tryby gotowe — A „CEL" i B „ZGADNIJ CZAS" (rotacja Biegacza, beep/klik do wszystkich, typowanie stepperem; czas i typy tajne do odsłonięcia)
 - [x] Faza 4 — Państwa-miasta (zweryfikowane na produkcji: tajność pisania, kwestionowanie, dedup, punktacja)
 - [x] Faza 5 — Wisielec: 3 tryby (wyścig/kooperacja/zadający) w silniku + UI (klawiatura PL, SVG szubienicy); kooperacja zweryfikowana na produkcji (tajność hasła)
 - [x] Faza 6 — Impostor: role/hasło tajne, 5 wariantów podpowiedzi (+ „nie wie, że jest impostorem"), głosowanie, zgadywanie po wylocie; zweryfikowane na produkcji (brak wycieku w publicState)
 - [~] Faza 7 — Mafia: RDZEŃ gotowy i zweryfikowany na produkcji (mafia/mieszkańcy/detektyw/lekarz + auto-narrator, rozliczenie nocy, warunki wygranej, role tajne). Do zrobienia: role dodatkowe (§5.6) + tryb z prowadzącym
-- [~] Faza 8 — polish: PWA (instalowalna, manifest+SW+ikona), Wake Lock (ekran nie gaśnie), konfetti+fanfara na wygranych — zweryfikowane na produkcji. Zostało: Stoper tryb B, role dodatkowe Mafii, „Rekordy pokoju", dopieszczenie dźwięków
+- [~] Faza 8 — polish: PWA (instalowalna, manifest+SW+ikona), Wake Lock (ekran nie gaśnie), konfetti+fanfara na wygranych — zweryfikowane na produkcji. Zostało: role dodatkowe Mafii (§5.6), tryb treningowy Stopera solo, dopieszczenie dźwięków
 
 ## Upgrade v2 — aktualny stan
 
@@ -68,4 +68,19 @@ firebase deploy --only firestore:rules
 - [x] Faza D — wygląd: skeleton lobby, neon click-to-copy + ambient glow, slideIn/fadeIn animacje, timer-urgent pulsacja, nowe SFX (join/phaseChange/neonBuzz/defeat), ekran hosta TV (8rem kod, duże awatary), prefers-reduced-motion
 - [x] Faza E — wydajność: dynamic imports gier (next/dynamic), manifests.ts (klient bez engines), selektywne private writes (JSON diff), debounce pingów 10s, /pokoj 339→314kB, / 110kB OK
 - [x] Faza F — jakość: ErrorBoundary per trasa gry, strukturalny logger (room/game/phase), tsconfig strict OK, zero any w prod, istniejące 74 testy pokrywają pełne partie + bezpieczeństwo
-- [x] Faza G — dopracowanie: ShareButton (navigator.share + fallback clipboard), deep link /?kod=XYZW, GameRulesCard (modal z krokami per gra), rules.ts (5 gier). Zostało: rekordy pokoju, unikalne awatary, tryb obserwatora
+- [x] Faza G — dopracowanie: ShareButton (navigator.share + fallback clipboard), deep link /?kod=XYZW, GameRulesCard (modal z krokami per gra), rules.ts (5 gier), rekordy pokoju. Zostało: unikalne awatary, tryb obserwatora
+
+## Konwencje, które łatwo przeoczyć
+
+Rdzeń nie zna żadnej konkretnej gry — dwie rzeczy działają przez opt-in silnika, nie przez
+wiedzę rdzenia o grach. Dzięki temu zasada 4 zostaje nienaruszona: nowa gra bez tych opt-inów
+po prostu działa, tylko bez danej funkcji.
+
+- **Rekordy pokoju.** Silnik oznacza swoje zdarzenie `meta: { uid, rekord: true }`, a rdzeń
+  dopisuje je do wyróżnień. Zgłaszają: Stoper (idealne trafienie), Impostor (odgadł hasło po
+  wylocie), Mafia (wygrana w pojedynkę). Logika w `lib/server/records.ts`.
+- **Zakończenie gry.** Silnik wystawia `canFinish` w `publicView` dla fazy, z której wypada
+  skończyć (zwykle ekran wyników). `GameShell` pokazuje wtedy „Zakończ grę" — jedna
+  implementacja dla wszystkich gier — a poza tą fazą awaryjne „Przerwij i wróć do lobby".
+  Różnica jest istotna: zakończenie daje podium i zapisuje rekordy, przerwanie nie.
+  Kontrakt pilnuje `src/games/finish.test.ts`, iterując po całym rejestrze.
