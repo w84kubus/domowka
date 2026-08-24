@@ -80,6 +80,8 @@ export interface KasynoState extends WithEvents {
    * zwycięzcy, zanim pasek zdąży wyhamować, i wynik byłby znany z góry.
    */
   snapshot: { chips: Record<string, number>; out: string[] } | null;
+  /** Jackpot: pula faktycznie wypłacona (stawki + wpisowe). Do pokazania po zamknięciu. */
+  potPaid: number | null;
 }
 
 const pickSchema = z.string().max(10).optional();
@@ -109,6 +111,7 @@ function beginRound(state: KasynoState, round: number, now: number): KasynoState
     outcome: null,
     delta: {},
     snapshot: null,
+    potPaid: null,
     pendingEvents: [{ type: "runda", text: `Runda ${round}: obstawiajcie`, key: "kasyno.event.bets", params: { round } }],
   };
 }
@@ -117,6 +120,7 @@ function beginRound(state: KasynoState, round: number, now: number): KasynoState
 function resolve(state: KasynoState, now: number, rng: () => number): KasynoState {
   const { mode } = state.settings;
   const snapshot = { chips: { ...state.chips }, out: [...state.out] };
+  let potWyplacona: number | null = null;
   const chips = { ...state.chips };
   const delta: Record<string, number> = {};
   const events: GameEvent[] = [];
@@ -126,9 +130,11 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
 
   // Wpisowe — od każdego, kto jeszcze gra, niezależnie od tego, czy obstawił.
   const ante = anteFor(state.settings.ante, state.round);
+  let anteZebrane = 0;
   for (const uid of alive(state)) {
     const paid = Math.min(ante, chips[uid] ?? 0);
     chips[uid] = (chips[uid] ?? 0) - paid;
+    anteZebrane += paid;
     // Stawka zeszła z salda już przy BET, ale odeszła w TEJ rundzie — musi być
     // w bilansie, inaczej przegrany widzi samo wpisowe i liczby się nie zgadzają.
     delta[uid] = -paid - stakeOf(uid);
@@ -142,7 +148,14 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
   if (mode === "jackpot") {
     // Szansa proporcjonalna do wkładu — kto wrzucił 60 ze 100, ma 60%.
     const players = Object.keys(state.bets).filter((u) => stakeOf(u) > 0);
-    const pot = players.reduce((a, u) => a + stakeOf(u), 0);
+    // Wpisowe WPADA DO PULI, zamiast wyparować. Jackpot jest w całości zero-sum:
+    // żetony tylko krążą między graczami, nikt nie oddaje prowizji „kasynu".
+    // Wpisowe nadal spełnia swoje zadanie — bierny gracz traci żetony na rzecz
+    // grających, więc partia „do ostatniego stojącego" ma jak się skończyć.
+    // W Double i Wheel wpisowe przepada, bo tam z założenia gra się przeciwko
+    // szansom z marżą, a puli, do której można je dorzucić, po prostu nie ma.
+    const pot = players.reduce((a, u) => a + stakeOf(u), 0) + anteZebrane;
+    potWyplacona = pot;
     if (players.length && pot > 0) {
       const idx = weightedPick(players.map(stakeOf), rng);
       const winner = players[idx];
@@ -213,6 +226,7 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
     delta,
     outcome,
     snapshot,
+    potPaid: potWyplacona,
     history: [historyEntry, ...state.history].slice(0, 12),
     pendingEvents: events,
   };
@@ -294,6 +308,7 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       winnerUid: null,
       lastSpin: {},
       snapshot: null,
+      potPaid: null,
       pendingEvents: [],
     };
     if (ctx.settings.mode === "sloty") return beginAnteTick(base, 1, ctx.now);
@@ -435,7 +450,15 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       // Zakłady są JAWNE od razu — widok, kto ile na co postawił, to połowa zabawy
       // i tak działają oryginały. Tajny jest tylko wynik, i to tylko do losowania.
       bets: Object.entries(state.bets).map(([uid, b]) => ({ uid, amount: b.amount, pick: b.pick ?? null })),
-      pot: Object.values(state.bets).reduce((a, b) => a + b.amount, 0),
+      // Liczba na ekranie musi zgadzać się z tym, co dostanie zwycięzca. Po zamknięciu
+      // bierzemy pulę faktycznie wypłaconą; w trakcie zakładów doliczamy zapowiedziane
+      // wpisowe, bo ono też do niej wpadnie.
+      pot:
+        state.potPaid ??
+        Object.values(state.bets).reduce((a, b) => a + b.amount, 0) +
+          (state.settings.mode === "jackpot"
+            ? anteFor(state.settings.ante, state.round) * alive(state).length
+            : 0),
       outcome: reveal ? state.outcome : null,
       // Bilans i zwycięzca dopiero PO animacji. Przy „reveal" obejmującym fazę
       // losowania wynik był widoczny pod spodem, zanim pasek zdążył wyhamować.

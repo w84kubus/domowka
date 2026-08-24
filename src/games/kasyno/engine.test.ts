@@ -133,6 +133,57 @@ describe("kasyno — jackpot", () => {
   });
 });
 
+describe("kasyno — jackpot jest zero-sum", () => {
+  it("zwycięzca zgarnia całą pulę, kasyno nie bierze nic", () => {
+    // Scenariusz Jakuba: jeden wchodzi za 100, drugi za 200 → pula 300 w całości
+    // dla zwycięzcy. Bez wpisowego suma żetonów w grze musi zostać nietknięta.
+    let s = game({ mode: "jackpot", startChips: 1000, ante: 0 });
+    s = { ...s, out: ["host"] };
+    const przed = s.chips.a + s.chips.b;
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 100 }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 200 }, ctx("b"));
+    const zw = s.outcome!.winnerUid!;
+    expect(s.chips.a + s.chips.b).toBe(przed);          // ani jeden żeton nie zniknął
+    expect(s.delta[zw]).toBe(300 - s.bets[zw].amount);  // zysk = cudza stawka
+  });
+
+  it("wpisowe WPADA DO PULI, zamiast wyparować", () => {
+    let s = game({ mode: "jackpot", startChips: 1000, ante: 10 });
+    s = { ...s, out: ["host"] };
+    const przed = s.chips.a + s.chips.b;
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 100 }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 200 }, ctx("b"));
+    // suma żetonów NADAL bez zmian — wpisowe tylko zmieniło właściciela
+    expect(s.chips.a + s.chips.b).toBe(przed);
+    // zwycięzca dostaje stawki (300) plus oba wpisowe (20)
+    const zw = s.outcome!.winnerUid!;
+    expect(s.delta[zw]).toBe(320 - s.bets[zw].amount - 10);
+  });
+
+  it("w Double wpisowe przepada — tam gra się przeciwko szansom, nie o pulę", () => {
+    let s = game({ mode: "double", startChips: 1000, ante: 10 });
+    const przed = uids.reduce((a, u) => a + s.chips[u], 0);
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 9000));
+    const po = uids.reduce((a, u) => a + s.chips[u], 0);
+    expect(po).toBe(przed - 30); // trzech graczy × 10
+  });
+
+  it("pokazywana pula zgadza się z wypłatą — w trakcie zakładów i po nich", () => {
+    let s = game({ mode: "jackpot", startChips: 1000, ante: 10 });
+    s = { ...s, out: ["host"] };
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 100 }, ctx("a"));
+    const wZakladach = kasynoEngine.publicView(s, players) as { pot: number };
+    expect(wZakladach.pot).toBe(100 + 20); // stawka + wpisowe od dwóch grających
+
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 200 }, ctx("b"));
+    const poZamknieciu = kasynoEngine.publicView(s, players) as { pot: number };
+    // 100 + 200 stawek + 2 × 10 wpisowego — dokładnie tyle dostaje zwycięzca
+    expect(poZamknieciu.pot).toBe(320);
+    const zw = s.outcome!.winnerUid!;
+    expect(s.delta[zw]).toBe(320 - s.bets[zw].amount - 10);
+  });
+});
+
 describe("kasyno — eliminacja i koniec", () => {
   it("kto zejdzie do zera, odpada", () => {
     let s = game({ mode: "double", ante: 0, minBet: 5 });
