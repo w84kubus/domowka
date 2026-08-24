@@ -19,6 +19,7 @@ const GAMES = {
   impostor: "szpieg-1",   // szpieg = ten, który udaje; NIE impostor-*.png (postacie Among Us)
   mafia: "karty-2",       // karty ról: odznaka szeryfa, czaszka, znak zapytania
   odcien: "paleta",       // paleta z kleksami — jedyna wielobarwna ikona w pakiecie
+  kasyno: "kasyno",       // koło fortuny + bębny slota + żetony (tło wycięte ze zrzutu)
 };
 
 const OUT = "public/avatars";

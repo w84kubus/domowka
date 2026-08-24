@@ -189,17 +189,34 @@ Nazwa pliku: odcien.png
 
 ---
 
+## ETAP 8 — ikona siódmej gry: Kasyno — ZROBIONE
+
+Ikona przyszła jako zrzut ekranu (JPEG z wypaloną szachownicą „przezroczystości"),
+nie jako PNG z kanałem alfa. Tło wycięte programowo: szachownica i cień to czyste
+szarości, a naklejka ma wszędzie ciemnofioletowy kontur o wyraźnej chromie — więc
+rozlewanie od krawędzi obrazu po pikselach o chromie < 30 zatrzymuje się dokładnie
+na konturze. Przy okazji znika biała otoczka naklejki, której pozostałe ikony
+w pakiecie i tak nie mają.
+
+MOTYW: koło fortuny w złotej obręczy z nitami, w środku okienko slota z trzema
+bębnami (wiśnie / siódemka / cytryna), obok dźwignia z czerwoną gałką, na dole
+stosik żetonów i moneta „2x". Akcent gry: złoto #F0B429.
+
+Nazwa pliku: kasyno.png
+
+---
+
 ## Czego potrzebuję od Ciebie na końcu
 
-**36 plików PNG** o dokładnie tych nazwach (to są identyfikatory z kodu — nie zmieniaj ich):
+**37 plików PNG** o dokładnie tych nazwach (to są identyfikatory z kodu — nie zmieniaj ich):
 
 **Awatary (30):**
 `cat` `dog` `bird` `rabbit` `panda` `squirrel` `fish` `turtle` `bug` `rat`
 `snail` `worm` `shell` `feather` `egg` `paw` `pizza` `beer` `guitar` `rocket`
 `bot` `ghost` `skull` `flame` `gamepad` `crown` `diamond` `anchor` `bike` `zap`
 
-**Gry (6):**
-`stoper` `panstwa-miasta` `wisielec` `impostor` `mafia` `odcien`
+**Gry (7):**
+`stoper` `panstwa-miasta` `wisielec` `impostor` `mafia` `odcien` `kasyno`
 
 > **Uwaga o nazwach:** nazwy plików są wygodne, ale nie krytyczne — przy poprzednim
 > pakiecie przyszły po polsku (`budzik.png`, `karty-2.png`) i po prostu je zmapowałem.
