@@ -6,6 +6,7 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 import { Podium } from "@/components/game/Podium";
 import type { GameViewProps } from "@/games/view";
 import { SpinStrip, type StripItem } from "./SpinStrip";
+import { SlotMachine } from "./SlotMachine";
 import { doubleColourOf, DOUBLE_SLOTS, SLOT_SYMBOLS, SPIN_MS, WHEEL_SEGMENTS } from "./tables";
 
 type Mode = "jackpot" | "double" | "wheel" | "sloty";
@@ -15,7 +16,7 @@ interface BetRow { uid: string; amount: number; pick: string | null }
 
 interface Pub {
   mode: Mode;
-  phase: "zaklady" | "losowanie" | "wynik" | "koniec";
+  phase: "zaklady" | "losowanie" | "wynik" | "gra" | "koniec";
   round: number;
   minBet: number;
   ante: number;
@@ -25,6 +26,7 @@ interface Pub {
   delta: Record<string, number>;
   history: string[];
   winnerUid: string | null;
+  lastSpin?: Record<string, { reels: string[]; bet: number; win: number }>;
   players: PlayerRow[];
 }
 
@@ -64,6 +66,7 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
   const [stawka, setStawka] = useState(pub.minBet);
   const [pick, setPick] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [kreci, setKreci] = useState(false);
 
   useEffect(() => {
     setStawka(Math.min(Math.max(pub.minBet, 0), Math.max(saldo, 0)));
@@ -124,6 +127,123 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
     }
     return { items: wpisy.length ? wpisy : [{ key: "x", node: null }], targetIndex: cel };
   }, [pub.mode, pub.outcome, pub.bets, pub.players, pub.pot]);
+
+  // ——— SLOTY: własna maszyna, każdy kręci kiedy chce ———
+  if (pub.phase === "gra") {
+    const mojObrot = pub.lastSpin?.[meUid] ?? null;
+    const maxStawka = Math.max(saldo, pub.minBet);
+
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex w-full max-w-md items-center justify-between gap-3">
+          <span className="font-display rounded-[12px] border-2 border-stroke bg-panel px-3 py-1.5 text-sm font-bold text-ink">
+            {t("kasyno.balance")}: <span className="tabular text-bursztyn">{saldo}</span>
+          </span>
+          {pub.ante > 0 && zostalo != null && (
+            <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">
+              {t("kasyno.anteIn", { ante: pub.ante, sec: zostalo })}
+            </span>
+          )}
+        </div>
+
+        <SlotMachine reels={mojObrot?.reels ?? null} spinning={kreci} onSettled={() => setKreci(false)} />
+
+        {mojObrot && !kreci && (
+          <p className={`font-display text-lg font-bold uppercase ${mojObrot.win > 0 ? "text-mint" : "text-ink-muted"}`}>
+            {mojObrot.win > 0 ? `+${mojObrot.win}` : `−${mojObrot.bet}`}
+          </p>
+        )}
+
+        {odpadl ? (
+          <p className="font-display rounded-[14px] border-[3px] border-czerwien/60 bg-czerwien/15 px-4 py-3 text-center text-base font-bold uppercase text-czerwien">
+            {t("kasyno.out")}
+          </p>
+        ) : (
+          <div className="flex w-full max-w-md flex-col gap-3">
+            <label className="flex items-center gap-3">
+              <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">
+                {t("kasyno.amount")}
+              </span>
+              <input
+                type="range"
+                min={Math.min(pub.minBet, saldo)}
+                max={maxStawka}
+                step={5}
+                value={Math.min(stawka, maxStawka)}
+                disabled={kreci}
+                onChange={(e) => setStawka(Number(e.target.value))}
+                className="odcien-slider flex-1"
+                style={{ ["--track" as string]: "linear-gradient(to right,#3A1B9B,#F0B429)" }}
+                aria-label={t("kasyno.amount")}
+              />
+              <span className="tabular w-14 flex-none text-right font-bold text-bursztyn">
+                {Math.min(stawka, maxStawka)}
+              </span>
+            </label>
+            <div className="flex gap-2">
+              <button type="button" className="btn btn-ghost flex-1 text-sm" disabled={kreci} onClick={() => setStawka(saldo)}>
+                {t("kasyno.allIn")}
+              </button>
+              <button
+                type="button"
+                className="btn flex-[2]"
+                disabled={kreci || saldo <= 0}
+                onClick={async () => {
+                  setKreci(true);
+                  vibrate(15);
+                  try {
+                    await dispatch({ type: "SPIN", amount: Math.min(stawka, saldo) });
+                  } catch {
+                    setKreci(false);
+                  }
+                }}
+              >
+                {kreci ? t("kasyno.spinning") : t("kasyno.spin")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Salda i ostatnie obroty wszystkich — widać, komu idzie */}
+        <section className="flex w-full max-w-md flex-col gap-1">
+          <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">
+            {t("kasyno.others")}
+          </span>
+          {[...pub.players].sort((a, b) => b.chips - a.chips).map((p) => {
+            const obrot = pub.lastSpin?.[p.uid];
+            return (
+              <div
+                key={p.uid}
+                className={`flex items-center gap-2 rounded-[12px] border-2 px-2 py-1.5 ${
+                  p.uid === meUid ? "border-mint bg-panel-hi" : "border-stroke bg-panel"
+                } ${p.out ? "opacity-40" : ""}`}
+              >
+                <AvatarIcon avatar={p.avatar} size={22} />
+                <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">
+                  {p.nick}
+                  {p.uid === meUid && <span className="font-semibold text-ink-muted"> {t("common.you")}</span>}
+                </span>
+                {obrot && (
+                  <span className="flex gap-0.5 text-base" aria-hidden>
+                    {obrot.reels.map((r, i) => (
+                      <span key={i}>{SYMBOL_LABEL[r] ?? r}</span>
+                    ))}
+                  </span>
+                )}
+                {obrot && (
+                  <span className={`tabular w-12 text-right text-xs font-bold ${obrot.win > 0 ? "text-mint" : "text-czerwien"}`}>
+                    {obrot.win > 0 ? `+${obrot.win}` : `−${obrot.bet}`}
+                  </span>
+                )}
+                {p.out && <span className="font-display text-xs font-bold uppercase text-czerwien">{t("kasyno.outShort")}</span>}
+                <span className="tabular w-14 text-right font-bold text-bursztyn">{p.chips}</span>
+              </div>
+            );
+          })}
+        </section>
+      </div>
+    );
+  }
 
   // ——— KONIEC ———
   if (pub.phase === "koniec") {

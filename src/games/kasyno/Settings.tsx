@@ -28,7 +28,7 @@ export function KasynoSettingsPanel({ value, onChange }: GameSettingsProps<Kasyn
         options={[{ v: 500, l: "500" }, { v: 1000, l: "1000" }, { v: 2000, l: "2000" }]}
       />
       <SegmentPicker
-        label={t("set.kasyno.betTime")}
+        label={t(value.mode === "sloty" ? "set.kasyno.anteEvery" : "set.kasyno.betTime")}
         value={value.betMs}
         onChange={(v) => set({ betMs: v as KasynoSettings["betMs"] })}
         options={[{ v: 15000, l: "15 s" }, { v: 20000, l: "20 s" }, { v: 30000, l: "30 s" }]}

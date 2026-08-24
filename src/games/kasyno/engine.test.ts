@@ -174,6 +174,65 @@ describe("kasyno — eliminacja i koniec", () => {
   });
 });
 
+describe("kasyno — sloty (tryb swobodny)", () => {
+  it("startują w fazie swobodnej, bez rund i okna zakładów", () => {
+    const s = game({ mode: "sloty" });
+    expect(s.phase).toBe("gra");
+  });
+
+  it("każdy kręci osobno, kiedy chce", () => {
+    let s = game({ mode: "sloty", startChips: 1000, ante: 0 });
+    s = kasynoEngine.reduce(s, { type: "SPIN", amount: 100 }, ctx("a"));
+    expect(s.lastSpin.a.reels).toHaveLength(3);
+    expect(s.lastSpin.b).toBeUndefined();   // b jeszcze nie kręcił
+    expect(s.phase).toBe("gra");            // gra się nie zatrzymuje
+    // saldo = start - stawka + wygrana
+    expect(s.chips.a).toBe(1000 - 100 + s.lastSpin.a.win);
+  });
+
+  it("BET nie działa w slotach, a SPIN tylko w slotach", () => {
+    const sl = game({ mode: "sloty" });
+    expect(() => kasynoEngine.reduce(sl, { type: "BET", amount: 50 }, ctx("a"))).toThrow();
+    const jp = game({ mode: "jackpot" });
+    expect(() => kasynoEngine.reduce(jp, { type: "SPIN", amount: 50 }, ctx("a"))).toThrow();
+  });
+
+  it("wpisowe schodzi na ZEGARZE, nie po rundzie", () => {
+    let s = game({ mode: "sloty", startChips: 500, ante: 10 });
+    const przed = { ...s.chips };
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 30000));
+    for (const u of uids) expect(s.chips[u]).toBe(przed[u] - 10);
+    expect(s.phase).toBe("gra"); // odliczanie startuje od nowa
+  });
+
+  it("bez wpisowego bierny gracz nigdy by nie zbankrutował — dlatego jest domyślnie włączone", () => {
+    const dom = kasynoSettingsSchema.parse({ mode: "sloty" });
+    expect(dom.ante).toBeGreaterThan(0);
+  });
+
+  it("kto zejdzie do zera po obrocie, odpada od razu", () => {
+    let s = game({ mode: "sloty", ante: 0, minBet: 5 });
+    s = { ...s, chips: { ...s.chips, a: 50 } };
+    // rng 0.42 daje układ bez trafienia przy tych symbolach → cała stawka przepada
+    s = kasynoEngine.reduce(s, { type: "SPIN", amount: 50 }, ctx("a"));
+    if (s.lastSpin.a.win === 0) {
+      expect(s.chips.a).toBe(0);
+      expect(s.out).toContain("a");
+    }
+  });
+
+  it("odpadnięty nie może kręcić", () => {
+    let s = game({ mode: "sloty" });
+    s = { ...s, out: ["a"] };
+    expect(() => kasynoEngine.reduce(s, { type: "SPIN", amount: 50 }, ctx("a"))).toThrow();
+  });
+
+  it("host może zakończyć partię w trakcie swobodnej gry", () => {
+    const v = kasynoEngine.publicView(game({ mode: "sloty" }), players) as { canFinish: boolean };
+    expect(v.canFinish).toBe(true);
+  });
+});
+
 describe("kasyno — bilans rundy", () => {
   it("bilans obejmuje stawkę, nie tylko wpisowe", () => {
     let s = game({ mode: "double", startChips: 1000, ante: 10 });
@@ -207,12 +266,15 @@ describe("kasyno — zgodność z Firestore", () => {
       if (v === null || typeof v !== "object") return false;
       return Object.values(v as Record<string, unknown>).some(maUndefined);
     };
-    for (const mode of ["jackpot", "sloty"] as const) {
-      let s = game({ mode, ante: 0 });
-      s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("a"));
-      expect(maUndefined(s.bets)).toBe(false);
-      expect("pick" in s.bets.a).toBe(false);
-    }
+    let j = game({ mode: "jackpot", ante: 0 });
+    j = kasynoEngine.reduce(j, { type: "BET", amount: 50 }, ctx("a"));
+    expect(maUndefined(j.bets)).toBe(false);
+    expect("pick" in j.bets.a).toBe(false);
+
+    // sloty mają własną akcję SPIN — sprawdzamy ich stan osobno
+    let sl = game({ mode: "sloty", ante: 0 });
+    sl = kasynoEngine.reduce(sl, { type: "SPIN", amount: 50 }, ctx("a"));
+    expect(maUndefined(sl.lastSpin)).toBe(false);
     // a tam, gdzie pick jest wymagany, ma się zapisać
     let d = game({ mode: "double", ante: 0 });
     d = kasynoEngine.reduce(d, { type: "BET", amount: 50, pick: "red" }, ctx("a"));

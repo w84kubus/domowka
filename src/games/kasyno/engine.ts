@@ -28,7 +28,13 @@ import type { KasynoSettings } from "./manifest";
 // niż w Impostorze czy Odcieniu, gdzie podejrzenie wprost pozwalało wygrać. Utajnianie
 // dokładałoby tu złożoności, nie chroniąc niczego.
 
-type Phase = "zaklady" | "losowanie" | "wynik" | "koniec";
+/**
+ * „gra" to faza wyłączna dla slotów: nie ma rund ani wspólnego okna zakładów,
+ * każdy kręci własną maszynę kiedy chce. Zegar fazy odmierza wtedy tylko
+ * kolejne pobranie wpisowego — bez niego gracz, który przestanie kręcić,
+ * nigdy nie zbankrutuje i partia „do ostatniego stojącego" nie miałaby końca.
+ */
+type Phase = "zaklady" | "losowanie" | "wynik" | "gra" | "koniec";
 
 interface Bet {
   amount: number;
@@ -65,6 +71,8 @@ export interface KasynoState extends WithEvents {
   /** Ostatnie wyniki do paska historii, jak w oryginałach. */
   history: string[];
   winnerUid: string | null;
+  /** Sloty: ostatni obrót każdego gracza — widoczny dla wszystkich. */
+  lastSpin: Record<string, { reels: string[]; bet: number; win: number }>;
 }
 
 const pickSchema = z.string().max(10).optional();
@@ -72,6 +80,7 @@ const pickSchema = z.string().max(10).optional();
 export const kasynoActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("BET"), amount: z.number().int().positive(), pick: pickSchema }),
   z.object({ type: z.literal("CLEAR_BET") }),
+  z.object({ type: z.literal("SPIN"), amount: z.number().int().positive() }),
   z.object({ type: z.literal("NEXT") }),
   z.object({ type: z.literal("FINISH") }),
 ]);
@@ -159,16 +168,8 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
     }
   }
 
-  if (mode === "sloty") {
-    const reels: Record<string, string[]> = {};
-    for (const [uid, bet] of Object.entries(state.bets)) {
-      const r = [0, 1, 2].map(() => SLOT_SYMBOLS[Math.floor(rng() * SLOT_SYMBOLS.length)]);
-      reels[uid] = r;
-      const mult = slotPayout(r);
-      if (mult > 0) pay(uid, Math.round(bet.amount * mult));
-    }
-    outcome.reels = reels;
-  }
+  // Sloty NIE przechodzą przez resolve() — mają własną fazę „gra" i akcję SPIN,
+  // bo każdy kręci osobno, kiedy chce.
 
   // Eliminacja: bez żetonów wypadasz. Gdyby wszyscy padli w tej samej rundzie,
   // nie eliminujemy nikogo — inaczej partia kończyłaby się bez zwycięzcy.
@@ -205,6 +206,40 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
     history: [historyEntry, ...state.history].slice(0, 12),
     pendingEvents: events,
   };
+}
+
+/** Sloty: kolejne okno do pobrania wpisowego. Rund jako takich tu nie ma. */
+function beginAnteTick(state: KasynoState, round: number, now: number): KasynoState {
+  return {
+    ...state,
+    round,
+    phase: "gra",
+    phaseEndsAt: now + state.settings.betMs,
+    pendingEvents: [],
+  };
+}
+
+/** Sloty: pobiera wpisowe od wszystkich grających i eliminuje tych bez żetonów. */
+function anteTick(state: KasynoState, now: number): KasynoState {
+  const chips = { ...state.chips };
+  const out = [...state.out];
+  const events: GameEvent[] = [];
+  const ante = anteFor(state.settings.ante, state.round);
+
+  for (const uid of alive(state)) {
+    chips[uid] = Math.max(0, (chips[uid] ?? 0) - ante);
+  }
+  const stillIn = alive(state).filter((u) => (chips[u] ?? 0) > 0);
+  if (stillIn.length > 0) {
+    for (const uid of alive(state)) {
+      if ((chips[uid] ?? 0) <= 0 && !out.includes(uid)) {
+        out.push(uid);
+        events.push({ type: "bankrut", text: "Bankructwo!", key: "kasyno.event.bust", params: {}, meta: { uid } });
+      }
+    }
+  }
+  const next: KasynoState = { ...state, chips, out, pendingEvents: events };
+  return endIfLastStanding(next) ?? beginAnteTick(next, state.round + 1, now);
 }
 
 /** Koniec partii, gdy zostaje jeden gracz z żetonami. */
@@ -247,13 +282,16 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       delta: {},
       history: [],
       winnerUid: null,
+      lastSpin: {},
       pendingEvents: [],
     };
+    if (ctx.settings.mode === "sloty") return beginAnteTick(base, 1, ctx.now);
     return beginRound(base, 1, ctx.now);
   },
 
   reduce(state, action, ctx): KasynoState {
     if (action.type === "PHASE_TIMEOUT") {
+      if (state.phase === "gra") return anteTick(state, ctx.now); // sloty: tylko wpisowe
       if (state.phase === "zaklady") return resolve(state, ctx.now, ctx.rng);
       if (state.phase === "losowanie") return toResult(state, ctx.now);
       if (state.phase === "wynik") return endIfLastStanding(state) ?? beginRound(state, state.round + 1, ctx.now);
@@ -280,6 +318,51 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       if (state.phase === "losowanie") return toResult(state, ctx.now);
       if (state.phase === "wynik") return endIfLastStanding(state) ?? beginRound(state, state.round + 1, ctx.now);
       return state;
+    }
+
+    if (action.type === "SPIN") {
+      if (state.settings.mode !== "sloty") throw new GameError("Ten tryb nie ma maszyny.", 400);
+      if (state.phase !== "gra") throw new GameError("Nie teraz.");
+      if (!state.playerUids.includes(ctx.uid)) throw new GameError("Nie jesteś w tej grze.", 403);
+      if (state.out.includes(ctx.uid)) throw new GameError("Odpadłeś — możesz tylko patrzeć.", 403);
+
+      const saldo = state.chips[ctx.uid] ?? 0;
+      if (action.amount > saldo) throw new GameError("Nie masz tylu żetonów.");
+      if (action.amount < state.settings.minBet && action.amount !== saldo) {
+        throw new GameError(`Minimalny zakład to ${state.settings.minBet}.`);
+      }
+
+      const reels = [0, 1, 2].map(() => SLOT_SYMBOLS[Math.floor(ctx.rng() * SLOT_SYMBOLS.length)]);
+      const win = Math.round(action.amount * slotPayout(reels));
+      const chips = { ...state.chips, [ctx.uid]: saldo - action.amount + win };
+
+      // Eliminacja od razu po obrocie — w trybie swobodnym nie ma rundy, w której
+      // można by to rozliczyć zbiorczo.
+      const out = [...state.out];
+      const events: GameEvent[] = [];
+      const inniMajaZetony = alive(state).some((u) => u !== ctx.uid && (chips[u] ?? 0) > 0);
+      if (chips[ctx.uid] <= 0 && inniMajaZetony && !out.includes(ctx.uid)) {
+        out.push(ctx.uid);
+        events.push({ type: "bankrut", text: "Bankructwo!", key: "kasyno.event.bust", params: {}, meta: { uid: ctx.uid } });
+      }
+      if (win >= action.amount * 10) {
+        events.push({
+          type: "rekord",
+          text: `Trójka! ${win} żetonów`,
+          key: "feat.kasyno.jackpotSpin",
+          params: { win },
+          meta: { uid: ctx.uid, rekord: true },
+        });
+      }
+
+      const next: KasynoState = {
+        ...state,
+        chips,
+        out,
+        lastSpin: { ...state.lastSpin, [ctx.uid]: { reels, bet: action.amount, win } },
+        pendingEvents: events,
+      };
+      return endIfLastStanding(next) ?? next;
     }
 
     if (action.type === "CLEAR_BET") {
@@ -337,7 +420,7 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       minBet: state.settings.minBet,
       ante: anteFor(state.settings.ante, state.round),
       // Rdzeń pokazuje „Zakończ grę" zamiast awaryjnego przerwania (patrz GameShell).
-      canFinish: state.phase === "wynik" || state.phase === "zaklady",
+      canFinish: state.phase === "wynik" || state.phase === "zaklady" || state.phase === "gra",
       // Zakłady są JAWNE od razu — widok, kto ile na co postawił, to połowa zabawy
       // i tak działają oryginały. Tajny jest tylko wynik, i to tylko do losowania.
       bets: Object.entries(state.bets).map(([uid, b]) => ({ uid, amount: b.amount, pick: b.pick ?? null })),
@@ -348,6 +431,8 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       delta: state.phase === "wynik" || state.phase === "koniec" ? state.delta : {},
       history: state.history,
       winnerUid: state.winnerUid,
+      // Sloty: wyniki wszystkich są jawne — o to chodzi, żeby widzieć, komu idzie.
+      lastSpin: state.lastSpin,
       players: state.playerUids.map((uid) => ({
         uid,
         nick: players[uid]?.nick ?? "?",
