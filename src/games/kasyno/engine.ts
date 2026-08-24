@@ -9,6 +9,7 @@ import {
 } from "@/games/types";
 import {
   anteFor,
+  SPIN_MS,
   doubleColourOf,
   DOUBLE_PAYOUT,
   DOUBLE_SLOTS,
@@ -103,16 +104,18 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
   const events: GameEvent[] = [];
   const outcome: Outcome = {};
 
+  const stakeOf = (uid: string) => state.bets[uid]?.amount ?? 0;
+
   // Wpisowe — od każdego, kto jeszcze gra, niezależnie od tego, czy obstawił.
   const ante = anteFor(state.settings.ante, state.round);
   for (const uid of alive(state)) {
     const paid = Math.min(ante, chips[uid] ?? 0);
     chips[uid] = (chips[uid] ?? 0) - paid;
-    delta[uid] = -paid;
+    // Stawka zeszła z salda już przy BET, ale odeszła w TEJ rundzie — musi być
+    // w bilansie, inaczej przegrany widzi samo wpisowe i liczby się nie zgadzają.
+    delta[uid] = -paid - stakeOf(uid);
   }
 
-  // Stawki są już odjęte przy BET — tu tylko wypłaty.
-  const stakeOf = (uid: string) => state.bets[uid]?.amount ?? 0;
   const pay = (uid: string, amount: number) => {
     chips[uid] = (chips[uid] ?? 0) + amount;
     delta[uid] = (delta[uid] ?? 0) - 0 + amount;
@@ -186,11 +189,15 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
     : mode === "jackpot" ? (outcome.winnerUid ?? "-")
     : "-";
 
+  // Nikt nie obstawił → nie ma czego losować. Bez tego pasek kręci się pusty,
+  // bo nie ma z czego zbudować kafelków (zgłoszenie z rozgrywki).
+  const ktokolwiekObstawil = Object.keys(state.bets).length > 0;
+
   return {
     ...state,
-    phase: "losowanie",
+    phase: ktokolwiekObstawil ? "losowanie" : "wynik",
     // Animacja paska. Wynik jest już znany i jawny — patrz komentarz na górze pliku.
-    phaseEndsAt: now + 5200,
+    phaseEndsAt: now + (ktokolwiekObstawil ? SPIN_MS[mode] + 900 : 2500),
     chips,
     out,
     delta,
@@ -200,19 +207,21 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
   };
 }
 
-function toResult(state: KasynoState, now: number): KasynoState {
+/** Koniec partii, gdy zostaje jeden gracz z żetonami. */
+function endIfLastStanding(state: KasynoState): KasynoState | null {
   const stillIn = alive(state);
-  // Zostaje jeden → koniec partii.
-  if (stillIn.length <= 1) {
-    return {
-      ...state,
-      phase: "koniec",
-      phaseEndsAt: null,
-      winnerUid: stillIn[0] ?? null,
-      pendingEvents: [{ type: "koniec", text: "Koniec gry!", key: "kasyno.event.end" }],
-    };
-  }
-  return { ...state, phase: "wynik", phaseEndsAt: now + 6000, pendingEvents: [] };
+  if (stillIn.length > 1) return null;
+  return {
+    ...state,
+    phase: "koniec",
+    phaseEndsAt: null,
+    winnerUid: stillIn[0] ?? null,
+    pendingEvents: [{ type: "koniec", text: "Koniec gry!", key: "kasyno.event.end" }],
+  };
+}
+
+function toResult(state: KasynoState, now: number): KasynoState {
+  return endIfLastStanding(state) ?? { ...state, phase: "wynik", phaseEndsAt: now + 6000, pendingEvents: [] };
 }
 
 export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings> = {
@@ -247,7 +256,7 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
     if (action.type === "PHASE_TIMEOUT") {
       if (state.phase === "zaklady") return resolve(state, ctx.now, ctx.rng);
       if (state.phase === "losowanie") return toResult(state, ctx.now);
-      if (state.phase === "wynik") return beginRound(state, state.round + 1, ctx.now);
+      if (state.phase === "wynik") return endIfLastStanding(state) ?? beginRound(state, state.round + 1, ctx.now);
       return state;
     }
 
@@ -269,7 +278,7 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       requireHost(state, ctx.uid);
       if (state.phase === "zaklady") return resolve(state, ctx.now, ctx.rng); // host zamyka wcześniej
       if (state.phase === "losowanie") return toResult(state, ctx.now);
-      if (state.phase === "wynik") return beginRound(state, state.round + 1, ctx.now);
+      if (state.phase === "wynik") return endIfLastStanding(state) ?? beginRound(state, state.round + 1, ctx.now);
       return state;
     }
 
@@ -303,12 +312,20 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       throw new GameError(`Minimalny zakład to ${state.settings.minBet}.`);
     }
 
-    return {
+    // `pick` dopisujemy TYLKO gdy istnieje. W Jackpocie i slotach go nie ma, a Firestore
+    // odrzuca dokumenty z wartością undefined — { amount, pick: undefined } wywalało
+    // zapis stanu i każdy zakład w Jackpocie kończył się błędem serwera.
+    const bet: Bet = action.pick != null ? { amount: action.amount, pick: action.pick } : { amount: action.amount };
+    const next: KasynoState = {
       ...state,
-      bets: { ...state.bets, [ctx.uid]: { amount: action.amount, pick: action.pick } },
+      bets: { ...state.bets, [ctx.uid]: bet },
       chips: { ...state.chips, [ctx.uid]: saldo - action.amount },
       pendingEvents: [],
     };
+    // Wszyscy grający obstawili → zamykamy od razu, zamiast czekać do końca okna.
+    // Bez tego po ostatnim zakładzie nic się nie dzieje i wygląda to na zwiechę.
+    const wszyscy = alive(next).every((u) => next.bets[u]);
+    return wszyscy ? resolve(next, ctx.now, ctx.rng) : next;
   },
 
   publicView(state, players: PlayerMap) {
@@ -326,7 +343,9 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       bets: Object.entries(state.bets).map(([uid, b]) => ({ uid, amount: b.amount, pick: b.pick ?? null })),
       pot: Object.values(state.bets).reduce((a, b) => a + b.amount, 0),
       outcome: reveal ? state.outcome : null,
-      delta: reveal ? state.delta : {},
+      // Bilans i zwycięzca dopiero PO animacji. Przy „reveal" obejmującym fazę
+      // losowania wynik był widoczny pod spodem, zanim pasek zdążył wyhamować.
+      delta: state.phase === "wynik" || state.phase === "koniec" ? state.delta : {},
       history: state.history,
       winnerUid: state.winnerUid,
       players: state.playerUids.map((uid) => ({

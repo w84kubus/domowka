@@ -20,7 +20,8 @@ export function SpinStrip({
   spinning,
   itemWidth = 92,
   loops = 6,
-  durationMs = 5000,
+  durationMs = 7000,
+  elapsedMs = 0,
 }: {
   items: StripItem[];
   targetIndex: number;
@@ -28,9 +29,17 @@ export function SpinStrip({
   itemWidth?: number;
   loops?: number;
   durationMs?: number;
+  /**
+   * Ile animacji już minęło wg zegara SERWERA. Bez tego każdy klient startował
+   * własne 7 s od chwili, w której u niego zamontował się komponent — kto wszedł
+   * z opóźnieniem, oglądał losowanie „w trakcie" albo urwane. Teraz wszyscy
+   * kończą w tym samym momencie, a spóźniony ma po prostu krótszy przelot.
+   */
+  elapsedMs?: number;
 }) {
   const [offset, setOffset] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [pozostalo, setPozostalo] = useState(durationMs);
   const startedFor = useRef<string | null>(null);
 
   const n = items.length;
@@ -49,11 +58,14 @@ export function SpinStrip({
       typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     const docelowy = (loops * n + targetIndex) * itemWidth;
-    if (reduced) {
+    const zostalo = Math.max(0, durationMs - elapsedMs);
+    // Animacja praktycznie po czasie albo wyłączony ruch → od razu wynik.
+    if (reduced || zostalo < 350) {
       setAnimating(false);
       setOffset(docelowy);
       return;
     }
+    setPozostalo(zostalo);
     // Reset bez animacji, potem start — inaczej przeglądarka skleiłaby to w jeden skok.
     setAnimating(false);
     setOffset(0);
@@ -62,7 +74,8 @@ export function SpinStrip({
       setOffset(docelowy);
     }, 30);
     return () => clearTimeout(t);
-  }, [spinning, targetIndex, n, itemWidth, loops]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinning, targetIndex, n, itemWidth, loops, durationMs]);
 
   useEffect(() => {
     if (!spinning) startedFor.current = null;
@@ -79,7 +92,7 @@ export function SpinStrip({
         className="flex"
         style={{
           transform: `translateX(calc(50% - ${itemWidth / 2}px - ${offset}px))`,
-          transition: animating ? `transform ${durationMs}ms cubic-bezier(0.12, 0.72, 0.12, 1)` : "none",
+          transition: animating ? `transform ${pozostalo}ms cubic-bezier(0.12, 0.72, 0.12, 1)` : "none",
         }}
       >
         {strip.map((it, i) => (

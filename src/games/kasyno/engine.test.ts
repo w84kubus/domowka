@@ -174,6 +174,52 @@ describe("kasyno — eliminacja i koniec", () => {
   });
 });
 
+describe("kasyno — bilans rundy", () => {
+  it("bilans obejmuje stawkę, nie tylko wpisowe", () => {
+    let s = game({ mode: "double", startChips: 1000, ante: 10 });
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 100, pick: "red" }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 9000, () => 0.9)); // czarne — a przegrywa
+    // realna zmiana salda: 1000 -> 890, więc bilans musi pokazać -110, nie -10
+    expect(s.chips.a).toBe(890);
+    expect(s.delta.a).toBe(-110);
+  });
+
+  it("bilans nie jest ujawniany w trakcie animacji", () => {
+    let s = game({ mode: "jackpot", ante: 0 });
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 100 }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 9000));
+    expect(s.phase).toBe("losowanie");
+    const wTrakcie = kasynoEngine.publicView(s, players) as { delta: Record<string, number> };
+    expect(Object.keys(wTrakcie.delta)).toHaveLength(0); // inaczej wynik widać przed końcem paska
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 20000));
+    const poWszystkim = kasynoEngine.publicView(s, players) as { delta: Record<string, number> };
+    expect(Object.keys(poWszystkim.delta).length).toBeGreaterThan(0);
+  });
+});
+
+describe("kasyno — zgodność z Firestore", () => {
+  it("stan po zakładzie NIE zawiera undefined", () => {
+    // Firestore odrzuca dokumenty z undefined. W Jackpocie nie ma `pick`, więc
+    // { amount, pick: undefined } wywalało zapis i każdy zakład kończył się błędem 500.
+    // Testy jednostkowe tego nie łapały, bo nie serializują do bazy.
+    const maUndefined = (v: unknown): boolean => {
+      if (v === undefined) return true;
+      if (v === null || typeof v !== "object") return false;
+      return Object.values(v as Record<string, unknown>).some(maUndefined);
+    };
+    for (const mode of ["jackpot", "sloty"] as const) {
+      let s = game({ mode, ante: 0 });
+      s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("a"));
+      expect(maUndefined(s.bets)).toBe(false);
+      expect("pick" in s.bets.a).toBe(false);
+    }
+    // a tam, gdzie pick jest wymagany, ma się zapisać
+    let d = game({ mode: "double", ante: 0 });
+    d = kasynoEngine.reduce(d, { type: "BET", amount: 50, pick: "red" }, ctx("a"));
+    expect(d.bets.a.pick).toBe("red");
+  });
+});
+
 describe("kasyno — widok publiczny", () => {
   it("zakłady są jawne od razu, wynik dopiero po zamknięciu", () => {
     let s = game({ mode: "double" });
@@ -189,13 +235,44 @@ describe("kasyno — widok publiczny", () => {
 
   it("canFinish jest booleanem w każdej fazie", () => {
     let s: KasynoState = game({ mode: "double", ante: 0 });
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 50, pick: "red" }, ctx("a"));
     const fazy: string[] = [];
     for (let i = 0; i < 4; i++) {
       const v = kasynoEngine.publicView(s, players) as { phase: string; canFinish?: boolean };
       fazy.push(v.phase);
       expect(typeof v.canFinish).toBe("boolean");
-      s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 5000 * (i + 1)));
+      s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 12000 * (i + 1)));
     }
     expect(fazy).toEqual(["zaklady", "losowanie", "wynik", "zaklady"]);
+  });
+
+  it("bez zakładów NIE ma fazy losowania — pasek nie ma czego pokazać", () => {
+    let s: KasynoState = game({ mode: "jackpot", ante: 0 });
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 12000)); // okno minęło, nikt nie obstawił
+    expect(s.phase).toBe("wynik");
+    expect(kasynoEngine.publicView(s, players)).toMatchObject({ pot: 0 });
+  });
+
+  it("wpisowe schodzi nawet w rundzie, w której nikt nie obstawił", () => {
+    let s = game({ mode: "jackpot", startChips: 500, ante: 10 });
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 12000));
+    for (const u of uids) expect(s.chips[u]).toBe(490);
+  });
+
+  it("gdy wszyscy obstawią, runda zamyka się OD RAZU", () => {
+    let s = game({ mode: "jackpot", ante: 0 });
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("host"));
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("a"));
+    expect(s.phase).toBe("zaklady"); // jeszcze czekamy na trzeciego
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("b"));
+    expect(s.phase).toBe("losowanie"); // bez czekania na koniec okna
+  });
+
+  it("odpadnięci nie blokują zamknięcia rundy", () => {
+    let s = game({ mode: "jackpot", ante: 0 });
+    s = { ...s, out: ["b"] };
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("host"));
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 50 }, ctx("a"));
+    expect(s.phase).toBe("losowanie"); // b odpadł, więc nie czekamy na niego
   });
 });

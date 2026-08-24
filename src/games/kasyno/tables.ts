@@ -58,6 +58,18 @@ export function weightedPick(weights: number[], rng: () => number): number {
   return weights.length - 1;
 }
 
+/**
+ * Ile trwa animacja losowania. Jackpot dostaje najwięcej, bo to jego moment —
+ * pasek z awatarami musi zdążyć zbudować napięcie, zanim wyhamuje.
+ * Sloty nie używają paska, więc wystarczy im krótki obrót bębnów.
+ */
+export const SPIN_MS: Record<string, number> = {
+  jackpot: 9000,
+  double: 7000,
+  wheel: 7000,
+  sloty: 2500,
+};
+
 /** Wpisowe rośnie co 5 rund, żeby partia „do ostatniego stojącego" miała koniec. */
 export function anteFor(base: number, round: number): number {
   if (base === 0) return 0;

@@ -6,7 +6,7 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 import { Podium } from "@/components/game/Podium";
 import type { GameViewProps } from "@/games/view";
 import { SpinStrip, type StripItem } from "./SpinStrip";
-import { doubleColourOf, DOUBLE_SLOTS, SLOT_SYMBOLS, WHEEL_SEGMENTS } from "./tables";
+import { doubleColourOf, DOUBLE_SLOTS, SLOT_SYMBOLS, SPIN_MS, WHEEL_SEGMENTS } from "./tables";
 
 type Mode = "jackpot" | "double" | "wheel" | "sloty";
 
@@ -33,7 +33,19 @@ const SYMBOL_LABEL: Record<string, string> = {
   cherry: "🍒", lemon: "🍋", bell: "🔔", star: "⭐", gem: "💎", seven: "7",
 };
 
-export function KasynoPlayerView({ publicState, privateState, meUid, isHost, dispatch }: GameViewProps) {
+/** Odświeża co pół sekundy, żeby licznik faktycznie tykał. */
+function useTicker(ms = 500) {
+  const [, set] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => set((n) => n + 1), ms);
+    return () => clearInterval(id);
+  }, [ms]);
+}
+
+const secLeft = (endsAt: number | null, now: number) =>
+  endsAt == null ? null : Math.max(0, Math.ceil((endsAt - now) / 1000));
+
+export function KasynoPlayerView({ room, publicState, privateState, meUid, isHost, dispatch, serverNow }: GameViewProps) {
   const t = useT();
   const pub = publicState as Pub;
   const priv = privateState as { chips: number; bet: { amount: number; pick?: string } | null; out: boolean } | null;
@@ -42,6 +54,12 @@ export function KasynoPlayerView({ publicState, privateState, meUid, isHost, dis
   const saldo = priv?.chips ?? me?.chips ?? 0;
   const mojZaklad = pub.bets.find((b) => b.uid === meUid) ?? null;
   const odpadl = me?.out ?? false;
+
+  useTicker();
+  const now = serverNow();
+  const zostalo = secLeft(room.phaseEndsAt, now);
+  // Ile animacji już minęło wg serwera — patrz SpinStrip.
+  const spinElapsed = room.phaseStartedAt != null ? Math.max(0, now - room.phaseStartedAt) : 0;
 
   const [stawka, setStawka] = useState(pub.minBet);
   const [pick, setPick] = useState<string | null>(null);
@@ -126,16 +144,27 @@ export function KasynoPlayerView({ publicState, privateState, meUid, isHost, dis
         <span className="font-display rounded-[12px] border-2 border-stroke bg-panel px-3 py-1.5 text-sm font-bold text-ink">
           {t("kasyno.balance")}: <span className="tabular text-bursztyn">{saldo}</span>
         </span>
-        <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-ink-muted">
-          {t("common.round")} {pub.round}
-          {pub.ante > 0 && ` · ${t("kasyno.anteInfo", { ante: pub.ante })}`}
+        <span className="font-display flex items-center gap-2 text-sm font-bold uppercase tracking-[0.06em] text-ink-muted">
+          <span>
+            {t("common.round")} {pub.round}
+            {pub.ante > 0 && ` · ${t("kasyno.anteInfo", { ante: pub.ante })}`}
+          </span>
+          {pub.phase === "zaklady" && zostalo != null && (
+            <span className={`tabular text-base ${zostalo <= 5 ? "timer-urgent" : "text-mint"}`}>{zostalo} s</span>
+          )}
         </span>
       </div>
 
       {/* Pasek losowania / wynik */}
       {(pub.phase === "losowanie" || pub.phase === "wynik") && pub.mode !== "sloty" && (
         <div className="w-full max-w-md">
-          <SpinStrip items={items} targetIndex={targetIndex} spinning={pub.phase === "losowanie"} />
+          <SpinStrip
+            items={items}
+            targetIndex={targetIndex}
+            spinning={pub.phase === "losowanie"}
+            durationMs={SPIN_MS[pub.mode] ?? 7000}
+            elapsedMs={spinElapsed}
+          />
         </div>
       )}
 
@@ -215,7 +244,7 @@ export function KasynoPlayerView({ publicState, privateState, meUid, isHost, dis
                   {t("kasyno.allIn")}
                 </button>
                 <button type="button" className="btn flex-[2]" disabled={!mozeObstawic || busy} onClick={obstaw}>
-                  {busy ? t("common.loading") : t("kasyno.placeBet")}
+                  {busy ? t("kasyno.betPlaced") : t("kasyno.placeBet")}
                 </button>
               </div>
             </>
@@ -249,7 +278,9 @@ export function KasynoPlayerView({ publicState, privateState, meUid, isHost, dis
                 <li
                   key={b.uid}
                   className={`flex items-center gap-2 rounded-[12px] border-2 px-2 py-1.5 ${
-                    b.uid === pub.outcome?.winnerUid ? "border-bursztyn bg-panel-hi" : "border-stroke bg-panel"
+                    b.uid === pub.outcome?.winnerUid && pub.phase !== "losowanie"
+                      ? "border-bursztyn bg-panel-hi"
+                      : "border-stroke bg-panel"
                   }`}
                   style={b.pick && COLOUR_BG[b.pick] ? { borderColor: COLOUR_BG[b.pick] } : undefined}
                 >
