@@ -243,6 +243,59 @@ describe("kasyno — bilans rundy", () => {
     expect(s.delta.a).toBe(-110);
   });
 
+  it("SALDA nie zdradzają wyniku w trakcie animacji", () => {
+    // Zgłoszenie z rozgrywki: pasek jeszcze się kręcił, a pod spodem było już widać,
+    // komu skoczyły żetony. Rozliczamy atomowo przy zamknięciu zakładów, więc
+    // publicView musi w tej fazie oddawać migawkę SPRZED wypłaty.
+    let s = game({ mode: "jackpot", startChips: 1000, ante: 0 });
+    s = { ...s, out: ["host"] }; // gramy we dwóch, żeby runda zamknęła się po obu zakładach
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 400 }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 600 }, ctx("b"));
+    expect(s.phase).toBe("losowanie");
+
+    const wTrakcie = kasynoEngine.publicView(s, players) as { players: { uid: string; chips: number }[] };
+    const saldo = (uid: string) => wTrakcie.players.find((p) => p.uid === uid)!.chips;
+    // Obaj mają tyle, ile im zostało PO postawieniu zakładu, ale PRZED wypłatą puli.
+    expect(saldo("a")).toBe(600);
+    expect(saldo("b")).toBe(400);
+    // Żaden z grających nie ma jeszcze puli — inaczej od razu wiadomo, kto wygrał.
+    expect(saldo("a") + saldo("b")).toBe(1000); // 600 + 400, pula wciąż „w powietrzu"
+
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 20000));
+    const po = kasynoEngine.publicView(s, players) as { players: { uid: string; chips: number }[] };
+    // Po animacji zwycięzca ma już pulę.
+    expect(po.players.some((p) => p.chips === 1000)).toBe(true);
+  });
+
+  it("własne saldo w widoku prywatnym też nie zdradza wyniku", () => {
+    // Drugi kanał wycieku: publicView oddawał migawkę, ale privateView zwracał
+    // prawdziwe żetony, więc gracz widział własną wygraną na górze ekranu,
+    // zanim pasek zdążył wyhamować.
+    let s = game({ mode: "jackpot", startChips: 1000, ante: 0 });
+    s = { ...s, out: ["host"] };
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 400 }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 600 }, ctx("b"));
+    expect(s.phase).toBe("losowanie");
+    const zwyciezca = s.outcome!.winnerUid!;
+    const wTrakcie = (kasynoEngine.privateView(s, zwyciezca) as { chips: number }).chips;
+    // W trakcie animacji widzi tylko to, co mu zostało po postawieniu zakładu.
+    expect(wTrakcie).toBe(1000 - s.bets[zwyciezca].amount);
+
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 20000));
+    const po = (kasynoEngine.privateView(s, zwyciezca) as { chips: number }).chips;
+    expect(po).toBe(wTrakcie + 1000); // dopiero teraz dochodzi pula
+  });
+
+  it("eliminacja też nie wycieka przed końcem animacji", () => {
+    let s = game({ mode: "double", ante: 0 });
+    s = { ...s, chips: { ...s.chips, a: 100 } };
+    s = kasynoEngine.reduce(s, { type: "BET", amount: 100, pick: "red" }, ctx("a"));
+    s = kasynoEngine.reduce(s, { type: "PHASE_TIMEOUT" }, ctx("host", 9000, () => 0.9)); // czarne
+    expect(s.out).toContain("a"); // w stanie już odpadł
+    const wTrakcie = kasynoEngine.publicView(s, players) as { players: { uid: string; out: boolean }[] };
+    expect(wTrakcie.players.find((p) => p.uid === "a")!.out).toBe(false); // ale jeszcze tego nie widać
+  });
+
   it("bilans nie jest ujawniany w trakcie animacji", () => {
     let s = game({ mode: "jackpot", ante: 0 });
     s = kasynoEngine.reduce(s, { type: "BET", amount: 100 }, ctx("a"));

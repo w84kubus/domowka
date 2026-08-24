@@ -73,6 +73,13 @@ export interface KasynoState extends WithEvents {
   winnerUid: string | null;
   /** Sloty: ostatni obrót każdego gracza — widoczny dla wszystkich. */
   lastSpin: Record<string, { reels: string[]; bet: number; win: number }>;
+  /**
+   * Salda i lista odpadniętych SPRZED rozliczenia. Rozliczamy w chwili zamknięcia
+   * zakładów (atomowo, żeby nic nie zginęło przy przerwaniu), ale animacja trwa
+   * jeszcze kilka sekund — bez tej migawki gracze widzieliby skok żetonów
+   * zwycięzcy, zanim pasek zdąży wyhamować, i wynik byłby znany z góry.
+   */
+  snapshot: { chips: Record<string, number>; out: string[] } | null;
 }
 
 const pickSchema = z.string().max(10).optional();
@@ -101,6 +108,7 @@ function beginRound(state: KasynoState, round: number, now: number): KasynoState
     bets: {},
     outcome: null,
     delta: {},
+    snapshot: null,
     pendingEvents: [{ type: "runda", text: `Runda ${round}: obstawiajcie`, key: "kasyno.event.bets", params: { round } }],
   };
 }
@@ -108,6 +116,7 @@ function beginRound(state: KasynoState, round: number, now: number): KasynoState
 /** Zamyka zakłady, losuje wynik i rozlicza salda. */
 function resolve(state: KasynoState, now: number, rng: () => number): KasynoState {
   const { mode } = state.settings;
+  const snapshot = { chips: { ...state.chips }, out: [...state.out] };
   const chips = { ...state.chips };
   const delta: Record<string, number> = {};
   const events: GameEvent[] = [];
@@ -203,6 +212,7 @@ function resolve(state: KasynoState, now: number, rng: () => number): KasynoStat
     out,
     delta,
     outcome,
+    snapshot,
     history: [historyEntry, ...state.history].slice(0, 12),
     pendingEvents: events,
   };
@@ -283,6 +293,7 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       history: [],
       winnerUid: null,
       lastSpin: {},
+      snapshot: null,
       pendingEvents: [],
     };
     if (ctx.settings.mode === "sloty") return beginAnteTick(base, 1, ctx.now);
@@ -433,18 +444,31 @@ export const kasynoEngine: GameEngine<KasynoState, KasynoAction, KasynoSettings>
       winnerUid: state.winnerUid,
       // Sloty: wyniki wszystkich są jawne — o to chodzi, żeby widzieć, komu idzie.
       lastSpin: state.lastSpin,
-      players: state.playerUids.map((uid) => ({
-        uid,
-        nick: players[uid]?.nick ?? "?",
-        avatar: players[uid]?.avatar ?? "",
-        chips: state.chips[uid] ?? 0,
-        out: state.out.includes(uid),
-      })),
+      // W trakcie animacji oddajemy salda SPRZED rozliczenia — inaczej skok żetonów
+      // zwycięzcy zdradzałby wynik, zanim pasek stanie.
+      players: state.playerUids.map((uid) => {
+        const przed = state.phase === "losowanie" ? state.snapshot : null;
+        return {
+          uid,
+          nick: players[uid]?.nick ?? "?",
+          avatar: players[uid]?.avatar ?? "",
+          chips: (przed ? przed.chips[uid] : state.chips[uid]) ?? 0,
+          out: (przed ? przed.out : state.out).includes(uid),
+        };
+      }),
     };
   },
 
   privateView(state, uid: string) {
-    return { chips: state.chips[uid] ?? 0, bet: state.bets[uid] ?? null, out: state.out.includes(uid) };
+    // Także tutaj migawka w trakcie animacji. Bez tego własne saldo na górze ekranu
+    // skakało od razu po rozliczeniu i gracz wiedział, że wygrał, zanim pasek stanął —
+    // dokładnie ten sam wyciek co w widoku publicznym, tylko innym kanałem.
+    const przed = state.phase === "losowanie" ? state.snapshot : null;
+    return {
+      chips: (przed ? przed.chips[uid] : state.chips[uid]) ?? 0,
+      bet: state.bets[uid] ?? null,
+      out: (przed ? przed.out : state.out).includes(uid),
+    };
   },
 
   phase(state) {
