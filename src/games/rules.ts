@@ -8,6 +8,17 @@ export interface GameRules {
 }
 
 export const GAME_RULES: Record<string, GameRules> = {
+  kasyno: {
+    howTo: "Cztery tryby losowe na wirtualne żetony. Obstawiasz, losowanie rozstrzyga, kto zejdzie do zera — odpada.",
+    steps: [
+      "Każdy dostaje tyle samo żetonów na start",
+      "Co rundę obstawiasz stawkę (w Double i Wheel także kolor albo mnożnik)",
+      "Zakłady wszystkich są jawne — widzisz, kto na co poszedł",
+      "Losowanie, wypłaty, a kto straci wszystko, wypada z gry",
+      "Wygrywa ten, kto zostanie ostatni",
+    ],
+    tip: "Szanse są tak dobrane, że każdy zakład ma tę samą wartość oczekiwaną — różni je tylko zmienność. ×35 kusi, ale wypada raz na czterdzieści rund.",
+  },
   odcien: {
     howTo: "Kolor błyska na kilka sekund i znika. Odtwarzasz go z pamięci trzema suwakami — im bliżej, tym więcej punktów.",
     steps: [

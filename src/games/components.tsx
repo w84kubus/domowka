@@ -45,6 +45,11 @@ export const GAME_COMPONENTS: Record<string, GameComponents> = {
     PlayerView: dynamic(() => import("./odcien/PlayerView").then((m) => m.OdcienPlayerView), { loading: Loading }),
     HostView: dynamic(() => import("./odcien/HostView").then((m) => m.OdcienHostView), { loading: Loading }),
   },
+  kasyno: {
+    Settings: dynamic(() => import("./kasyno/Settings").then((m) => m.KasynoSettingsPanel)),
+    PlayerView: dynamic(() => import("./kasyno/PlayerView").then((m) => m.KasynoPlayerView), { loading: Loading }),
+    HostView: dynamic(() => import("./kasyno/HostView").then((m) => m.KasynoHostView), { loading: Loading }),
+  },
   mafia: {
     Settings: dynamic(() => import("./mafia/Settings").then((m) => m.MafiaSettingsPanel)),
     PlayerView: dynamic(() => import("./mafia/PlayerView").then((m) => m.MafiaPlayerView), { loading: Loading }),
