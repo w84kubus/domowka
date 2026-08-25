@@ -84,7 +84,7 @@ export function LobbyGames({
       {SettingsPanel && manifest && (
         <div className="card flex flex-col gap-4">
           <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-            Ustawienia
+            {t("lobby.settings")}
           </span>
           <SettingsPanel value={settings} onChange={setSettings} playerCount={playerCount} />
         </div>

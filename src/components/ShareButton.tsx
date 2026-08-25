@@ -34,7 +34,9 @@ export function ShareButton({ code, compact }: { code: string; compact?: boolean
     } catch {
       // schowek niedostępny
     }
-  }, [code]);
+    // `t` w zależnościach: bez tego po przełączeniu języka tekst udostępniania
+    // zostawał w poprzednim, bo callback pamiętał starą funkcję tłumaczącą.
+  }, [code, t]);
 
   // Wariant compact — w rogu przy QR (mockup lobby), pełny — pod QR na innych ekranach.
   if (compact) {

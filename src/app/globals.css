@@ -291,6 +291,25 @@ body {
   padding: 1.5rem;
 }
 
+/* Karta zrośnięta z zakładkami „teczkowymi" (DESIGN.md §4.3).
+
+   OBA górne rogi kanciaste, nie tylko ten pod aktywną zakładką. Specyfikacja mówi
+   „po stronie aktywnej", ale zakłada przy tym zakładki, które nie sięgają zewnętrznej
+   krawędzi panelu. U nas dwie zakładki dzielą całą szerokość, więc na rogu panelu
+   stoi także ta NIEAKTYWNA — a że ma kanciasty dół, zwisała ostrym narożnikiem nad
+   zaokrągleniem karty. Zaokrąglenie całego zestawu niosą teraz górne rogi zakładek
+   i dolne rogi karty; wszystkie styki w środku są proste.
+
+   UWAGA — dlaczego osobna klasa, a nie `rounded-t-none` z Tailwinda: utility siedzą
+   w wygenerowanym arkuszu PRZED regułami komponentów (`.rounded-tr-none` na bajcie
+   ~35 900, `.card` na ~70 500). Specyficzność jest ta sama — jedna klasa — więc
+   rozstrzyga kolejność i `.card` wygrywa. Utility Tailwinda NIE nadpisują niczego,
+   co jest zdefiniowane w tym pliku poniżej. */
+.card-tabbed {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 /* === Kod pokoju — klocowe litery (Arcade) === */
 .neon-code {
   display: inline-flex;

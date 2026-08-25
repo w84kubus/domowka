@@ -7,6 +7,7 @@ import Link from "next/link";
 import { CodeInput } from "./CodeInput";
 import { AvatarPicker } from "./AvatarPicker";
 import { AvatarIcon, avatarColor } from "./AvatarIcon";
+import { EntryTabs } from "./EntryTabs";
 import { AVATARS } from "@/lib/avatars";
 import { useSession } from "@/lib/store/session";
 import { apiPost } from "@/lib/client/api";
@@ -17,9 +18,15 @@ import { isValidRoomCode, normalizeRoomCode } from "@/lib/room-code";
 export function EntryForm({
   mode,
   initialCode = "",
+  withTabs = false,
 }: {
   mode: "create" | "join";
   initialCode?: string;
+  /**
+   * Zakładki nad panelem (DESIGN.md §4.3). Wyłączone na /p/[code]: tam kod przyszedł
+   * ze skanu QR i jest już wpisany, więc zakładka „nowy pokój" tylko by go wyrzuciła.
+   */
+  withTabs?: boolean;
 }) {
   const t = useT();
   const router = useRouter();
@@ -70,62 +77,70 @@ export function EntryForm({
         submit();
       }}
     >
-      <div className="card arcade-pop flex flex-col gap-5">
-        {mode === "join" && (
+      {/* Zakładki i panel to jedna teczka — bez odstępu między nimi. Reszta
+          formularza (błąd, przycisk, powrót) zachowuje normalny gap-5. */}
+      <div className="flex flex-col">
+        {withTabs && <EntryTabs active={mode} />}
+
+        {/* Górne rogi karty kanciaste, bo stoją na nich OBIE zakładki — patrz
+            .card-tabbed w globals.css. */}
+        <div className={`card arcade-pop flex flex-col gap-5 ${withTabs ? "card-tabbed" : ""}`}>
+          {mode === "join" && (
+            <div className="flex flex-col gap-2">
+              <label className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
+                {t("entry.code")}
+              </label>
+              <CodeInput value={code} onChange={setCode} />
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
-            <label className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-              {t("entry.code")}
+            <label
+              htmlFor="nick"
+              className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint"
+            >
+              {t("entry.nick")}
             </label>
-            <CodeInput value={code} onChange={setCode} />
+            <input
+              id="nick"
+              value={nick}
+              onChange={(e) => setNick(e.target.value.replace(/[\r\n]/g, ""))}
+              maxLength={MAX_NICK_LENGTH * 2}
+              placeholder={t("entry.nickPlaceholder")}
+              autoComplete="off"
+              className="min-h-[56px] rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-lg font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi"
+            />
           </div>
-        )}
 
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="nick"
-            className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint"
-          >
-            {t("entry.nick")}
-          </label>
-          <input
-            id="nick"
-            value={nick}
-            onChange={(e) => setNick(e.target.value.replace(/[\r\n]/g, ""))}
-            maxLength={MAX_NICK_LENGTH * 2}
-            placeholder={t("entry.nickPlaceholder")}
-            autoComplete="off"
-            className="min-h-[56px] rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-lg font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi"
-          />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-            {t("entry.avatar")}
-          </span>
-
-          {/* Duży podgląd wyboru (DESIGN.md §4.5). Bez niego ekran wejścia wyglądał
-              jak siatka ustawień — a to jest moment „to ja", jedyny, w którym gracz
-              zakłada sobie twarz na cały wieczór. Kafelki w siatce mają 40 px i przy
-              tym rozmiarze nie widać, co się właściwie wybrało. */}
-          <div className="flex flex-col items-center gap-2">
-            <span
-              className="flex size-28 items-center justify-center rounded-full border-[6px] border-white shadow-[0_4px_0_rgb(0_0_0/0.35)]"
-              style={{ background: avatarColor(avatar) }}
-              aria-hidden
-            >
-              <AvatarIcon avatar={avatar} size={68} />
+          <div className="flex flex-col gap-3">
+            <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
+              {t("entry.avatar")}
             </span>
-            <button
-              type="button"
-              onClick={randomAvatar}
-              className="font-display flex min-h-[44px] items-center gap-2 rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-2 active:translate-y-[3px] active:shadow-none"
-            >
-              <Dices size={18} strokeWidth={2.5} aria-hidden />
-              {t("entry.randomAvatar")}
-            </button>
-          </div>
 
-          <AvatarPicker value={avatar} onChange={setAvatar} />
+            {/* Duży podgląd wyboru (DESIGN.md §4.5). Bez niego ekran wejścia wyglądał
+                jak siatka ustawień — a to jest moment „to ja", jedyny, w którym gracz
+                zakłada sobie twarz na cały wieczór. Kafelki w siatce mają 40 px i przy
+                tym rozmiarze nie widać, co się właściwie wybrało. */}
+            <div className="flex flex-col items-center gap-2">
+              <span
+                className="flex size-28 items-center justify-center rounded-full border-[6px] border-white shadow-[0_4px_0_rgb(0_0_0/0.35)]"
+                style={{ background: avatarColor(avatar) }}
+                aria-hidden
+              >
+                <AvatarIcon avatar={avatar} size={68} />
+              </span>
+              <button
+                type="button"
+                onClick={randomAvatar}
+                className="font-display flex min-h-[44px] items-center gap-2 rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-2 active:translate-y-[3px] active:shadow-none"
+              >
+                <Dices size={18} strokeWidth={2.5} aria-hidden />
+                {t("entry.randomAvatar")}
+              </button>
+            </div>
+
+            <AvatarPicker value={avatar} onChange={setAvatar} />
+          </div>
         </div>
       </div>
 
