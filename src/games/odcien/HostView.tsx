@@ -81,7 +81,7 @@ export function OdcienHostView({ publicState }: GameHostViewProps) {
             <span className="font-display w-5 flex-none text-center font-bold text-ink-muted">{i + 1}</span>
             <span className="size-12 flex-none rounded-[12px] border-[3px] border-white" style={{ background: r.hex }} />
             <span className="min-w-0 flex-1 truncate font-display text-lg font-bold text-ink">{nickOf(r.uid)}</span>
-            <span className="tabular flex-none font-display text-lg font-bold text-mint">{r.accuracy}%</span>
+            <span className="tabular flex-none text-lg font-bold text-mint">{r.accuracy}%</span>
           </li>
         ))}
       </ul>

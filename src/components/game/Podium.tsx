@@ -60,7 +60,7 @@ export function Podium({ players, meUid }: { players: PodiumPlayer[]; meUid: str
                 {p.nick}
                 {p.uid === meUid && <span className="font-semibold text-ink-muted"> {t("common.you")}</span>}
               </span>
-              <span className="tabular flex-none font-display text-lg font-bold text-ink">{p.score}</span>
+              <span className="tabular flex-none text-lg font-bold text-ink">{p.score}</span>
             </li>
           );
         })}

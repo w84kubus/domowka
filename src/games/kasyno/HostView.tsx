@@ -45,7 +45,7 @@ export function KasynoHostView({ publicState }: GameHostViewProps) {
         <span className="font-display text-xl font-bold uppercase tracking-[0.2em] text-ink-muted">
           {t("kasyno.pot")}
         </span>
-        <span className="tabular font-display text-6xl font-bold text-bursztyn">{pub.pot}</span>
+        <span className="tabular text-6xl font-bold text-bursztyn">{pub.pot}</span>
       </div>
 
       {wynik && pub.phase !== "zaklady" && (
@@ -65,7 +65,7 @@ export function KasynoHostView({ publicState }: GameHostViewProps) {
           >
             <AvatarIcon avatar={p.avatar} size={38} />
             <span className="min-w-0 flex-1 truncate font-display text-lg font-bold text-ink">{p.nick}</span>
-            <span className="tabular font-display text-lg font-bold text-bursztyn">{p.chips}</span>
+            <span className="tabular text-lg font-bold text-bursztyn">{p.chips}</span>
           </li>
         ))}
       </ul>

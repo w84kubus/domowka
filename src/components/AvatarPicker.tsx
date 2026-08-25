@@ -26,8 +26,11 @@ export function AvatarPicker({
             aria-checked={selected}
             aria-label={`Awatar ${id}`}
             onClick={() => onChange(id)}
-            className={`flex aspect-square items-center justify-center rounded-[14px] border-[3px] text-white shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-2 active:translate-y-[3px] active:shadow-none ${
-              selected ? "glow-selected" : "border-white/25"
+            // Cień siedzi w gałęzi NIEwybranej, nie w bazie: `.glow-selected` ustawia własny
+            // box-shadow (poświatę), a utility z bazy by ją nadpisało i zaznaczenie
+            // przestałoby świecić.
+            className={`flex aspect-square items-center justify-center rounded-[14px] border-[3px] text-white transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-2 active:translate-y-[3px] active:shadow-none ${
+              selected ? "glow-selected" : "border-white/25 shadow-[0_3px_0_rgb(0_0_0/0.35)]"
             }`}
             style={{ background: avatarColor(id) }}
           >

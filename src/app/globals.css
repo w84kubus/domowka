@@ -60,361 +60,375 @@
   --shadow-lift:    0 18px 40px rgb(0 0 0 / 0.35);
 }
 
-/* === Reset i higiena mobilna === */
-* {
-  box-sizing: border-box;
-}
-
-html {
-  touch-action: manipulation;
-  -webkit-text-size-adjust: 100%;
-}
-
-/* Skala na dużych ekranach. Wszystkie rozmiary w projekcie są w rem, więc podniesienie
-   bazowego rozmiaru skaluje naraz typografię, odstępy i szerokości kolumn (max-w-3xl to
-   48rem, czyli 864 px przy 18 px i 960 px przy 20 px). Na telefonie zostaje 16 px. */
-@media (min-width: 1280px) {
-  html { font-size: 18px; }
-}
-@media (min-width: 1680px) {
-  html { font-size: 20px; }
-}
-
-body {
-  min-height: 100dvh;
-  margin: 0;
-  background: var(--color-frame);
-  color: var(--color-ink);
-  font-family: var(--font-body), system-ui, sans-serif;
-  overscroll-behavior: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Liczby: tabularne, żeby cyfry nie skakały (stoper, timery, wyniki) */
-.tabular {
-  font-family: var(--font-mono), monospace;
-  font-variant-numeric: tabular-nums;
-}
-
-/* === Arcade Party — tło (DESIGN.md §3) === */
-.arcade-bg {
-  background: linear-gradient(135deg, var(--color-bg-1) 0%, var(--color-bg-2) 45%, var(--color-bg-3) 100%);
-}
-
-/* Tekstura halftone */
-.halftone {
-  background-image: radial-gradient(rgb(255 255 255 / 0.5) 1px, transparent 1px);
-  background-size: 6px 6px;
-  opacity: 0.10;
-}
-
-/* Timer pulsuje gdy <5 s — kolor przechodzi w czerwień */
-.timer-urgent {
-  color: var(--color-czerwien);
-  animation: timerPulse 0.6s ease infinite;
-}
-@keyframes timerPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.05); }
-}
-
-/* === Rama aplikacji (DESIGN.md §3 pkt 1) ===
-   Aplikacja to karta wpuszczona w ciemną ramę, nie strona na pełnej szerokości.
-   To pierwsza z trzech warstw tła i jednocześnie najmocniejszy sygnał „to jest
-   urządzenie, nie witryna". Margines i promień maleją na telefonie (§6).
-
-   Rama siedzi na `.screen`, nie na <body>, celowo: ekran hosta na TV nie używa tej
-   klasy i ma zostać na pełnym kadrze — telewizor ma własną ramkę i overscan, więc
-   drugi bezel tylko zabierałby miejsce. */
-:root {
-  --app-inset: 8px;
-}
-@media (min-width: 768px) {
-  :root {
-    --app-inset: 20px;
-    --radius-app: 28px;
+@layer base {
+  /* === Reset i higiena mobilna === */
+  * {
+    box-sizing: border-box;
   }
-}
-@media (max-width: 767px) {
-  :root {
-    --radius-app: 20px;
+
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Skala na dużych ekranach. Wszystkie rozmiary w projekcie są w rem, więc podniesienie
+     bazowego rozmiaru skaluje naraz typografię, odstępy i szerokości kolumn (max-w-3xl to
+     48rem, czyli 864 px przy 18 px i 960 px przy 20 px). Na telefonie zostaje 16 px. */
+  @media (min-width: 1280px) {
+    html { font-size: 18px; }
+  }
+  @media (min-width: 1680px) {
+    html { font-size: 20px; }
+  }
+
+  body {
+    min-height: 100dvh;
+    margin: 0;
+    background: var(--color-frame);
+    color: var(--color-ink);
+    font-family: var(--font-body), system-ui, sans-serif;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* === Wspólny layout ekranu z safe-area === */
-.screen {
-  display: flex;
-  flex-direction: column;
-  margin: var(--app-inset);
-  min-height: calc(100dvh - 2 * var(--app-inset));
-  border-radius: var(--radius-app);
-  padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
-    max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
-}
+/* === Komponenty ===
+   W warstwie `components`, NIE poza warstwami. Tailwind v4 układa kaskadę
+   theme → base → components → utilities, więc dopiero tutaj utility (`px-4`,
+   `text-2xl`, `p-0`) mogą nadpisać to, co ustawia `.card` czy `.btn`.
 
-/* === Przycisk Arcade (DESIGN.md §4.1) === */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 1rem 2rem;
-  border-radius: var(--radius-btn);
-  border: 3px solid rgb(255 255 255 / 0.9);
-  background: var(--color-primary);
-  color: white;
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 1.125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: transform 75ms;
-  box-shadow: var(--shadow-hard);
-}
-.btn:hover {
-  filter: brightness(1.1);
-}
-.btn:active {
-  transform: translateY(4px);
-  box-shadow: none;
-}
-.btn:disabled {
-  opacity: 0.5;
-  box-shadow: none;
-  pointer-events: none;
-}
-.btn:focus-visible {
-  outline: 3px solid var(--color-mint);
-  outline-offset: 2px;
-}
+   Wcześniej te reguły leżały poza warstwami, czyli PO utility w kolejności
+   pliku. Przy tej samej specyficzności — jedna klasa — wygrywała kolejność
+   i żadne utility nie działało: w kodzie było ~40 miejsc, gdzie ktoś dopisał
+   obok `.card` własny padding albo obok `.btn` własny stopień pisma, i nic
+   z tego się nie renderowało. */
+@layer components {
+  /* Liczby: tabularne, żeby cyfry nie skakały (stoper, timery, wyniki) */
+  .tabular {
+    font-family: var(--font-mono), monospace;
+    font-variant-numeric: tabular-nums;
+  }
 
-/* Wariant ghost — biały przycisk */
-.btn-ghost {
-  background: rgb(255 255 255 / 0.9);
-  color: var(--color-sheet-ink);
-  border-color: rgb(255 255 255 / 0.4);
-  box-shadow: var(--shadow-hard-sm);
-}
-.btn-ghost:hover {
-  filter: brightness(0.95);
-}
-.btn-ghost:active {
-  transform: translateY(3px);
-  box-shadow: none;
-}
+  /* === Arcade Party — tło (DESIGN.md §3) === */
+  .arcade-bg {
+    background: linear-gradient(135deg, var(--color-bg-1) 0%, var(--color-bg-2) 45%, var(--color-bg-3) 100%);
+  }
 
-/* Wariant accent — kolor danej gry */
-.btn-accent {
-  border-color: color-mix(in srgb, var(--accent, white) 80%, white);
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent, var(--color-primary-deep)) 70%, black);
-}
-.btn-accent:active {
-  transform: translateY(4px);
-  box-shadow: none;
-}
+  /* Tekstura halftone */
+  .halftone {
+    background-image: radial-gradient(rgb(255 255 255 / 0.5) 1px, transparent 1px);
+    background-size: 6px 6px;
+    opacity: 0.10;
+  }
 
-/* Przycisk limonkowy — główne CTA „ZACZYNAMY!" (mockup: Ustawienia gry) */
-.btn-lime {
-  background: linear-gradient(180deg, #ccff00 0%, #a8e600 100%);
-  color: #1a1a2e;
-  border-color: #ffffff;
-  box-shadow: 0 4px 0 #6b8f00;
-  text-shadow: none;
-}
-.btn-lime:active {
-  transform: translateY(4px);
-  box-shadow: none;
-}
+  /* Timer pulsuje gdy <5 s — kolor przechodzi w czerwień */
+  .timer-urgent {
+    color: var(--color-czerwien);
+    animation: timerPulse 0.6s ease infinite;
+  }
+  @keyframes timerPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+  }
 
-/* Przycisk koralowy — „ZAKŁADAM POKÓJ" (mockup: Nowy pokój) */
-.btn-coral {
-  background: linear-gradient(180deg, #ff6b8a 0%, #e4335c 100%);
-  border-color: #ffffff;
-  box-shadow: 0 4px 0 #a30f30;
-}
-.btn-coral:active {
-  transform: translateY(4px);
-  box-shadow: none;
-}
+  /* === Rama aplikacji (DESIGN.md §3 pkt 1) ===
+     Aplikacja to karta wpuszczona w ciemną ramę, nie strona na pełnej szerokości.
+     To pierwsza z trzech warstw tła i jednocześnie najmocniejszy sygnał „to jest
+     urządzenie, nie witryna". Margines i promień maleją na telefonie (§6).
 
-/* Glow selekcji — miętowa poświata na wybranym elemencie */
-.glow-selected {
-  border-color: var(--color-mint);
-  box-shadow:
-    0 0 16px rgb(124 240 174 / 0.5),
-    0 0 4px rgb(124 240 174 / 0.3);
-}
+     Rama siedzi na `.screen`, nie na <body>, celowo: ekran hosta na TV nie używa tej
+     klasy i ma zostać na pełnym kadrze — telewizor ma własną ramkę i overscan, więc
+     drugi bezel tylko zabierałby miejsce. */
+  :root {
+    --app-inset: 8px;
+  }
+  @media (min-width: 768px) {
+    :root {
+      --app-inset: 20px;
+      --radius-app: 28px;
+    }
+  }
+  @media (max-width: 767px) {
+    :root {
+      --radius-app: 20px;
+    }
+  }
 
-/* Gradient tekstu (tytuł „Nowy pokój") */
-.text-gradient {
-  background: linear-gradient(90deg, #ffd166 0%, #ff6b8a 45%, #7cf0ae 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
+  /* === Wspólny layout ekranu z safe-area === */
+  .screen {
+    display: flex;
+    flex-direction: column;
+    margin: var(--app-inset);
+    min-height: calc(100dvh - 2 * var(--app-inset));
+    border-radius: var(--radius-app);
+    padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+      max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+  }
 
-/* Tytuł z grubym ciemnym obrysem (mockup: „POKÓJ FFLC") */
-.text-outline {
-  paint-order: stroke fill;
-  -webkit-text-stroke: 8px var(--color-frame);
-  text-shadow: 0 5px 0 rgb(0 0 0 / 0.35);
-}
+  /* === Przycisk Arcade (DESIGN.md §4.1) === */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 56px;
+    padding: 1rem 2rem;
+    border-radius: var(--radius-btn);
+    border: 3px solid rgb(255 255 255 / 0.9);
+    background: var(--color-primary);
+    color: white;
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: transform 75ms;
+    box-shadow: var(--shadow-hard);
+  }
+  .btn:hover {
+    filter: brightness(1.1);
+  }
+  .btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    box-shadow: none;
+    pointer-events: none;
+  }
+  .btn:focus-visible {
+    outline: 3px solid var(--color-mint);
+    outline-offset: 2px;
+  }
 
-/* Karta gry na landingu — ramka w kolorze akcentu, jasne tło jak karteczka */
-.game-card {
-  border: 3px solid var(--accent);
-  border-radius: var(--radius-card);
-  background: rgb(255 255 255 / 0.9);
-  color: var(--color-sheet-ink);
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, black);
-  padding: 1.25rem;
-}
+  /* Wariant ghost — biały przycisk */
+  .btn-ghost {
+    background: rgb(255 255 255 / 0.9);
+    color: var(--color-sheet-ink);
+    border-color: rgb(255 255 255 / 0.4);
+    box-shadow: var(--shadow-hard-sm);
+  }
+  .btn-ghost:hover {
+    filter: brightness(0.95);
+  }
+  .btn-ghost:active {
+    transform: translateY(3px);
+    box-shadow: none;
+  }
 
-/* === Panel frosted glass (DESIGN.md §4.2) === */
-/* Cień TWARDY, nie `--shadow-lift`. DESIGN.md sam sobie tu przeczy: §1 pisze „cienie —
-   zawsze twarde, blur = 0", a trzy linijki niżej deklaruje --shadow-lift z rozmyciem
-   40 px, i kod poszedł za tym drugim. Skutek był taki, że panel unosił się na miękkim
-   cieniu w stylu Material tuż obok przycisku z twardym — dwa języki cienia na jednym
-   ekranie. Rozstrzyga §0, bo to twardy cień jest nazwany elementem sygnaturowym stylu.
-   --shadow-lift zostaje wyłącznie dla modala, któremu §4.4 przypisuje go wprost. */
-.card {
-  background: var(--color-panel);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 2px solid var(--color-stroke);
-  border-radius: var(--radius-card);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 4px 0 rgb(0 0 0 / 0.35);
-  padding: 1.5rem;
-}
+  /* Wariant accent — kolor danej gry */
+  .btn-accent {
+    border-color: color-mix(in srgb, var(--accent, white) 80%, white);
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--accent, var(--color-primary-deep)) 70%, black);
+  }
+  .btn-accent:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
 
-/* Karta zrośnięta z zakładkami „teczkowymi" (DESIGN.md §4.3).
+  /* Przycisk limonkowy — główne CTA „ZACZYNAMY!" (mockup: Ustawienia gry) */
+  .btn-lime {
+    background: linear-gradient(180deg, #ccff00 0%, #a8e600 100%);
+    color: #1a1a2e;
+    border-color: #ffffff;
+    box-shadow: 0 4px 0 #6b8f00;
+    text-shadow: none;
+  }
+  .btn-lime:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
 
-   OBA górne rogi kanciaste, nie tylko ten pod aktywną zakładką. Specyfikacja mówi
-   „po stronie aktywnej", ale zakłada przy tym zakładki, które nie sięgają zewnętrznej
-   krawędzi panelu. U nas dwie zakładki dzielą całą szerokość, więc na rogu panelu
-   stoi także ta NIEAKTYWNA — a że ma kanciasty dół, zwisała ostrym narożnikiem nad
-   zaokrągleniem karty. Zaokrąglenie całego zestawu niosą teraz górne rogi zakładek
-   i dolne rogi karty; wszystkie styki w środku są proste.
+  /* Przycisk koralowy — „ZAKŁADAM POKÓJ" (mockup: Nowy pokój) */
+  .btn-coral {
+    background: linear-gradient(180deg, #ff6b8a 0%, #e4335c 100%);
+    border-color: #ffffff;
+    box-shadow: 0 4px 0 #a30f30;
+  }
+  .btn-coral:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
 
-   UWAGA — dlaczego osobna klasa, a nie `rounded-t-none` z Tailwinda: utility siedzą
-   w wygenerowanym arkuszu PRZED regułami komponentów (`.rounded-tr-none` na bajcie
-   ~35 900, `.card` na ~70 500). Specyficzność jest ta sama — jedna klasa — więc
-   rozstrzyga kolejność i `.card` wygrywa. Utility Tailwinda NIE nadpisują niczego,
-   co jest zdefiniowane w tym pliku poniżej. */
-.card-tabbed {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
+  /* Glow selekcji — miętowa poświata na wybranym elemencie */
+  .glow-selected {
+    border-color: var(--color-mint);
+    box-shadow:
+      0 0 16px rgb(124 240 174 / 0.5),
+      0 0 4px rgb(124 240 174 / 0.3);
+  }
 
-/* === Kod pokoju — klocowe litery (Arcade) === */
-.neon-code {
-  display: inline-flex;
-  gap: 0.3em;
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.neon-code span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.15em;
-  padding: 0.1em 0.15em;
-  border-radius: 0.25em;
-  /* --code-ink podmieniane na ciemne, gdy akcent gry jest jasny (np. limonka) */
-  color: var(--code-ink, white);
-  background: var(--color-primary);
-  border: 3px solid rgb(255 255 255 / 0.6);
-  box-shadow: 0 3px 0 var(--color-primary-deep);
-  text-shadow: var(--code-shadow, 0 2px 4px rgb(0 0 0 / 0.3));
-}
+  /* Gradient tekstu (tytuł „Nowy pokój") */
+  .text-gradient {
+    background: linear-gradient(90deg, #ffd166 0%, #ff6b8a 45%, #7cf0ae 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
 
-/* === Neutralne tło do oceny koloru === */
-/* Fioletowo-różowy gradient zniekształca postrzeganą barwę (kontrast jednoczesny):
-   ta sama próbka na fioletowym tle wygląda inaczej niż na szarym, więc gracz dopasowuje
-   się do czegoś, co tło przesuwa. Dlatego gry o kolorze dostają neutralną szarość.
+  /* Tytuł z grubym ciemnym obrysem (mockup: „POKÓJ FFLC") */
+  .text-outline {
+    paint-order: stroke fill;
+    -webkit-text-stroke: 8px var(--color-frame);
+    text-shadow: 0 5px 0 rgb(0 0 0 / 0.35);
+  }
 
-   Świadomie PŁASKA, nie gradient: przy gradiencie ta sama próbka czytałaby się inaczej
-   u góry i u dołu ekranu. I świadomie bez halftone — kropki tuż przy próbce też
-   zaburzają ocenę. Wartość #333 jest czysto neutralna (R=G=B), więc nie wnosi
-   żadnego zafarbu barwnego. */
-.neutral-bg {
-  background: #333333;
-}
+  /* Karta gry na landingu — ramka w kolorze akcentu, jasne tło jak karteczka */
+  .game-card {
+    border: 3px solid var(--accent);
+    border-radius: var(--radius-card);
+    background: rgb(255 255 255 / 0.9);
+    color: var(--color-sheet-ink);
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, black);
+    padding: 1.25rem;
+  }
 
-/* === Suwaki w grze Odcień === */
-/* Tor pokazuje gradient danej składowej — gracz widzi, w którą stronę idzie kolor,
-   zamiast zgadywać po samej liczbie. */
-.odcien-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-  /* Bez tego przeglądarka może potraktować poziome przeciągnięcie po suwaku jako
-     przewijanie strony i odebrać je elementowi — na telefonie suwak „nie łapie". */
-  touch-action: none;
-  /* Wysokość musi pomieścić gałkę (1.75rem), inaczej wystaje poza pole trafienia
-     i część przeciągnięć ląduje obok inputa. */
-  height: 2rem;
-}
-.odcien-slider::-webkit-slider-runnable-track {
-  height: 1.5rem;
-  border-radius: 999px;
-  border: 3px solid var(--color-stroke);
-  background: var(--track);
-}
-.odcien-slider::-moz-range-track {
-  height: 1.5rem;
-  border-radius: 999px;
-  border: 3px solid var(--color-stroke);
-  background: var(--track);
-}
-.odcien-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 1.75rem;
-  height: 1.75rem;
-  /* (wysokość toru - wysokość gałki) / 2 — gałka wyśrodkowana na torze */
-  margin-top: -0.125rem;
-  border-radius: 999px;
-  border: 4px solid #fff;
-  background: var(--color-primary);
-  box-shadow: 0 3px 0 var(--color-primary-deep);
-}
-.odcien-slider::-moz-range-thumb {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  border: 4px solid #fff;
-  background: var(--color-primary);
-  box-shadow: 0 3px 0 var(--color-primary-deep);
-}
-.odcien-slider:disabled { opacity: 0.55; cursor: not-allowed; }
-.odcien-slider:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--color-mint); outline-offset: 2px; }
+  /* === Panel frosted glass (DESIGN.md §4.2) === */
+  /* Cień TWARDY, nie `--shadow-lift`. DESIGN.md sam sobie tu przeczy: §1 pisze „cienie —
+     zawsze twarde, blur = 0", a trzy linijki niżej deklaruje --shadow-lift z rozmyciem
+     40 px, i kod poszedł za tym drugim. Skutek był taki, że panel unosił się na miękkim
+     cieniu w stylu Material tuż obok przycisku z twardym — dwa języki cienia na jednym
+     ekranie. Rozstrzyga §0, bo to twardy cień jest nazwany elementem sygnaturowym stylu.
+     --shadow-lift zostaje wyłącznie dla modala, któremu §4.4 przypisuje go wprost. */
+  .card {
+    background: var(--color-panel);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 2px solid var(--color-stroke);
+    border-radius: var(--radius-card);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 4px 0 rgb(0 0 0 / 0.35);
+    padding: 1.5rem;
+  }
 
-/* === Animacje UI === */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(1rem); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(0.5rem); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes arcade-pop {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.arcade-pop {
-  animation: arcade-pop 160ms ease-out;
+  /* Karta zrośnięta z zakładkami „teczkowymi" (DESIGN.md §4.3).
+
+     OBA górne rogi kanciaste, nie tylko ten pod aktywną zakładką. Specyfikacja mówi
+     „po stronie aktywnej", ale zakłada przy tym zakładki, które nie sięgają zewnętrznej
+     krawędzi panelu. U nas dwie zakładki dzielą całą szerokość, więc na rogu panelu
+     stoi także ta NIEAKTYWNA — a że ma kanciasty dół, zwisała ostrym narożnikiem nad
+     zaokrągleniem karty. Zaokrąglenie całego zestawu niosą teraz górne rogi zakładek
+     i dolne rogi karty; wszystkie styki w środku są proste.
+
+     UWAGA — dlaczego osobna klasa, a nie `rounded-t-none` z Tailwinda: utility siedzą
+     w wygenerowanym arkuszu PRZED regułami komponentów (`.rounded-tr-none` na bajcie
+     ~35 900, `.card` na ~70 500). Specyficzność jest ta sama — jedna klasa — więc
+     rozstrzyga kolejność i `.card` wygrywa. Utility Tailwinda NIE nadpisują niczego,
+     co jest zdefiniowane w tym pliku poniżej. */
+  .card-tabbed {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  /* === Kod pokoju — klocowe litery (Arcade) === */
+  .neon-code {
+    display: inline-flex;
+    gap: 0.3em;
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .neon-code span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15em;
+    padding: 0.1em 0.15em;
+    border-radius: 0.25em;
+    /* --code-ink podmieniane na ciemne, gdy akcent gry jest jasny (np. limonka) */
+    color: var(--code-ink, white);
+    background: var(--color-primary);
+    border: 3px solid rgb(255 255 255 / 0.6);
+    box-shadow: 0 3px 0 var(--color-primary-deep);
+    text-shadow: var(--code-shadow, 0 2px 4px rgb(0 0 0 / 0.3));
+  }
+
+  /* === Neutralne tło do oceny koloru === */
+  /* Fioletowo-różowy gradient zniekształca postrzeganą barwę (kontrast jednoczesny):
+     ta sama próbka na fioletowym tle wygląda inaczej niż na szarym, więc gracz dopasowuje
+     się do czegoś, co tło przesuwa. Dlatego gry o kolorze dostają neutralną szarość.
+
+     Świadomie PŁASKA, nie gradient: przy gradiencie ta sama próbka czytałaby się inaczej
+     u góry i u dołu ekranu. I świadomie bez halftone — kropki tuż przy próbce też
+     zaburzają ocenę. Wartość #333 jest czysto neutralna (R=G=B), więc nie wnosi
+     żadnego zafarbu barwnego. */
+  .neutral-bg {
+    background: #333333;
+  }
+
+  /* === Suwaki w grze Odcień === */
+  /* Tor pokazuje gradient danej składowej — gracz widzi, w którą stronę idzie kolor,
+     zamiast zgadywać po samej liczbie. */
+  .odcien-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    /* Bez tego przeglądarka może potraktować poziome przeciągnięcie po suwaku jako
+       przewijanie strony i odebrać je elementowi — na telefonie suwak „nie łapie". */
+    touch-action: none;
+    /* Wysokość musi pomieścić gałkę (1.75rem), inaczej wystaje poza pole trafienia
+       i część przeciągnięć ląduje obok inputa. */
+    height: 2rem;
+  }
+  .odcien-slider::-webkit-slider-runnable-track {
+    height: 1.5rem;
+    border-radius: 999px;
+    border: 3px solid var(--color-stroke);
+    background: var(--track);
+  }
+  .odcien-slider::-moz-range-track {
+    height: 1.5rem;
+    border-radius: 999px;
+    border: 3px solid var(--color-stroke);
+    background: var(--track);
+  }
+  .odcien-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    /* (wysokość toru - wysokość gałki) / 2 — gałka wyśrodkowana na torze */
+    margin-top: -0.125rem;
+    border-radius: 999px;
+    border: 4px solid #fff;
+    background: var(--color-primary);
+    box-shadow: 0 3px 0 var(--color-primary-deep);
+  }
+  .odcien-slider::-moz-range-thumb {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    border: 4px solid #fff;
+    background: var(--color-primary);
+    box-shadow: 0 3px 0 var(--color-primary-deep);
+  }
+  .odcien-slider:disabled { opacity: 0.55; cursor: not-allowed; }
+  .odcien-slider:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--color-mint); outline-offset: 2px; }
+
+  /* === Animacje UI === */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(1rem); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(0.5rem); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes arcade-pop {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .arcade-pop {
+    animation: arcade-pop 160ms ease-out;
+  }
 }
 
 /* Reduced motion (DESIGN.md §5) */
