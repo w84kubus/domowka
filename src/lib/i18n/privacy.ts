@@ -63,7 +63,7 @@ const pl: PrivacyContent = {
     "Dane pokoju znikają same po 8 godzinach — nie trzeba o nic prosić.",
   ],
   contactTitle: "Kontakt",
-  contact: "Pytania o dane: napisz do właściciela projektu przez GitHub (w84kubus/domowka).",
+  contact: "Pytania o dane? Napisz do mnie przez GitHub.",
   back: "← Wróć do gry",
 };
 
@@ -99,7 +99,7 @@ const en: PrivacyContent = {
     "Room data disappears on its own after 8 hours — you don't need to ask for anything.",
   ],
   contactTitle: "Contact",
-  contact: "Questions about data: reach the project owner via GitHub (w84kubus/domowka).",
+  contact: "Questions about data? Reach me on GitHub.",
   back: "← Back to the game",
 };
 

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { GithubMark } from "@/components/GithubMark";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { PRIVACY } from "@/lib/i18n/privacy";
@@ -77,7 +78,18 @@ export default function PrywatnoscPage() {
 
       <section className="relative flex w-full max-w-3xl flex-col gap-3">
         <h2 className="font-display text-lg font-bold uppercase tracking-[0.06em] text-mint">{c.contactTitle}</h2>
-        <p className="card text-base font-semibold leading-relaxed text-ink">{c.contact}</p>
+        <div className="card flex flex-col items-start gap-3 text-base font-semibold leading-relaxed text-ink">
+          <p>{c.contact}</p>
+          <a
+            href="https://github.com/w84kubus"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-display inline-flex min-h-[44px] items-center gap-2 rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-2 active:translate-y-[3px] active:shadow-none"
+          >
+            <GithubMark size={18} />
+            github.com/w84kubus
+          </a>
+        </div>
       </section>
 
       <Link href="/" className="btn btn-ghost relative mb-4 w-full max-w-3xl">
