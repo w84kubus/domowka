@@ -21,14 +21,17 @@
   <img src="https://img.shields.io/badge/Firebase-Firestore+Auth-FFCA28?logo=firebase&logoColor=black" alt="Firebase" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind v4" />
   <img src="https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/i18n-PL%20%C2%B7%20EN-7CF0AE" alt="Polish and English" />
   <img src="https://img.shields.io/badge/multiplayer-realtime-E4002B" alt="Multiplayer Realtime" />
-  <img src="https://img.shields.io/badge/tests-134-7CF0AE?logo=vitest&logoColor=black" alt="134 tests" />
+  <img src="https://img.shields.io/badge/tests-206-7CF0AE?logo=vitest&logoColor=black" alt="206 tests" />
 </p>
 
 ---
 
-> **Note:** the app's interface is in **Polish** — it's built for house parties in Poland.
-> This README is in English so the architecture is readable to everyone.
+> **Note:** the app ships in **Polish and English** — there's a switcher in the corner.
+> The Polish half is complete; on the English side the shell (landing, entry, lobby,
+> privacy) is fully translated, while a few in-game screens still fall back to Polish.
+> Directory and route names stay Polish throughout, because that's the app's home language.
 
 ## About
 
@@ -41,15 +44,49 @@
 3. 🎮 **Host picks a game** — settings, start, play!
 4. 🔄 **Next round** — when it ends you're back in the lobby to pick another
 
+## Screenshots
+
+The same three screens side by side in both languages — that's the whole i18n story in one table.
+
+| | Polski | English |
+|---|---|---|
+| **Landing** | <img src="docs/screenshots/pl-landing.webp" width="230" alt="Landing page in Polish" /> | <img src="docs/screenshots/en-landing.webp" width="230" alt="Landing page in English" /> |
+| **Entry** | <img src="docs/screenshots/pl-wejscie.webp" width="230" alt="Entry screen in Polish" /> | <img src="docs/screenshots/en-wejscie.webp" width="230" alt="Entry screen in English" /> |
+| **Lobby** | <img src="docs/screenshots/pl-lobby.webp" width="230" alt="Lobby in Polish" /> | <img src="docs/screenshots/en-lobby.webp" width="230" alt="Lobby in English" /> |
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**In-game** — Stopwatch, TARGET mode. The digits are masked, so you count in your head.
+
+<img src="docs/screenshots/pl-gra.webp" width="230" alt="Stopwatch mid-round" />
+
+</td>
+<td width="50%" valign="top">
+
+**Host screen (TV)** — a separate landscape layout for a laptop or TV: huge room code, QR, and who's already in.
+
+<img src="docs/screenshots/pl-tv.webp" width="420" alt="Host screen on a TV" />
+
+</td>
+</tr>
+</table>
+
+> Those last two are Polish-only for now — the in-game screens and the TV layout are the
+> part of the interface still waiting for translation.
+
 ## Games
 
-| Game | Icon | Description | Players |
-|---|---|---|---|
-| **Stopwatch** | ⏱️ | Stop at the perfect moment. Without looking at the digits. 2 modes: **TARGET** and **GUESS THE TIME**. | 1–16 |
-| **Categories** | ✍️ | A letter drops, pens start moving. First one done wins. | 1–16 |
-| **Hangman** | 🪢 | Guess the phrase before the figure hangs. 3 modes: race, co-op, setter. | 1–16 |
-| **Impostor** | 🕵️ | Everyone knows the password. Almost everyone. Find the mole or lose. | 3–16 |
-| **Mafia** | 🔪 | The town sleeps. The Mafia doesn't. Auto-narrator, roles: detective, doctor, mafia. | 4–16 |
+| Game | Description | Players |
+|---|---|---|
+| **Stopwatch** | Stop at the perfect moment. Without looking at the digits. 2 modes: **TARGET** and **GUESS THE TIME**. | 1–16 |
+| **Categories** | A letter drops, pens start moving. First one done wins. | 1–16 |
+| **Hangman** | Guess the phrase before the figure hangs. 3 modes: race, co-op, setter. | 1–16 |
+| **Impostor** | Everyone knows the password. Almost everyone. Find the mole or lose. | 3–16 |
+| **Mafia** | The town sleeps. The Mafia doesn't. Auto-narrator, roles: detective, doctor, mafia. | 4–16 |
+| **Shade** | Memorise the colour. Rebuild it from memory with three sliders. | 1–16 |
+| **Casino** | Bet your chips. Run out and you're out. 4 modes: Jackpot, Double, Wheel, Slots. | 2–16 |
 
 > **Stopwatch has two modes.** In **TARGET**, everyone gets the same time to hit and stops the
 > clock on their own device — the digits are masked, so you count in your head. In **GUESS THE
@@ -68,6 +105,8 @@
 - **Avatars** — 30 illustrated icons on colored tiles
 - **Game rules** — modal with steps for each game
 - **Room records** — who won how many times plus a list of feats, persistent for the room's lifetime
+- **Empty slots** — the lobby shows free seats, so a host waiting alone isn't staring at one row and a void
+- **Folder tabs** — creating and joining are two tabs of one form; nickname and avatar survive the switch
 
 ### Realtime multiplayer
 - **Anonymous auth** — Firebase Anonymous Auth, zero sign-up
@@ -77,6 +116,11 @@
 - **Idempotency** — actionId (UUID) prevents duplicate actions
 - **Connection bar** — red "no connection", green "connected"
 - **Exponential backoff** — 500ms → 1s → 2s → … → 16s max
+
+### Language
+- **Polish and English** — a switcher in the corner, no language prefix in the URL (room codes live there)
+- **Cookie-based** — the server reads it before the first render, so nothing flashes in the wrong language
+- **Link card** — `og:image` plus a title and description in the reader's language, because the room link gets pasted into group chats
 
 ### Security
 - **The client NEVER writes game state** — every write goes through Route Handlers + `firebase-admin`
@@ -98,7 +142,9 @@
 - **Animations** — slideIn, fadeIn, timer pulse, arcade-pop
 - **SFX** — Web Audio: join, phase change, urgent tick, fanfare, defeat, neon buzz
 - **Confetti** — canvas-confetti on a win, in the game's colors
-- **Skeleton loader** — animated placeholder in the lobby
+- **Skeleton loader** — placeholder shaped like the lobby that's coming, so nothing jumps once it loads
+- **Illustration set** — three recurring characters: on the landing page, waiting in an empty lobby, shrugging on error screens, celebrating on the podium
+- **App frame** — the app is a rounded card set into a dark bezel, not a full-bleed page
 - **prefers-reduced-motion** — fully respected
 
 ## Tech stack
@@ -112,12 +158,14 @@
 | Auth | Firebase Anonymous Auth |
 | Server | Route Handlers + `firebase-admin` |
 | PWA | Serwist (Service Worker, manifest, offline) |
-| Tests | Vitest (134 tests — full playthroughs, security, core contracts) |
+| Tests | Vitest (206 tests — full playthroughs, security, core contracts) |
 | Deploy | Vercel (auto-deploy from GitHub) |
 | Sound | Web Audio API (zero audio files) |
 | QR | `qrcode` (SVG generation) |
+| i18n | Own dictionary (~250 keys, no library — next-intl would force a language prefix in the URL) |
 | Fonts | Baloo 2 (display), Nunito (body), JetBrains Mono (numbers) |
-| Icons | Lucide (interface) + a custom illustration pack (avatars, games) |
+| Icons | Lucide (interface) + a custom illustration pack (30 avatars, 7 game icons, characters) |
+| Image pipeline | `scripts/process-assets.py` — Pillow + NumPy, cuts the background off generated art |
 
 ## Architecture
 
@@ -133,6 +181,9 @@ src/
 │   ├── dolacz/                 # join a room
 │   ├── pokoj/[code]/           # player screen (lobby + game)
 │   │   └── ekran/              # host screen for TV (landscape layout)
+│   ├── p/[code]/               # deep link from the QR (code pre-filled)
+│   ├── prywatnosc/             # privacy notice (GDPR art. 13)
+│   ├── opengraph-image.jpg     # link card for chats and social
 │   ├── ~offline/               # offline page (PWA)
 │   └── api/rooms/              # Route Handlers (the ONLY place that writes!)
 │       ├── route.ts            # POST — create room
@@ -163,7 +214,9 @@ src/
 │   ├── panstwa-miasta/         # ✍️ Categories
 │   ├── wisielec/               # 🪢 Hangman
 │   ├── impostor/               # 🕵️ Impostor
-│   └── mafia/                  # 🔪 Mafia
+│   ├── mafia/                  # 🔪 Mafia
+│   ├── odcien/                 # 🎨 Shade
+│   └── kasyno/                 # 🎰 Casino
 │
 ├── components/                 # React components
 │   ├── game/                   # GameShell, LobbyGames, GameRulesCard
@@ -182,7 +235,13 @@ src/
 │   ├── ConnectionBar.tsx       # online/offline bar
 │   ├── InstallPrompt.tsx       # PWA install prompt
 │   ├── ErrorBoundary.tsx       # error boundary per game
-│   └── LobbySkeleton.tsx       # skeleton loader
+│   ├── LobbySkeleton.tsx       # skeleton loader
+│   ├── Illustration.tsx        # illustration set (@1x/@2x via srcSet)
+│   ├── ComingSoonCard.tsx      # "more games soon" tile
+│   ├── EntryTabs.tsx           # folder tabs (create / join)
+│   ├── LanguageSwitcher.tsx    # PL / EN
+│   ├── PrivacyNotice.tsx       # first-visit notice (one bar at a time)
+│   └── ReturnToRoom.tsx        # "you have an active room"
 │
 ├── hooks/                      # Custom hooks
 │   ├── useRoom.ts              # Firestore onSnapshot + backoff
@@ -202,6 +261,8 @@ src/
 │   ├── sound.ts                # Web Audio SFX (10 sounds)
 │   ├── confetti.ts             # canvas-confetti wrapper
 │   ├── action-id.ts            # crypto.randomUUID()
+│   ├── client/notices.ts       # coordinates the bars pinned to the bottom
+│   ├── i18n/                   # dictionary, provider, privacy copy
 │   ├── store/session.ts        # Zustand (activeRoom)
 │   └── types/room.ts           # Room, Player, RoomStatus
 │
@@ -213,10 +274,12 @@ src/
 - **Read-only client** — the client NEVER writes to Firestore. Everything goes through Route Handlers + `firebase-admin`. Breaking this rule leaks roles in DevTools.
 - **Engines are pure functions** — zero `Date.now()`, zero `Math.random()`. Time and randomness arrive via `ctx.now` and `ctx.rng`. Fully deterministic, fully testable.
 - **Plugin architecture** — adding a game = a new folder in `src/games/` + one line in `registry.ts`. Zero changes to the core.
-- **Dynamic imports** — game components load on demand (`next/dynamic`). A player downloads only the current game's code, not all five.
+- **Dynamic imports** — game components load on demand (`next/dynamic`). A player downloads only the current game's code, not all seven.
 - **Secrets in three layers** — `publicState` (everyone sees), `secret/state` (nobody reads, `allow read: if false`), `private/{uid}` (yours only).
 - **Timers without cron** — the server writes `phaseEndsAt`, clients count down, and once it passes **only the host** nudges the server. The rest step in as a fallback after 3s, in case the host drops. Previously everyone nudged at once, which with 8 players meant ~6.6 transactions/s against a single document versus Firestore's ~1/s limit — transactions collided, retried, and phase changes ran several seconds late.
-- **Everything in Polish** — UI, names, fonts with `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). Having the glyphs isn't enough though: Fredoka has them, but draws the ogonek in Ą/Ę as a thin hairline detached from the letter. Hence Baloo 2 — details in [`DESIGN.md`](DESIGN.md).
+- **Polish first, English alongside** — code, routes and directory names stay Polish; the interface reads from a dictionary. No i18n library: next-intl would force a language prefix into the URL, and room codes live there. The language sits in a cookie the server reads before the first render, so nothing flashes in the wrong language.
+- **Fonts with `latin-ext`** (Ą Ć Ę Ł Ń Ó Ś Ź Ż) — having the glyphs isn't enough though: Fredoka has them, but draws the ogonek in Ą/Ę as a thin hairline detached from the letter. Hence Baloo 2 — details in [`DESIGN.md`](DESIGN.md).
+- **Component rules live in `@layer components`** — Tailwind orders the cascade theme → base → components → utilities. Outside a layer these rules land *after* the utilities and win every tie, so `px-4` next to `.card` silently did nothing. About forty such spots existed before the fix.
 - **The core knows no game** — two features work through engine opt-in rather than core knowledge. A game without the opt-in simply works, just without that feature:
   - **Records** — an engine tags its event with `meta: { uid, rekord: true }`; the core collects it into the room's feats.
   - **Ending a game** — an engine exposes `canFinish` in `publicView`, and `GameShell` then shows "End game" instead of the emergency abort. Ending gives you a podium and saves records; aborting doesn't.
@@ -260,7 +323,7 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 npm run dev        # dev server (localhost:3000)
 npm run build      # production build
 npm run lint       # eslint
-npm run test       # vitest run (134 tests)
+npm run test       # vitest run (206 tests)
 ```
 
 ## Installing on a phone (PWA)

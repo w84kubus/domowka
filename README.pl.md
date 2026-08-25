@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind v4" />
   <img src="https://img.shields.io/badge/PWA-instalowalna-5A0FC8?logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/multiplayer-realtime-E4002B" alt="Multiplayer Realtime" />
-  <img src="https://img.shields.io/badge/testy-134-7CF0AE?logo=vitest&logoColor=black" alt="134 testy" />
+  <img src="https://img.shields.io/badge/testy-206-7CF0AE?logo=vitest&logoColor=black" alt="206 testów" />
 </p>
 
 ---
@@ -38,15 +38,49 @@
 3. 🎮 **Host wybiera grę** — ustawienia, start, gramy!
 4. 🔄 **Kolejna runda** — po zakończeniu wracasz do lobby i wybierasz następną
 
+## Zrzuty ekranu
+
+Te same trzy ekrany obok siebie w obu językach — cała historia dwujęzyczności w jednej tabeli.
+
+| | Polski | English |
+|---|---|---|
+| **Strona główna** | <img src="docs/screenshots/pl-landing.webp" width="230" alt="Strona główna po polsku" /> | <img src="docs/screenshots/en-landing.webp" width="230" alt="Strona główna po angielsku" /> |
+| **Wejście** | <img src="docs/screenshots/pl-wejscie.webp" width="230" alt="Ekran wejścia po polsku" /> | <img src="docs/screenshots/en-wejscie.webp" width="230" alt="Ekran wejścia po angielsku" /> |
+| **Lobby** | <img src="docs/screenshots/pl-lobby.webp" width="230" alt="Lobby po polsku" /> | <img src="docs/screenshots/en-lobby.webp" width="230" alt="Lobby po angielsku" /> |
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**W trakcie gry** — Stoper, tryb CEL. Cyfry są zasłonięte, więc liczysz w głowie.
+
+<img src="docs/screenshots/pl-gra.webp" width="230" alt="Stoper w trakcie rundy" />
+
+</td>
+<td width="50%" valign="top">
+
+**Ekran hosta (TV)** — osobny układ poziomy na laptopa albo telewizor: wielki kod pokoju, QR i kto już jest.
+
+<img src="docs/screenshots/pl-tv.webp" width="420" alt="Ekran hosta na telewizorze" />
+
+</td>
+</tr>
+</table>
+
+> Te dwa ostatnie są na razie tylko po polsku — ekrany gier i układ na TV to ta część
+> interfejsu, która wciąż czeka na tłumaczenie.
+
 ## Gry
 
-| Gra | Emoji | Opis | Gracze |
-|---|---|---|---|
-| **Stoper** | ⏱️ | Zatrzymaj w idealnym momencie. Bez patrzenia na cyfry. 2 tryby: **CEL** i **ZGADNIJ CZAS**. | 1–16 |
-| **Państwa-miasta** | ✍️ | Litera pada, długopisy w ruch. Kto pierwszy, ten lepszy. | 1–16 |
-| **Wisielec** | 🪢 | Zgadnij hasło, zanim ludzik zawiśnie. 3 tryby: wyścig, kooperacja, zadający. | 1–16 |
-| **Impostor** | 🕵️ | Wszyscy znają hasło. Prawie wszyscy. Znajdź kreta albo giń. | 3–16 |
-| **Mafia** | 🔪 | Miasto śpi. Mafia nie. Auto-narrator, role: detektyw, lekarz, mafia. | 4–16 |
+| Gra | Opis | Gracze |
+|---|---|---|
+| **Stoper** | Zatrzymaj w idealnym momencie. Bez patrzenia na cyfry. 2 tryby: **CEL** i **ZGADNIJ CZAS**. | 1–16 |
+| **Państwa-miasta** | Litera pada, długopisy w ruch. Kto pierwszy, ten lepszy. | 1–16 |
+| **Wisielec** | Zgadnij hasło, zanim ludzik zawiśnie. 3 tryby: wyścig, kooperacja, zadający. | 1–16 |
+| **Impostor** | Wszyscy znają hasło. Prawie wszyscy. Znajdź kreta albo giń. | 3–16 |
+| **Mafia** | Miasto śpi. Mafia nie. Auto-narrator, role: detektyw, lekarz, mafia. | 4–16 |
+| **Odcień** | Zapamiętaj kolor. Odtwórz go z pamięci trzema suwakami. | 1–16 |
+| **Kasyno** | Obstawiaj żetony. Kto zostanie z pustymi rękami, odpada. 4 tryby: Jackpot, Double, Wheel, Sloty. | 2–16 |
 
 > **Stoper ma dwa tryby.** W **CEL** wszyscy dostają ten sam czas do trafienia i zatrzymują stoper
 > u siebie — cyfry są zamaskowane, liczysz w głowie. W **ZGADNIJ CZAS** jeden gracz jest Biegaczem
@@ -64,6 +98,8 @@
 - **Awatary** — 30 ilustrowanych ikon w kolorowych kafelkach
 - **Zasady gier** — modal z krokami dla każdej gry
 - **Rekordy pokoju** — kto ile wygrał i lista wyczynów, trwałe przez cały czas życia pokoju
+- **Wolne miejsca** — lobby pokazuje puste sloty, żeby czekający host nie patrzył na jeden wiersz i pustkę
+- **Zakładki teczkowe** — zakładanie i dołączanie to dwie zakładki jednego formularza; nick i awatar przeżywają przełączenie
 
 ### Realtime multiplayer
 - **Anonimowa autoryzacja** — Firebase Anonymous Auth, zero rejestracji
@@ -73,6 +109,11 @@
 - **Idempotencja** — actionId (UUID) zapobiega podwójnym akcjom
 - **Pasek połączenia** — czerwony "Brak połączenia", zielony "✓ Połączono"
 - **Wykładniczy backoff** — 500ms → 1s → 2s → ... → 16s max
+
+### Język
+- **Polski i angielski** — przełącznik w rogu, bez prefiksu języka w adresie (tam siedzą kody pokoi)
+- **Przez ciasteczko** — serwer czyta je przed pierwszym renderem, więc nic nie miga w złym języku
+- **Karta linku** — `og:image` plus tytuł i opis w języku czytelnika, bo link do pokoju ląduje w czatach grupowych
 
 ### Bezpieczeństwo
 - **Klient NIGDY nie zapisuje stanu gry** — wszystkie zapisy przez Route Handlery + `firebase-admin`
@@ -94,7 +135,9 @@
 - **Animacje** — slideIn, fadeIn, timer pulse, arcade-pop
 - **SFX** — WebAudio: join, phase change, urgent tick, fanfara, defeat, neon buzz
 - **Konfetti** — canvas-confetti na wygraną z kolorami gry
-- **Skeleton loader** — animowany placeholder w lobby
+- **Skeleton loader** — placeholder w kształcie lobby, które za chwilę przyjdzie, więc nic nie podskakuje po załadowaniu
+- **Pakiet ilustracji** — trzy powracające postacie: na stronie głównej, czekające w pustym lobby, wzruszające ramionami na ekranach błędu, świętujące na podium
+- **Rama aplikacji** — aplikacja jest zaokrągloną kartą wpuszczoną w ciemną ramę, nie stroną na pełnej szerokości
 - **prefers-reduced-motion** — pełne wsparcie
 
 ## Stack technologiczny
@@ -108,12 +151,14 @@
 | Autoryzacja | Firebase Anonymous Auth |
 | Serwer | Route Handlers + `firebase-admin` |
 | PWA | Serwist (Service Worker, manifest, offline) |
-| Testy | Vitest (134 testy — pełne partie, bezpieczeństwo, kontrakty rdzenia) |
+| Testy | Vitest (206 testów — pełne partie, bezpieczeństwo, kontrakty rdzenia) |
 | Deploy | Vercel (auto-deploy z GitHub) |
 | Dźwięki | Web Audio API (zero plików audio) |
 | QR | `qrcode` (generowanie SVG) |
 | Czcionki | Baloo 2 (display), Nunito (body), JetBrains Mono (liczby) |
-| Ikony | Lucide (interfejs) + własny pakiet ilustracji (awatary, gry) |
+| Języki | Własny słownik (~250 kluczy, bez biblioteki — next-intl wymusiłby prefiks języka w adresie) |
+| Ikony | Lucide (interfejs) + własny pakiet ilustracji (30 awatarów, 7 ikon gier, postacie) |
+| Obróbka grafik | `scripts/process-assets.py` — Pillow + NumPy, wycina tło z wygenerowanych ilustracji |
 
 ## Architektura
 
@@ -126,6 +171,9 @@ src/
 │   ├── dolacz/                 # dołączanie do pokoju
 │   ├── pokoj/[code]/           # ekran gracza (lobby + gra)
 │   │   └── ekran/              # ekran hosta na TV (układ poziomy)
+│   ├── p/[code]/               # deep link ze skanu QR (kod wpisany)
+│   ├── prywatnosc/             # obowiązek informacyjny (RODO art. 13)
+│   ├── opengraph-image.jpg     # karta linku do czatów i social mediów
 │   ├── ~offline/               # strona offline (PWA)
 │   └── api/rooms/              # Route Handlers (jedyne miejsce zapisu!)
 │       ├── route.ts            # POST — tworzenie pokoju
@@ -156,7 +204,9 @@ src/
 │   ├── panstwa-miasta/         # ✍️ Państwa-miasta
 │   ├── wisielec/               # 🪢 Wisielec
 │   ├── impostor/               # 🕵️ Impostor
-│   └── mafia/                  # 🔪 Mafia
+│   ├── mafia/                  # 🔪 Mafia
+│   ├── odcien/                 # 🎨 Odcień
+│   └── kasyno/                 # 🎰 Kasyno
 │
 ├── components/                 # Komponenty React
 │   ├── game/                   # GameShell, LobbyGames, GameRulesCard
@@ -175,7 +225,13 @@ src/
 │   ├── ConnectionBar.tsx       # pasek online/offline
 │   ├── InstallPrompt.tsx       # prompt instalacji PWA
 │   ├── ErrorBoundary.tsx       # error boundary per gra
-│   └── LobbySkeleton.tsx       # skeleton loader
+│   ├── LobbySkeleton.tsx       # skeleton loader
+│   ├── Illustration.tsx        # pakiet ilustracji (@1x/@2x przez srcSet)
+│   ├── ComingSoonCard.tsx      # kafelek „więcej gier wkrótce"
+│   ├── EntryTabs.tsx           # zakładki teczkowe (zakładam / dołączam)
+│   ├── LanguageSwitcher.tsx    # PL / EN
+│   ├── PrivacyNotice.tsx       # informacja przy pierwszej wizycie
+│   └── ReturnToRoom.tsx        # „masz aktywny pokój"
 │
 ├── hooks/                      # Custom hooks
 │   ├── useRoom.ts              # Firestore onSnapshot + backoff
@@ -195,6 +251,8 @@ src/
 │   ├── sound.ts                # WebAudio SFX (10 dźwięków)
 │   ├── confetti.ts             # canvas-confetti wrapper
 │   ├── action-id.ts            # crypto.randomUUID()
+│   ├── client/notices.ts       # koordynacja pasków przyklejonych do dołu
+│   ├── i18n/                   # słownik, provider, treść prywatności
 │   ├── store/session.ts        # Zustand (activeRoom)
 │   └── types/room.ts           # Room, Player, RoomStatus
 │
@@ -206,10 +264,12 @@ src/
 - **Klient read-only** — klient NIGDY nie zapisuje do Firestore. Wszystko przez Route Handlery + `firebase-admin`. Złamanie tej zasady wycieka role w DevToolsach.
 - **Silniki to czyste funkcje** — zero `Date.now()`, zero `Math.random()`. Czas i losowość wchodzą przez `ctx.now` i `ctx.rng`. W pełni deterministyczne, w pełni testowalne.
 - **Plugin architecture** — dodanie nowej gry = nowy folder w `src/games/` + jedna linia w `registry.ts`. Zero zmian w rdzeniu.
-- **Dynamic imports** — komponenty gier ładowane dynamicznie (`next/dynamic`). Gracz pobiera tylko kod aktualnej gry, nie wszystkich pięciu.
+- **Dynamic imports** — komponenty gier ładowane dynamicznie (`next/dynamic`). Gracz pobiera tylko kod aktualnej gry, nie wszystkich siedmiu.
 - **Tajne dane w trzech warstwach** — `publicState` (wszyscy widzą), `secret/state` (nikt nie czyta, `allow read: if false`), `private/{uid}` (tylko Twoje).
 - **Timer bez crona** — serwer pisze `phaseEndsAt`, klienci odliczają, a po upływie czasu ponagla serwer **wyłącznie host**. Reszta wchodzi jako zapas dopiero po 3 s, gdyby host wypadł. Wcześniej ponaglali wszyscy naraz, co przy 8 graczach dawało ~6,6 transakcji/s na jednym dokumencie przy limicie Firestore ~1/s — transakcje wchodziły w konflikt i faza spóźniała się o kilka sekund.
-- **Wszystko po polsku** — UI, nazwy, fonty z `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). Sama obecność glifów to jednak za mało: Fredoka je ma, ale rysuje ogonek w Ą/Ę cienkim włosem oderwanym od litery. Stąd Baloo 2 — szczegóły w [`DESIGN.md`](DESIGN.md).
+- **Polski jako pierwszy, angielski obok** — kod, trasy i nazwy katalogów zostają po polsku; interfejs czyta ze słownika. Bez biblioteki i18n: next-intl wymusiłby prefiks języka w adresie, a tam siedzą kody pokoi. Język trzyma ciasteczko, które serwer czyta przed pierwszym renderem, więc nic nie miga w złym języku.
+- **Fonty z `latin-ext`** (Ą Ć Ę Ł Ń Ó Ś Ź Ż) — sama obecność glifów to jednak za mało: Fredoka je ma, ale rysuje ogonek w Ą/Ę cienkim włosem oderwanym od litery. Stąd Baloo 2 — szczegóły w [`DESIGN.md`](DESIGN.md).
+- **Reguły komponentów w `@layer components`** — Tailwind układa kaskadę theme → base → components → utilities. Poza warstwą te reguły lądują *po* utility i wygrywają każdy remis, więc `px-4` obok `.card` po cichu nic nie robiło. Przed poprawką takich miejsc było około czterdziestu.
 - **Rdzeń nie zna żadnej gry** — dwie funkcje działają przez opt-in silnika, nie przez wiedzę rdzenia. Gra bez opt-inu po prostu działa, tylko bez danej funkcji:
   - **Rekordy** — silnik oznacza zdarzenie `meta: { uid, rekord: true }`, rdzeń zbiera i dopisuje do wyróżnień pokoju.
   - **Zakończenie gry** — silnik wystawia `canFinish` w `publicView`, a `GameShell` pokazuje wtedy „Zakończ grę" zamiast awaryjnego przerwania. Zakończenie daje podium i zapisuje rekordy, przerwanie nie.
@@ -253,7 +313,7 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 npm run dev        # serwer deweloperski (localhost:3000)
 npm run build      # produkcyjny build
 npm run lint       # eslint
-npm run test       # vitest run (134 testy)
+npm run test       # vitest run (206 testów)
 ```
 
 ## Instalacja na telefonie (PWA)
