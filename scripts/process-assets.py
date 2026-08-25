@@ -218,9 +218,14 @@ def cut_background(
     # dwóch postaci) — rozlewanie od krawędzi tam nie wejdzie, a to nadal jest tło.
     # Warunek jest ciasny: `t_in` od CZYSTEGO klucza. Miętowe ekrany telefonów leżą
     # 214 jednostek od zieleni, więc ta reguła ich nie dotyka.
-    holes = (~outside) & (dist < t_in)
+    #
+    # NIGDY przy kluczu bez barwy. Reguła jest bezpieczna tylko dlatego, że kolor
+    # klucza dobiera się tak, by nie występował w rysunku — a biel i czerń występują
+    # w kreskówce wszędzie. Przy kluczu #FFFFFF wycięło to białka oczu wszystkim trzem
+    # postaciom (147 tys. pikseli) i przez oczodoły było widać tło strony.
     alpha[~outside] = 1.0  # wnętrze obiektu jest nietykalne, choćby miało kolor klucza
-    alpha[holes] = 0.0
+    if not achromatic:
+        alpha[(~outside) & (dist < t_in)] = 0.0
 
     # Głębokie wnętrze obiektu — tam nie wolno ruszać kolorów (miętowy ekran telefonu
     # przy zielonym kluczu musi zostać miętowy).
