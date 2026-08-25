@@ -13,6 +13,7 @@ const DIMS = {
   "sceny/howto-pokoj": [454, 640],
   "sceny/howto-kod": [640, 493],
   "sceny/howto-gra": [640, 453],
+  "ikony/wkrotce": [357, 384],
 } as const;
 
 export type IllustrationId = keyof typeof DIMS;

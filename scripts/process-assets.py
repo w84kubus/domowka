@@ -92,7 +92,8 @@ class Asset:
     subdir: str
     width: int         # docelowa szerokość @2x
     height: int        # docelowa wysokość @2x
-    key: str | None = None  # kolor tła TEGO pliku, gdy inny niż domyślny
+    key: str | None = None   # kolor tła TEGO pliku, gdy inny niż domyślny
+    halo: bool = False       # zdjąć naklejkową otoczkę po wycięciu tła?
 
 
 MANIFEST: tuple[Asset, ...] = (
@@ -107,7 +108,7 @@ MANIFEST: tuple[Asset, ...] = (
     Asset("ziomek-wygrana", "cutout", "postacie", 720, 720),
     # Kafelek „wkrótce" w sekcji gier. Styl bąbelkowego 3D jak ikony gier,
     # nie płaski jak postacie — stoi w siatce obok kart gier.
-    Asset("wkrotce", "cutout", "ikony", 384, 384),
+    Asset("wkrotce", "cutout", "ikony", 384, 384, halo=True),
 )
 
 
@@ -166,6 +167,43 @@ def dilate(mask: np.ndarray, steps: int) -> np.ndarray:
         grown[:, 1:] |= out[:, :-1]
         grown[:, :-1] |= out[:, 1:]
         out = grown
+    return out
+
+
+def strip_halo(rgba: np.ndarray, outline_lum: float = 70.0) -> np.ndarray:
+    """
+    Zdejmij naklejkową otoczkę, która została PO wycięciu tła.
+
+    Generator lubi obrysować obiekt białym paskiem „jak naklejkę". Przy zielonym kluczu
+    taki pasek przeżywa wycinanie, bo nie jest zielony — a pakiet ikon gier go nie ma
+    i jedna ikona z otoczką wygląda jak z innego kompletu.
+
+    NIE szukamy otoczki po kolorze. Próbowałem tak dwa razy i za każdym razem między
+    przezroczystym tłem a białym paskiem stawał pas bieli podbarwionej kluczem, którego
+    żaden próg nie łapał razem z bielą, nie wpuszczając jednocześnie rozlewania w obiekt.
+
+    Zamiast tego korzystamy z tego, co te ikony mają z definicji: GRUBY CIEMNY KONTUR
+    dookoła całej sylwetki. Zostawiamy dokładnie to, co ten kontur zamyka — wszystko
+    poza nim leci. Kryterium jest odporne: przy progu jasności od 50 do 110 wynik jest
+    identyczny, bo kontur jest szczelny.
+    """
+    rgb = rgba[..., :3].astype(np.float64)
+    alpha = rgba[..., 3].astype(np.float64) / 255.0
+    lum = 0.2126 * rgb[..., 0] + 0.7152 * rgb[..., 1] + 0.0722 * rgb[..., 2]
+
+    kontur = (lum < outline_lum) & (alpha > 0.5)
+    poza = flood_from_border(~kontur)
+
+    out = rgba.copy()
+    out[..., 3] = np.where(poza, 0, rgba[..., 3])
+
+    # Kontur był wygładzany WZGLĘDEM białej otoczki, więc po jej zdjęciu zostałby po niej
+    # jasny rąbek. Odwracamy to mieszanie na pikselach, które właśnie stały się brzegiem.
+    rabek = dilate(poza, 2) & ~poza & (alpha > 0.02)
+    biel = np.array([255.0, 255.0, 255.0])
+    a = np.clip(out[..., 3].astype(np.float64) / 255.0, 1e-6, 1.0)[..., None]
+    odwrocone = np.clip((rgb - (1.0 - a) * biel) / a, 0, 255)
+    out[..., :3] = np.where(rabek[..., None], odwrocone.astype(np.uint8), out[..., :3])
     return out
 
 
@@ -346,6 +384,9 @@ def process(asset: Asset, args: argparse.Namespace) -> None:
         img, key, args.t_in, args.t_out,
         despill=not args.no_despill, gain=args.gain, rim=args.rim
     )
+    halo = args.halo or asset.halo
+    if halo:
+        cut = Image.fromarray(strip_halo(np.asarray(cut.convert("RGBA"))))
     cut = trim_to_content(cut, args.margin)
     big = fit_inside(cut, asset.width, asset.height)
     small = big.resize((max(big.width // 2, 1), max(big.height // 2, 1)), Image.LANCZOS)
@@ -386,6 +427,7 @@ def main() -> int:
     ap.add_argument("--t-out", type=float, default=DEFAULT_T_OUT, dest="t_out")
     ap.add_argument("--margin", type=float, default=DEFAULT_MARGIN, help="margines po przycięciu, ułamek dłuższego boku")
     ap.add_argument("--gain", type=float, default=DEFAULT_GAIN, help="podbicie alfy na krawędzi; >1 zwęża obwódkę, <1 ją zmiękcza")
+    ap.add_argument("--halo", action="store_true", help="zdejmij naklejkową otoczkę (zostaw tylko to, co zamyka ciemny kontur)")
     ap.add_argument("--rim", type=int, default=DEFAULT_RIM, help="ile pikseli w głąb obiektu czyścić z koloru klucza (0 = wyłącz)")
     ap.add_argument("--no-despill", action="store_true", help="nie odejmuj koloru klucza z krawędzi")
     ap.add_argument("--quality", type=int, default=82, help="jakość WebP (domyślnie 82)")
