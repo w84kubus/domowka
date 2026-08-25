@@ -206,6 +206,44 @@ Nazwa pliku: kasyno.png
 
 ---
 
+## ETAP 9 — ikona kafelka „WKRÓTCE" (nie gra)
+
+> **Załącz do rozmowy którąś z gotowych ikon gier** (np. `budzik.png` albo `kasyno.png`).
+> Ten kafelek stoi w siatce OBOK kart gier, więc ma pasować do TEGO pakietu —
+> bąbelkowego 3D — a nie do płaskich postaci z `assets/PROMPTS.md`.
+
+> **Tło:** proś o jednolitą zieleń, nie o przezroczystość. Przy poprzednich dwóch
+> partiach generator i tak oddał pliki na zieleni albo na bieli, mimo prośby o alfę.
+> Wycinaniem zajmuje się `scripts/process-assets.py`.
+
+```
+I am attaching one icon from my existing game-icon set as a style reference.
+
+Generate ONE new icon in exactly the same style: chunky cartoon 3D, bubbly volumes,
+thick solid dark purple #2A1758 outline, soft highlight from the upper left, saturated
+colours, flat readable silhouette.
+
+SUBJECT: a closed gift box with its lid lifting off, warm mint #7CF0AE light spilling
+out of the gap between lid and box. The box body is violet #6D3BF5, the ribbon
+crossing it is mint #7CF0AE, the lid is a lighter violet. Nothing identifiable is
+visible inside — only light. This has to read as „something new is coming", not as
+a finished present.
+
+The icon must stay recognisable when scaled down to 44 px, so keep the shape simple
+and the glow wide rather than detailed.
+
+Solid flat #00FF00 background for later cutout. Aspect ratio 1:1, the object centred
+with roughly 10% margin on every side so the outline is never cropped. Minimum 512×512.
+
+avoid: photorealism, photographic textures, cast shadows on the background, watermarks,
+frames or borders, characters or faces, sparkle stars, motion lines, more than one
+object in frame, any text, letters, numbers, question marks or logos.
+```
+
+Nazwa pliku: `wkrotce.png`, do `assets/zrodla/`.
+
+---
+
 ## Czego potrzebuję od Ciebie na końcu
 
 **37 plików PNG** o dokładnie tych nazwach (to są identyfikatory z kodu — nie zmieniaj ich):

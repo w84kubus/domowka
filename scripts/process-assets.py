@@ -105,6 +105,9 @@ MANIFEST: tuple[Asset, ...] = (
     Asset("ziomek-czeka", "cutout", "postacie", 720, 720),
     Asset("ziomek-zagubiony", "cutout", "postacie", 720, 720),
     Asset("ziomek-wygrana", "cutout", "postacie", 720, 720),
+    # Kafelek „wkrótce" w sekcji gier. Styl bąbelkowego 3D jak ikony gier,
+    # nie płaski jak postacie — stoi w siatce obok kart gier.
+    Asset("wkrotce", "cutout", "ikony", 384, 384),
 )
 
 

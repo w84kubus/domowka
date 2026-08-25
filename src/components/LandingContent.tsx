@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ReturnToRoom } from "@/components/ReturnToRoom";
 import { GameCard } from "@/components/GameCard";
+import { ComingSoonCard } from "@/components/ComingSoonCard";
 import { HowToPlay } from "@/components/HowToPlay";
 import { GithubMark } from "@/components/GithubMark";
 import { Illustration } from "@/components/Illustration";
@@ -73,6 +74,7 @@ export function LandingContent() {
           {GAME_LIST.map((g) => (
             <GameCard key={g.id} manifest={g} />
           ))}
+          <ComingSoonCard />
         </ul>
       </section>
 
