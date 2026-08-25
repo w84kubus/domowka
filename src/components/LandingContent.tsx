@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ReturnToRoom } from "@/components/ReturnToRoom";
 import { GameCard } from "@/components/GameCard";
 import { HowToPlay } from "@/components/HowToPlay";
+import { Illustration } from "@/components/Illustration";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { GAME_LIST } from "@/games/manifests";
 import { useT } from "@/lib/i18n/provider";
@@ -21,30 +22,44 @@ export function LandingContent() {
         <LanguageSwitcher />
       </div>
 
-      <header className="relative flex w-full flex-col items-center gap-4 text-center">
-        <Image
-          src="/icon-512.png"
-          alt=""
-          width={132}
-          height={132}
-          priority
-          className="size-24 drop-shadow-[0_6px_0_rgb(0_0_0/0.28)] sm:size-32"
-          aria-hidden
-        />
-        <h1 className="font-display text-5xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_4px_0_rgb(0_0_0/0.35)] sm:text-6xl">
-          Domówka
-        </h1>
-        <p className="max-w-md text-lg font-semibold leading-relaxed text-ink-muted">
-          {t("landing.tagline")}
-        </p>
-        <div className="flex w-full max-w-md gap-3 pt-2">
-          <Link href="/nowy" className="btn min-w-0 flex-1 px-3 text-base sm:whitespace-nowrap">
-            {t("landing.create")}
-          </Link>
-          <Link href="/dolacz" className="btn btn-ghost min-w-0 flex-1 px-3 text-base sm:whitespace-nowrap">
-            {t("landing.join")}
-          </Link>
+      {/* Hero. Na desktopie dwie kolumny — tekst i ekipa — bo w jednej wąskiej kolumnie
+          70% szerokości zostawało pustym gradientem. Na telefonie ilustracja ląduje pod
+          przyciskami: obietnicę produktu opowiada obrazek, ale kliknięcie ma być pierwsze. */}
+      <header className="relative grid w-full max-w-5xl items-center gap-6 lg:grid-cols-2 lg:gap-10">
+        <div className="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
+          <Image
+            src="/icon-512.png"
+            alt=""
+            width={132}
+            height={132}
+            priority
+            className="size-20 drop-shadow-[0_6px_0_rgb(0_0_0/0.28)] sm:size-24"
+            aria-hidden
+          />
+          <h1 className="font-display text-5xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_4px_0_rgb(0_0_0/0.35)] sm:text-6xl">
+            Domówka
+          </h1>
+          <p className="max-w-md text-lg font-semibold leading-relaxed text-ink-muted">
+            {t("landing.tagline")}
+          </p>
+          {/* Na telefonie przyciski jeden pod drugim (DESIGN.md §6: „mobile — przyciski
+              w-full"). Obok siebie nie mieszczą się: para ma 351 px minimalnej szerokości
+              przy 335 px dostępnych na 375-px ekranie, więc `overflow-hidden` na <main>
+              po cichu ucinał po 8 px z każdej strony. */}
+          <div className="flex w-full max-w-md flex-col gap-3 pt-2 sm:max-w-none sm:flex-row">
+            <Link href="/nowy" className="btn text-base sm:whitespace-nowrap">
+              {t("landing.create")}
+            </Link>
+            <Link href="/dolacz" className="btn btn-ghost text-base sm:whitespace-nowrap">
+              {t("landing.join")}
+            </Link>
+          </div>
         </div>
+        <Illustration
+          id="postacie/hero-ekipa"
+          priority
+          className="mx-auto w-full max-w-md drop-shadow-[0_6px_0_rgb(0_0_0/0.28)] lg:max-w-none"
+        />
       </header>
 
       <ReturnToRoom />

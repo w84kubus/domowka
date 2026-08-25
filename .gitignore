@@ -55,6 +55,9 @@ next-env.d.ts
 # Źródła pakietów ikon (PNG-i) — do repo idą przetworzone WebP z public/
 /emoji-pack/
 /emotki-gry/
+# Surowe pliki z generatora (15 MB JPEG-ów na zielonym tle). Odtwarzalne z promptów
+# w assets/PROMPTS.md; do repo idą wycinanki z public/assets/
+/assets/zrodla/
 # Zrzuty ekranu wrzucane do rootu na potrzeby rozmowy (10 MB) — nie należą do repo
 /*.jpg
 /domowka-icon/

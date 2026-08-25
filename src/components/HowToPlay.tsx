@@ -1,12 +1,14 @@
 "use client";
-import { Gamepad2, Link2, Smartphone } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
+import { Illustration, type IllustrationId } from "@/components/Illustration";
 import type { Key } from "@/lib/i18n/dict";
 // Sekcja „JAK GRAĆ" na landingu (mockup): trzy kroki z numerem w kółku.
-const STEPS: { Icon: typeof Smartphone; key: Key }[] = [
-  { Icon: Smartphone, key: "landing.step1" },
-  { Icon: Link2, key: "landing.step2" },
-  { Icon: Gamepad2, key: "landing.step3" },
+// Zamiast ikon z biblioteki idą tu scenki z pakietu „Ekipa" — to jedyne miejsce
+// na landingu, które ma wytłumaczyć produkt komuś, kto widzi go pierwszy raz.
+const STEPS: { art: IllustrationId; key: Key }[] = [
+  { art: "sceny/howto-pokoj", key: "landing.step1" },
+  { art: "sceny/howto-kod", key: "landing.step2" },
+  { art: "sceny/howto-gra", key: "landing.step3" },
 ];
 
 export function HowToPlay() {
@@ -25,7 +27,11 @@ export function HowToPlay() {
             <span className="font-display flex size-8 items-center justify-center rounded-full border-2 border-white bg-primary text-sm font-bold text-white">
               {i + 1}
             </span>
-            <s.Icon size={38} strokeWidth={2.5} className="text-mint" aria-hidden />
+            {/* Stała wysokość kadru: scenki mają różne proporcje (jedna pionowa,
+                dwie poziome), więc bez tego numerki i podpisy nie stanęłyby w rzędzie. */}
+            <span className="flex h-28 items-end justify-center sm:h-32">
+              <Illustration id={s.art} className="max-h-full w-auto" />
+            </span>
             <span className="text-base font-bold leading-snug text-ink">{t(s.key)}</span>
           </li>
         ))}
