@@ -160,6 +160,9 @@ const pl = {
   "privacy.learnMore": "Szczegóły",
   "privacy.noticeTitle": "Informacja o danych",
   "privacy.link": "Prywatność",
+
+  // — stopka —
+  "footer.madeBy": "zrobił {name}",
   "set.odcien.show": "Czas pokazu koloru",
   "set.odcien.space": "Suwaki",
   "hint.odcien.space": "HSL (barwa/nasycenie/jasność) jest znacznie łatwiejszy niż RGB.",
@@ -428,6 +431,9 @@ const en: Record<Key, string> = {
   "privacy.learnMore": "Details",
   "privacy.noticeTitle": "Data notice",
   "privacy.link": "Privacy",
+
+  // — footer —
+  "footer.madeBy": "made by {name}",
   "set.odcien.show": "Colour display time",
   "set.odcien.space": "Sliders",
   "hint.odcien.space": "HSL (hue/saturation/lightness) is much easier than RGB.",
