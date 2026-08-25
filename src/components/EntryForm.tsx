@@ -1,10 +1,13 @@
 "use client";
 import { useT } from "@/lib/i18n/provider";
-import { useState } from "react";
+import { Dices } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CodeInput } from "./CodeInput";
 import { AvatarPicker } from "./AvatarPicker";
+import { AvatarIcon, avatarColor } from "./AvatarIcon";
+import { AVATARS } from "@/lib/avatars";
 import { useSession } from "@/lib/store/session";
 import { apiPost } from "@/lib/client/api";
 import { MAX_NICK_LENGTH, sanitizeNick } from "@/lib/schemas/room";
@@ -24,6 +27,13 @@ export function EntryForm({
   const [code, setCode] = useState(normalizeRoomCode(initialCode));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Losowanie zawsze zmienia awatar — trafienie w ten sam, który już jest wybrany,
+  // wyglądałoby jak zepsuty przycisk.
+  const randomAvatar = useCallback(() => {
+    const inne = AVATARS.filter((a) => a !== avatar);
+    setAvatar(inne[Math.floor(Math.random() * inne.length)]);
+  }, [avatar, setAvatar]);
 
   const nickOk = sanitizeNick(nick).length > 0;
   const codeOk = mode === "create" || isValidRoomCode(code);
@@ -88,10 +98,33 @@ export function EntryForm({
           />
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <span className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
             {t("entry.avatar")}
           </span>
+
+          {/* Duży podgląd wyboru (DESIGN.md §4.5). Bez niego ekran wejścia wyglądał
+              jak siatka ustawień — a to jest moment „to ja", jedyny, w którym gracz
+              zakłada sobie twarz na cały wieczór. Kafelki w siatce mają 40 px i przy
+              tym rozmiarze nie widać, co się właściwie wybrało. */}
+          <div className="flex flex-col items-center gap-2">
+            <span
+              className="flex size-28 items-center justify-center rounded-full border-[6px] border-white shadow-[0_4px_0_rgb(0_0_0/0.35)]"
+              style={{ background: avatarColor(avatar) }}
+              aria-hidden
+            >
+              <AvatarIcon avatar={avatar} size={68} />
+            </span>
+            <button
+              type="button"
+              onClick={randomAvatar}
+              className="font-display flex min-h-[44px] items-center gap-2 rounded-[14px] border-[3px] border-stroke bg-panel px-4 text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint focus-visible:outline-offset-2 active:translate-y-[3px] active:shadow-none"
+            >
+              <Dices size={18} strokeWidth={2.5} aria-hidden />
+              {t("entry.randomAvatar")}
+            </button>
+          </div>
+
           <AvatarPicker value={avatar} onChange={setAvatar} />
         </div>
       </div>

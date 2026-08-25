@@ -168,12 +168,17 @@ export default function LobbyPage() {
             {t("lobby.tvScreen")}
           </Link>
         </div>
+        {/* Gdy host jest sam, puste sloty się nie pojawiają: rolę „tu jest miejsce"
+            przejmuje karta z ziomkiem pod spodem i dwa komunikaty o tym samym tylko
+            spychałyby listę gier pod zgięcie. Od dwóch graczy w górę jest odwrotnie —
+            karta znika, a wolne miejsca pokazują, że można kogoś jeszcze dorzucić. */}
         <PlayerList
           players={room.players}
           hostUid={room.hostUid}
           myUid={uid}
           serverNow={serverNow}
           onKick={isHost ? kick : undefined}
+          minSlots={playerCount === 1 ? 0 : 4}
         />
 
         {/* Sam w pokoju. To jest ekran, na który host patrzy najdłużej ze wszystkich —

@@ -119,11 +119,36 @@ body {
   50% { opacity: 0.7; transform: scale(1.05); }
 }
 
+/* === Rama aplikacji (DESIGN.md §3 pkt 1) ===
+   Aplikacja to karta wpuszczona w ciemną ramę, nie strona na pełnej szerokości.
+   To pierwsza z trzech warstw tła i jednocześnie najmocniejszy sygnał „to jest
+   urządzenie, nie witryna". Margines i promień maleją na telefonie (§6).
+
+   Rama siedzi na `.screen`, nie na <body>, celowo: ekran hosta na TV nie używa tej
+   klasy i ma zostać na pełnym kadrze — telewizor ma własną ramkę i overscan, więc
+   drugi bezel tylko zabierałby miejsce. */
+:root {
+  --app-inset: 8px;
+}
+@media (min-width: 768px) {
+  :root {
+    --app-inset: 20px;
+    --radius-app: 28px;
+  }
+}
+@media (max-width: 767px) {
+  :root {
+    --radius-app: 20px;
+  }
+}
+
 /* === Wspólny layout ekranu z safe-area === */
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  margin: var(--app-inset);
+  min-height: calc(100dvh - 2 * var(--app-inset));
+  border-radius: var(--radius-app);
   padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
     max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
 }
@@ -250,13 +275,19 @@ body {
 }
 
 /* === Panel frosted glass (DESIGN.md §4.2) === */
+/* Cień TWARDY, nie `--shadow-lift`. DESIGN.md sam sobie tu przeczy: §1 pisze „cienie —
+   zawsze twarde, blur = 0", a trzy linijki niżej deklaruje --shadow-lift z rozmyciem
+   40 px, i kod poszedł za tym drugim. Skutek był taki, że panel unosił się na miękkim
+   cieniu w stylu Material tuż obok przycisku z twardym — dwa języki cienia na jednym
+   ekranie. Rozstrzyga §0, bo to twardy cień jest nazwany elementem sygnaturowym stylu.
+   --shadow-lift zostaje wyłącznie dla modala, któremu §4.4 przypisuje go wprost. */
 .card {
   background: var(--color-panel);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 2px solid var(--color-stroke);
   border-radius: var(--radius-card);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), var(--shadow-lift);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 4px 0 rgb(0 0 0 / 0.35);
   padding: 1.5rem;
 }
 
