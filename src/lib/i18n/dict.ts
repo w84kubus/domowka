@@ -9,6 +9,7 @@ const pl = {
   // — wspólne —
   "common.back": "← wróć",
   "common.cancel": "Anuluj",
+  "common.close": "Zamknij",
   "common.sure": "Na pewno?",
   "common.loading": "Chwila…",
   "common.copied": "Skopiowano ✓",
@@ -38,6 +39,12 @@ const pl = {
   "entry.nickPlaceholder": "np. Damian",
   "entry.avatar": "Awatar",
   "entry.randomAvatar": "Losuj",
+
+  // — instalacja PWA —
+  "install.title": "Zainstaluj Domówkę",
+  "install.label": "Zainstaluj",
+  "install.add": "Dodaj",
+  "install.iosHint": "Kliknij Udostępnij, a potem Dodaj do ekranu początkowego.",
   "entry.code": "Kod pokoju",
   "entry.creating": "Zakładam pokój",
   "entry.joining": "Dołączam",
@@ -274,6 +281,7 @@ export type Key = keyof typeof pl;
 const en: Record<Key, string> = {
   "common.back": "← back",
   "common.cancel": "Cancel",
+  "common.close": "Close",
   "common.sure": "Are you sure?",
   "common.loading": "One moment…",
   "common.copied": "Copied ✓",
@@ -301,6 +309,12 @@ const en: Record<Key, string> = {
   "entry.nickPlaceholder": "e.g. Alex",
   "entry.avatar": "Avatar",
   "entry.randomAvatar": "Random",
+
+  // — PWA install —
+  "install.title": "Install Domówka",
+  "install.label": "Install",
+  "install.add": "Add",
+  "install.iosHint": "Tap Share, then Add to Home Screen.",
   "entry.code": "Room code",
   "entry.creating": "Create a room",
   "entry.joining": "Join",

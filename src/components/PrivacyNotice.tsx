@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
-
-const KEY = "privacy-notice-seen";
+import { markPrivacyNoticeSeen, privacyNoticeSeen } from "@/lib/client/notices";
 
 // Informacja przy pierwszej wizycie — NIE baner zgody. Aplikacja nie ma analityki ani
 // trackerów, więc nie ma czego odrzucać; RODO wymaga tu poinformowania, nie pytania o zgodę.
@@ -17,21 +16,15 @@ export function PrivacyNotice() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    try {
-      if (!localStorage.getItem(KEY)) setShow(true);
-    } catch {
-      // Prywatne okno bez dostępu do localStorage — po prostu nie pokazujemy.
-    }
+    // Prywatne okno bez dostępu do localStorage — po prostu nie pokazujemy.
+    if (!privacyNoticeSeen()) setShow(true);
   }, []);
 
   if (!show) return null;
 
   const dismiss = () => {
-    try {
-      localStorage.setItem(KEY, "1");
-    } catch {
-      /* nie szkodzi */
-    }
+    // Zwalnia też dół ekranu dla zachęty do instalacji (patrz lib/client/notices).
+    markPrivacyNoticeSeen();
     setShow(false);
   };
 
@@ -51,7 +44,7 @@ export function PrivacyNotice() {
         <button
           type="button"
           onClick={dismiss}
-          aria-label={t("common.cancel")}
+          aria-label={t("common.close")}
           className="flex size-10 flex-none items-center justify-center rounded-[12px] border-2 border-stroke bg-panel-hi text-ink transition-transform duration-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-mint active:translate-y-[2px]"
         >
           <X size={18} strokeWidth={2.5} aria-hidden />

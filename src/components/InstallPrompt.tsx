@@ -1,6 +1,8 @@
 "use client";
 import { Smartphone, X } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import { useT } from "@/lib/i18n/provider";
+import { PRIVACY_DISMISSED_EVENT, privacyNoticeSeen } from "@/lib/client/notices";
 
 // Prompt instalacji PWA (UPGRADE.md §B3).
 // - Android/Chrome: przechwytuje beforeinstallprompt, pokazuje dyskretny przycisk.
@@ -52,9 +54,20 @@ function isIOSSafari(): boolean {
 }
 
 export function InstallPrompt() {
+  const t = useT();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIOSHint, setShowIOSHint] = useState(false);
   const [visible, setVisible] = useState(false);
+  // Dół ekranu zajmuje informacja o prywatności. Zaczynamy od `false`, żeby na
+  // pierwszej wizycie oba paski nie mignęły razem, zanim efekt zdąży sprawdzić stan.
+  const [dolWolny, setDolWolny] = useState(false);
+
+  useEffect(() => {
+    setDolWolny(privacyNoticeSeen());
+    const zwolnij = () => setDolWolny(true);
+    window.addEventListener(PRIVACY_DISMISSED_EVENT, zwolnij);
+    return () => window.removeEventListener(PRIVACY_DISMISSED_EVENT, zwolnij);
+  }, []);
 
   useEffect(() => {
     // W standalone nie pokazuj nic.
@@ -91,7 +104,9 @@ export function InstallPrompt() {
     setVisible(false);
   }, []);
 
-  if (!visible) return null;
+  // Zdarzenie `beforeinstallprompt` odpala się raz i wcześnie, więc trzymamy je
+  // w stanie i pokazujemy przycisk dopiero, gdy dół ekranu się zwolni.
+  if (!visible || !dolWolny) return null;
 
   if (showIOSHint) {
     return (
@@ -100,16 +115,15 @@ export function InstallPrompt() {
           type="button"
           onClick={handleDismiss}
           className="absolute right-2 top-2 flex size-9 items-center justify-center rounded-lg text-lg font-bold opacity-60 hover:bg-black/10 hover:opacity-100"
-          aria-label="Zamknij"
+          aria-label={t("common.close")}
         >
           <X size={18} strokeWidth={3} aria-hidden />
         </button>
         <p className="font-display mb-2 pr-8 text-base font-bold uppercase tracking-[0.04em]">
-          Zainstaluj Domówkę
+          {t("install.title")}
         </p>
         <p className="text-sm font-semibold leading-relaxed">
-          Kliknij{" "}
-          <span className="inline-flex items-center gap-0.5">
+          <span className="inline-flex items-center gap-0.5 align-[-0.2em]">
             <svg
               width="18"
               height="18"
@@ -126,7 +140,7 @@ export function InstallPrompt() {
               <line x1="12" y1="2" x2="12" y2="15" />
             </svg>
           </span>{" "}
-          <strong>Udostępnij</strong>, a potem <strong>Dodaj do ekranu początkowego</strong>.
+          {t("install.iosHint")}
         </p>
       </div>
     );
@@ -136,19 +150,19 @@ export function InstallPrompt() {
   return (
     <div className="fixed bottom-4 right-4 z-40 animate-[slideUp_0.3s_ease]">
       <div className="flex items-center gap-2 rounded-[20px] border-[3px] border-white/40 bg-sheet p-2 pl-4 text-sheet-ink shadow-[0_18px_40px_rgb(0_0_0/0.35)]">
-        <span className="text-sm font-bold">Zainstaluj</span>
+        <span className="text-sm font-bold">{t("install.label")}</span>
         <button
           type="button"
           onClick={handleInstall}
           className="font-display inline-flex items-center gap-2 rounded-[14px] border-[3px] border-white/60 bg-primary px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] text-white shadow-[0_3px_0_var(--color-primary-deep)] transition-transform duration-75 active:translate-y-[3px] active:shadow-none"
         >
-          <Smartphone size={18} strokeWidth={2.5} aria-hidden /> Dodaj
+          <Smartphone size={18} strokeWidth={2.5} aria-hidden /> {t("install.add")}
         </button>
         <button
           type="button"
           onClick={handleDismiss}
           className="flex size-9 items-center justify-center rounded-lg text-lg font-bold opacity-60 hover:bg-black/10 hover:opacity-100"
-          aria-label="Zamknij"
+          aria-label={t("common.close")}
         >
           <X size={18} strokeWidth={3} aria-hidden />
         </button>
