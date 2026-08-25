@@ -68,7 +68,7 @@ export function LandingContent() {
         <h2 className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_3px_0_rgb(0_0_0/0.35)]">
           {t("landing.games")}
         </h2>
-        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <ul className="grid auto-rows-fr grid-cols-2 gap-3 lg:grid-cols-5">
           {GAME_LIST.map((g) => (
             <GameCard key={g.id} manifest={g} />
           ))}
