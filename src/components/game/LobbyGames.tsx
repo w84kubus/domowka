@@ -13,13 +13,17 @@ export function LobbyGames({
   code,
   isHost,
   playerCount,
+  gameId,
+  onGameChange,
 }: {
   code: string;
   isHost: boolean;
   playerCount: number;
+  /** Wybrana gra. Trzymana wyżej, bo lobby musi wiedzieć, ilu graczy wymaga. */
+  gameId: string;
+  onGameChange: (id: string) => void;
 }) {
   const t = useT();
-  const [gameId, setGameId] = useState(GAME_LIST[0]?.id ?? "");
   const manifest = GAME_LIST.find((g) => g.id === gameId);
   const [settings, setSettings] = useState<unknown>(manifest?.defaultSettings);
   const [busy, setBusy] = useState(false);
@@ -34,7 +38,7 @@ export function LobbyGames({
   }
 
   const pick = (id: string) => {
-    setGameId(id);
+    onGameChange(id);
     setSettings(GAME_LIST.find((g) => g.id === id)?.defaultSettings);
     setError(null);
   };

@@ -1,6 +1,6 @@
 "use client";
 import { useT } from "@/lib/i18n/provider";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
@@ -20,12 +20,17 @@ import { LobbySkeleton } from "@/components/LobbySkeleton";
 import { apiPost } from "@/lib/client/api";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { useSession } from "@/lib/store/session";
+import { GAME_LIST } from "@/games/manifests";
 
 export default function LobbyPage() {
   const t = useT();
   const router = useRouter();
   const params = useParams<{ code: string }>();
   const code = normalizeRoomCode(params.code ?? "");
+
+  // Wybrana gra żyje tutaj, nie w LobbyGames: lobby musi wiedzieć, ilu graczy
+  // wymaga, żeby nie namawiać do zapraszania kogokolwiek przy grze jednoosobowej.
+  const [gameId, setGameId] = useState(GAME_LIST[0]?.id ?? "");
 
   const { uid, loading: authLoading } = useAnonAuth();
   const { serverNow } = useServerClock();
@@ -138,6 +143,12 @@ export default function LobbyPage() {
   const isHost = uid === room.hostUid;
   const playerCount = Object.keys(room.players).length;
 
+  // Zachęta do zapraszania ma sens tylko wtedy, gdy wybrana gra NIE ruszy w tylu
+  // osobach. Stoper i Odcień idą od jednego gracza — tam „Zaproś znajomych" było
+  // po prostu nieprawdą i wyglądało jak blokada, której nie ma.
+  const wybrana = GAME_LIST.find((g) => g.id === gameId);
+  const zaMaloGraczy = wybrana ? playerCount < wybrana.minPlayers : false;
+
   return (
     <main className="arcade-bg screen relative items-center gap-5 overflow-hidden">
       <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
@@ -178,14 +189,13 @@ export default function LobbyPage() {
           myUid={uid}
           serverNow={serverNow}
           onKick={isHost ? kick : undefined}
-          minSlots={playerCount === 1 ? 0 : 4}
+          minSlots={zaMaloGraczy ? 0 : 4}
         />
 
-        {/* Sam w pokoju. To jest ekran, na który host patrzy najdłużej ze wszystkich —
-            zaraz po założeniu pokoju, czekając aż ktoś dojdzie. Wcześniej była tu jedna
-            linijka tekstu i pustka; warunek `playerCount === 0` nie odpalał się nigdy,
-            bo host zawsze jest w pokoju. */}
-        {playerCount === 1 && (
+        {/* Czekamy na ludzi. To jest ekran, na który host patrzy najdłużej ze wszystkich —
+            zaraz po założeniu pokoju. Wcześniej była tu jedna linijka tekstu i pustka;
+            warunek `playerCount === 0` nie odpalał się nigdy, bo host zawsze jest w pokoju. */}
+        {zaMaloGraczy && (
           <div className="card flex items-center gap-4 animate-[fadeIn_0.3s_ease]">
             <Illustration id="postacie/ziomek-czeka" className="h-24 w-auto flex-none sm:h-28" />
             <p className="text-base font-semibold leading-relaxed text-ink-muted">
@@ -196,7 +206,13 @@ export default function LobbyPage() {
       </section>
 
       <section className="relative flex w-full max-w-3xl flex-col gap-3">
-        <LobbyGames code={room.code} isHost={isHost} playerCount={playerCount} />
+        <LobbyGames
+          code={room.code}
+          isHost={isHost}
+          playerCount={playerCount}
+          gameId={gameId}
+          onGameChange={setGameId}
+        />
       </section>
 
       <RoomRecords records={room.records} players={room.players} />
