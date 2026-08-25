@@ -6,6 +6,7 @@ import Link from "next/link";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
 import { RoomQr } from "@/components/RoomQr";
 import { PlayerList } from "@/components/PlayerList";
+import { Illustration } from "@/components/Illustration";
 import { RoomRecords } from "@/components/RoomRecords";
 import { GameShell } from "@/components/game/GameShell";
 import { LobbyGames } from "@/components/game/LobbyGames";
@@ -165,18 +166,25 @@ export default function LobbyPage() {
             {t("lobby.tvScreen")}
           </Link>
         </div>
-        {playerCount === 0 ? (
-          <p className="card text-center text-base font-semibold text-ink-muted">
-            {t("lobby.noPlayers")}
-          </p>
-        ) : (
-          <PlayerList
-            players={room.players}
-            hostUid={room.hostUid}
-            myUid={uid}
-            serverNow={serverNow}
-            onKick={isHost ? kick : undefined}
-          />
+        <PlayerList
+          players={room.players}
+          hostUid={room.hostUid}
+          myUid={uid}
+          serverNow={serverNow}
+          onKick={isHost ? kick : undefined}
+        />
+
+        {/* Sam w pokoju. To jest ekran, na który host patrzy najdłużej ze wszystkich —
+            zaraz po założeniu pokoju, czekając aż ktoś dojdzie. Wcześniej była tu jedna
+            linijka tekstu i pustka; warunek `playerCount === 0` nie odpalał się nigdy,
+            bo host zawsze jest w pokoju. */}
+        {playerCount === 1 && (
+          <div className="card flex items-center gap-4 animate-[fadeIn_0.3s_ease]">
+            <Illustration id="postacie/ziomek-czeka" className="h-24 w-auto flex-none sm:h-28" />
+            <p className="text-base font-semibold leading-relaxed text-ink-muted">
+              {t("lobby.noPlayers")}
+            </p>
+          </div>
         )}
       </section>
 

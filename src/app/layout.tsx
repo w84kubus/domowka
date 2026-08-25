@@ -8,6 +8,7 @@ import { ConnectionBar } from "@/components/ConnectionBar";
 import { cookies } from "next/headers";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from "@/lib/i18n/types";
+import { translate } from "@/lib/i18n/dict";
 
 // Arcade Party (DESIGN.md §1). Wszystkie fonty z latin-ext (Ą Ć Ę Ł Ń Ó Ś Ź Ż).
 // Display: Baloo 2, nie Fredoka. Fredoka ma glify latin-ext, ale rysuje ogonek (Ą Ę)
@@ -32,24 +33,41 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Domówka",
-  description: "Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.",
-  manifest: "/manifest.webmanifest",
-  applicationName: "Domówka",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Domówka" },
-  icons: {
-    icon: [
-      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
-      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
-    ],
-    apple: "/apple-touch-icon.png",
-  },
-  other: {
-    // theme-color w dwóch wariantach (UPGRADE.md §B1). Next.js Metadata API nie obsługuje
-    // media query na themeColor, więc dodajemy ręcznie w <head> poniżej.
-  },
-};
+const SITE_URL = "https://domowka.vercel.app";
+
+// Kartę linku budujemy w języku czytelnika. Link do pokoju wkleja się do czatu
+// grupowego i to on jest pierwszym kontaktem z aplikacją — obrazek bierze się
+// automatycznie z src/app/opengraph-image.jpg (konwencja Next.js).
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
+  const locale = isLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+  const description = translate(locale, "landing.tagline");
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: "Domówka",
+    description,
+    manifest: "/manifest.webmanifest",
+    applicationName: "Domówka",
+    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Domówka" },
+    icons: {
+      icon: [
+        { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+        { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+      ],
+      apple: "/apple-touch-icon.png",
+    },
+    openGraph: {
+      type: "website",
+      siteName: "Domówka",
+      title: "Domówka",
+      description,
+      url: SITE_URL,
+      locale: locale === "pl" ? "pl_PL" : "en_US",
+    },
+    twitter: { card: "summary_large_image", title: "Domówka", description },
+  };
+}
 
 export const viewport: Viewport = {
   // theme-color z media query dodane w <head> ręcznie (patrz poniżej).

@@ -1,6 +1,7 @@
 "use client";
-import { Crown, Medal } from "lucide-react";
+import { Medal } from "lucide-react";
 import { AvatarIcon } from "@/components/AvatarIcon";
+import { Illustration } from "@/components/Illustration";
 import { useT } from "@/lib/i18n/provider";
 
 export interface PodiumPlayer {
@@ -29,7 +30,7 @@ export function Podium({ players, meUid }: { players: PodiumPlayer[]; meUid: str
   return (
     <section className="flex w-full max-w-md flex-col items-center gap-4">
       <div className="flex flex-col items-center gap-1">
-        <Crown size={40} strokeWidth={2.5} className="text-bursztyn" aria-hidden />
+        <Illustration id="postacie/ziomek-wygrana" className="h-28 w-auto sm:h-32" />
         <p className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink">
           {solo
             ? t("podium.winner", { nick: winners[0].nick })
