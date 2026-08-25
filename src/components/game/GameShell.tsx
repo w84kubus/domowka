@@ -81,7 +81,7 @@ export function GameShell({
 
       <header className="relative flex w-full max-w-3xl items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <GameIcon gameId={gameId} size={26} color={accent} />
+          <GameIcon gameId={gameId} size={32} color={accent} />
           <RoomCodeNeon code={room.code} size="1.1rem" accent={accent} />
         </div>
         <button

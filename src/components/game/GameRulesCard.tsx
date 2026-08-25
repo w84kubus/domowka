@@ -54,7 +54,7 @@ export function GameRulesCard({
 
             <div className="arcade-pop flex max-h-[85dvh] flex-col overflow-hidden rounded-[20px] bg-sheet shadow-[0_18px_40px_rgb(0_0_0/0.35)]">
               <header className="flex items-center gap-3 bg-primary px-5 py-4">
-                <GameIcon gameId={manifest.id} size={34} className="flex-none text-white" />
+                <GameIcon gameId={manifest.id} size={44} className="flex-none text-white" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-display truncate text-lg font-bold uppercase tracking-[0.04em] text-white">
                     {manifest.name}

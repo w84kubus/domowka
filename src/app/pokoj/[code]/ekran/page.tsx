@@ -71,7 +71,7 @@ export default function EkranPage() {
         >
           {!neutralBg && <div className="halftone pointer-events-none absolute inset-0" aria-hidden />}
           <div className="relative flex items-center gap-4">
-            <GameIcon gameId={room.gameId} size={48} color={accent} />
+            <GameIcon gameId={room.gameId} size={64} color={accent} />
             <RoomCodeNeon code={code} size="3rem" accent={accent} />
           </div>
           <div className="relative w-full">

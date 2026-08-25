@@ -31,7 +31,7 @@ export function GameRow({
           : "border-stroke bg-panel shadow-[0_3px_0_rgb(0_0_0/0.35)]"
       }`}
     >
-      <GameIcon gameId={manifest.id} size={46} color={manifest.accentColor} className="flex-none" />
+      <GameIcon gameId={manifest.id} size={56} color={manifest.accentColor} className="flex-none" />
       <span className="min-w-0 flex-1">
         <span className="font-display block text-base font-bold uppercase tracking-[0.04em] text-ink">
           {t(gameNameKey(manifest.id))}

@@ -25,7 +25,7 @@ export function GameCard({
           — krótkie nazwy miały margines, długie nie, i stąd brało się wrażenie krzywizny.
           Nad nazwą jest cała szerokość karty i zapas na dłuższe tłumaczenia.
           `break-words` zostaje jako ostatnia deska ratunku. */}
-      <GameIcon gameId={manifest.id} size={30} color={manifest.accentColor} />
+      <GameIcon gameId={manifest.id} size={44} color={manifest.accentColor} />
       <h3 className="font-display break-words text-base font-bold uppercase leading-tight tracking-[0.04em] sm:text-lg">
         {t(gameNameKey(manifest.id))}
       </h3>
