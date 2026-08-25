@@ -2,6 +2,7 @@
 import { Flag, Target, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { GameViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { sfx, vibrate } from "@/lib/sound";
 import { useSent } from "@/games/useOptimistic";
 import { AvatarIcon } from "@/components/AvatarIcon";
@@ -23,14 +24,16 @@ interface PublicState {
 }
 
 const fmt = (ms: number) => (ms / 1000).toFixed(2).replace(".", ",") + " s";
-function signed(ms: number) {
+// `t` argumentem, bo to zwykła funkcja poza komponentem — hooka użyć nie może.
+function signed(ms: number, t: ReturnType<typeof useT>) {
   const s = (Math.abs(ms) / 1000).toFixed(2).replace(".", ",");
-  if (ms > 0) return `+${s} s ZA PÓŹNO`;
-  if (ms < 0) return `−${s} s ZA WCZEŚNIE`;
+  if (ms > 0) return t("stoper.tooLate", { s });
+  if (ms < 0) return t("stoper.tooEarly", { s });
   return "±0,00 s";
 }
 
 export function StoperPlayerView({ publicState, privateState, meUid, isHost, dispatch, accent }: GameViewProps) {
+  const t = useT();
   const pub = publicState as PublicState;
   const priv = privateState as { submitted: boolean; myValueMs: number | null; myGuessMs: number | null } | null;
 
@@ -126,12 +129,12 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     return (
       <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
         <h2 className="font-display text-center text-2xl font-bold uppercase tracking-wide text-ink">
-          {pub.phase === "koniec" ? <>Koniec gry <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : `Runda ${pub.round} — wyniki`}
+          {pub.phase === "koniec" ? <>{t("stoper.gameOver")} <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : t("stoper.roundResults", { round: pub.round })}
         </h2>
         {pub.mode === "zgadnij" && pub.actualMs != null && (
           <p className="text-center">
             <span className="font-display block text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
-              Rzeczywisty czas
+              {t("stoper.realTime")}
             </span>
             <span className="tabular text-4xl font-bold" style={{ color: accent }}>{fmt(pub.actualMs)}</span>
           </p>
@@ -148,7 +151,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
               <span className="flex-1 truncate font-bold text-ink">
                 {nickOf(r.uid)}
                 {r.uid === meUid && " (Ty)"}
-                {r.suspicious && <span title="podejrzany wynik"> <TriangleAlert size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></span>}
+                {r.suspicious && <span title={t("stoper.suspicious")}> <TriangleAlert size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></span>}
               </span>
               <span className="tabular text-right text-sm">
                 {r.valueMs == null ? (
@@ -161,7 +164,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
                 ) : (
                   <>
                     <div>{fmt(r.valueMs)}</div>
-                    <div className="text-xs text-[var(--color-ink-muted)]">{signed(r.signedMs ?? 0)}</div>
+                    <div className="text-xs text-[var(--color-ink-muted)]">{signed(r.signedMs ?? 0, t)}</div>
                   </>
                 )}
               </span>
@@ -171,7 +174,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
         <div className="mt-2">
           <h3 className="font-display mb-2 text-sm font-bold uppercase tracking-[0.06em] text-mint">
-            Wyniki ogółem
+            {t("common.total")}
           </h3>
           <ul className="flex flex-col gap-1">
             {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
@@ -185,7 +188,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
 
         {iWon && (
           <p className="font-display text-center text-lg font-bold uppercase" style={{ color: accent }}>
-            Idealne trafienie! <Target size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden />
+            {t("stoper.perfect")} <Target size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden />
           </p>
         )}
 
@@ -197,7 +200,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
               style={{ ["--accent" as string]: accent }}
               onClick={() => dispatch({ type: "NEXT" })}
             >
-              Dalej →
+              {t("common.next")}
             </button>
             {/* „Zakończ grę" renderuje teraz GameShell dla wszystkich gier naraz —
                 Stoper zgłasza tylko canFinish w publicView. */}
@@ -212,7 +215,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
     <div className="flex flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
       <div className="text-center">
         <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
-          Runda {pub.round}{pub.totalRounds ? ` / ${pub.totalRounds}` : ""} · Cel
+          {t("common.round")} {pub.round}{pub.totalRounds ? ` / ${pub.totalRounds}` : ""} · {t("stoper.target")}
         </p>
         <p className="tabular text-5xl font-bold" style={{ color: accent }}>{fmt(pub.target)}</p>
       </div>
@@ -220,9 +223,9 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
       {submitted ? (
         <div className="flex flex-col items-center gap-3 text-center">
           <p className="tabular text-3xl text-ink-muted">●●:●●.●●</p>
-          <p className="text-lg font-bold text-ink">Zatrzymano. Czekamy na resztę…</p>
+          <p className="text-lg font-bold text-ink">{t("stoper.waiting")}</p>
           <p className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-            {pub.submitted.length} / {pub.players.length} gotowych
+            {t("stoper.readyCount", { done: pub.submitted.length, all: pub.players.length })}
           </p>
         </div>
       ) : (
@@ -230,7 +233,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
           <p className="tabular text-4xl text-ink-muted">●●:●●.●●</p>
           {invalidated && (
             <p className="rounded-[14px] border-2 border-czerwien/50 bg-czerwien/20 px-3 py-2 text-sm font-bold text-white">
-              Nie zmieniaj karty — próba unieważniona.
+              {t("stoper.busted")}
             </p>
           )}
           {!measuring ? (
@@ -242,7 +245,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
                 boxShadow: `0 6px 0 color-mix(in srgb, ${accent} 55%, black)`,
               }}
             >
-              START
+              {t("stoper.start")}
             </button>
           ) : (
             <button
@@ -254,19 +257,19 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
                 boxShadow: `0 6px 0 color-mix(in srgb, ${accent} 45%, black)`,
               }}
             >
-              STOP
+              {t("stoper.stop")}
             </button>
           )}
           <p className="text-center text-sm font-semibold text-ink-muted">
-            Zatrzymaj jak najbliżej celu. Cyfry są ukryte — licz w głowie.
+            {t("stoper.hint")}
           </p>
           {/* Podpowiedź o spacji tylko na urządzeniach z fizyczną klawiaturą (laptop). */}
           <p className="hidden text-center text-xs font-semibold text-ink-muted [@media(pointer:fine)]:block">
-            Na laptopie:{" "}
+            {t("stoper.laptopHint")}{" "}
             <kbd className="rounded-md border-2 border-stroke bg-panel px-1.5 py-0.5 font-bold">
-              spacja
+              {t("stoper.space")}
             </kbd>{" "}
-            = {measuring ? "STOP" : "START"}
+            = {measuring ? t("stoper.stop") : t("stoper.start")}
           </p>
         </>
       )}
@@ -287,7 +290,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
           }}
           onBlur={() => setConfirmClose(false)}
         >
-          {confirmClose ? "Na pewno? Reszta bez wyniku" : "Zamknij rundę"}
+          {confirmClose ? t("stoper.closeConfirm") : t("stoper.closeRound")}
         </button>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 import { Skull, X } from "lucide-react";
 import type { GameHostViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { Hangman, MaskedWord } from "./ui";
 import { AvatarIcon } from "@/components/AvatarIcon";
 
@@ -22,6 +23,7 @@ interface Pub {
 }
 
 export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
+  const t = useT();
   const pub = publicState as Pub;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
 
@@ -50,14 +52,14 @@ export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
           <Hangman wrong={pub.wrong ?? 0} maxWrong={pub.maxWrong} size={260} />
           {pub.mask && <MaskedWord mask={pub.mask} accent={accent} big />}
           {pub.phase === "zgadywanie" && pub.turnUid && (
-            <p className="text-2xl">Tura: <b style={{ color: accent }}>{nickOf(pub.turnUid)}</b></p>
+            <p className="text-2xl">{t("wisielec.turn")} <b style={{ color: accent }}>{nickOf(pub.turnUid)}</b></p>
           )}
         </>
       )}
 
       {(pub.phase === "wynik" || pub.phase === "koniec") && (
         <p className="text-3xl font-bold" style={{ color: pub.result === "wygrana" ? "#4ade80" : "var(--color-czerwien)" }}>
-          {pub.result === "wygrana" ? `Wygrywają: ${pub.winners.map(nickOf).join(", ")}` : <>Wisielec zawisł <Skull size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}
+          {pub.result === "wygrana" ? t("wisielec.winners", { nicks: pub.winners.map(nickOf).join(", ") }) : <>{t("wisielec.hanged")} <Skull size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}
         </p>
       )}
 

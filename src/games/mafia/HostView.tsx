@@ -23,10 +23,10 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
       <p className="flex items-center justify-center gap-2 text-2xl">
         {pub.phase === "noc" ? <><Moon size={26} strokeWidth={2.5} aria-hidden /> Noc {pub.night}</> :
          pub.phase === "dzien" ? <><Sun size={26} strokeWidth={2.5} aria-hidden /> Dzień {pub.night}</> :
-         pub.phase === "glosowanie" ? <><Vote size={26} strokeWidth={2.5} aria-hidden /> Głosowanie</> :
-         pub.phase === "switt" ? <><Sunrise size={26} strokeWidth={2.5} aria-hidden /> Świt</> :
-         pub.phase === "koniec" ? <><Flag size={26} strokeWidth={2.5} aria-hidden /> Koniec</> :
-         <><Spade size={26} strokeWidth={2.5} aria-hidden /> Rozdanie</>}
+         pub.phase === "glosowanie" ? <><Vote size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.voting")}</> :
+         pub.phase === "switt" ? <><Sunrise size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.dawn")}</> :
+         pub.phase === "koniec" ? <><Flag size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.end")}</> :
+         <><Spade size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.deal")}</>}
       </p>
       <p className="max-w-2xl text-center text-xl italic text-[var(--color-ink-muted)]">{pub.narratorKey ? t(pub.narratorKey as Parameters<typeof t>[0]) : pub.narrator}</p>
 
@@ -34,14 +34,14 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
         <div className="text-center">
           {pub.deaths.length ? pub.deaths.map((d) => (
             <p key={d} className="text-3xl font-bold"><Skull size={30} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /> {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_NAME[pub.players.find((p) => p.uid === d)!.role!]}` : ""}</p>
-          )) : <p className="text-2xl text-[var(--color-ink-muted)]">Noc minęła spokojnie.</p>}
+          )) : <p className="text-2xl text-[var(--color-ink-muted)]">{t("mafia.quietNight")}</p>}
         </div>
       )}
 
       {pub.phase === "koniec" ? (
         <>
           <p className="text-4xl font-bold" style={{ color: pub.winner === "mafia" ? accent : "#4ade80" }}>
-            {pub.winner === "mafia" ? "Mafia wygrywa!" : "Miasto wygrywa!"}
+            {pub.winner === "mafia" ? t("mafia.mafiaWins") : t("mafia.townWins")}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {pub.players.map((p) => (

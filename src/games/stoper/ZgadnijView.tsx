@@ -1,5 +1,6 @@
 "use client";
 import { Ear, Minus, Play, Plus, Square } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import { sfx, vibrate } from "@/lib/sound";
 import { AvatarIcon } from "@/components/AvatarIcon";
@@ -33,6 +34,7 @@ export function ZgadnijView({
   dispatch: (a: unknown) => Promise<void>;
   accent: string;
 }) {
+  const t = useT();
   const amRunner = pub.runnerUid === meUid;
   const runner = pub.players.find((p) => p.uid === pub.runnerUid);
   const t0 = useRef(0);
@@ -65,7 +67,7 @@ export function ZgadnijView({
         <Runda pub={pub} />
         {amRunner ? (
           <>
-            <p className="text-lg font-bold text-ink">Twoja kolej. Biegniesz Ty.</p>
+            <p className="text-lg font-bold text-ink">{t("zgadnij.yourTurn")}</p>
             <button
               type="button"
               onClick={() => {
@@ -75,10 +77,10 @@ export function ZgadnijView({
               className="font-display flex size-40 items-center justify-center gap-2 rounded-full border-[5px] border-white text-3xl font-bold uppercase tracking-[0.06em] text-black transition-transform duration-75 active:translate-y-[6px]"
               style={{ background: accent, boxShadow: `0 6px 0 color-mix(in srgb, ${accent} 55%, black)` }}
             >
-              <Play size={28} strokeWidth={3} aria-hidden /> Start
+              <Play size={28} strokeWidth={3} aria-hidden /> {t("zgadnij.start")}
             </button>
             <p className="text-sm font-semibold text-ink-muted">
-              Zatrzymaj kiedy chcesz. Nikt nie widzi cyfr — Ty też nie.
+              {t("zgadnij.runnerHint")}
             </p>
           </>
         ) : (
@@ -88,7 +90,7 @@ export function ZgadnijView({
             </span>
             <p className="text-lg font-bold text-ink">Biegnie {runner?.nick ?? "…"}</p>
             <p className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
-              <Ear size={18} strokeWidth={2.5} aria-hidden /> Słuchaj uważnie — usłyszysz start i stop.
+              <Ear size={18} strokeWidth={2.5} aria-hidden /> {t("zgadnij.listen")}
             </p>
           </>
         )}
@@ -113,7 +115,7 @@ export function ZgadnijView({
             className="font-display flex size-40 items-center justify-center gap-2 rounded-full border-[5px] bg-panel-hi text-3xl font-bold uppercase tracking-[0.06em] transition-transform duration-75 active:translate-y-[6px]"
             style={{ borderColor: accent, color: accent, boxShadow: `0 6px 0 color-mix(in srgb, ${accent} 45%, black)` }}
           >
-            <Square size={26} strokeWidth={3} aria-hidden /> Stop
+            <Square size={26} strokeWidth={3} aria-hidden /> {t("zgadnij.stop")}
           </button>
         ) : (
           <p className="text-lg font-bold text-ink">{runner?.nick ?? "Biegacz"} biegnie… licz w głowie!</p>
@@ -130,18 +132,18 @@ export function ZgadnijView({
         <Runda pub={pub} />
         {alreadyGuessed ? (
           <>
-            <p className="text-lg font-bold text-ink">Typ zapisany. Czekamy na resztę…</p>
+            <p className="text-lg font-bold text-ink">{t("zgadnij.saved")}</p>
             <p className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
               {pub.guessed.length} / {pub.players.length} gotowych
             </p>
           </>
         ) : (
           <>
-            <p className="text-lg font-bold text-ink">Ile trwał bieg?</p>
+            <p className="text-lg font-bold text-ink">{t("zgadnij.howLong")}</p>
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                aria-label="Mniej"
+                aria-label={t("zgadnij.less")}
                 onClick={() => step(-0.1)}
                 className="flex size-14 items-center justify-center rounded-[14px] border-[3px] border-stroke bg-panel shadow-[0_3px_0_rgb(0_0_0/0.35)] active:translate-y-[3px]"
               >
@@ -154,12 +156,12 @@ export function ZgadnijView({
                 min="0"
                 value={guess}
                 onChange={(e) => setGuess(Math.max(0, Number(e.target.value) || 0))}
-                aria-label="Twój typ w sekundach"
+                aria-label={t("zgadnij.yourGuess")}
                 className="tabular w-40 rounded-[14px] border-[3px] border-stroke bg-panel px-3 py-3 text-center text-3xl font-bold text-ink"
               />
               <button
                 type="button"
-                aria-label="Więcej"
+                aria-label={t("zgadnij.more")}
                 onClick={() => step(0.1)}
                 className="flex size-14 items-center justify-center rounded-[14px] border-[3px] border-stroke bg-panel shadow-[0_3px_0_rgb(0_0_0/0.35)] active:translate-y-[3px]"
               >

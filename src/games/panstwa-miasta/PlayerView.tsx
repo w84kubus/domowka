@@ -2,6 +2,7 @@
 import { Flag, FlagTriangleRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { GameViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { sfx } from "@/lib/sound";
 import { useSent } from "@/games/useOptimistic";
 import { AvatarIcon } from "@/components/AvatarIcon";
@@ -34,6 +35,7 @@ function useTicker(ms = 300) {
 const secLeft = (endsAt: number | null, now: number) => (endsAt == null ? null : Math.max(0, Math.ceil((endsAt - now) / 1000)));
 
 export function PmPlayerView({ room, publicState, privateState, meUid, isHost, dispatch, serverNow, accent }: GameViewProps) {
+  const t = useT();
   const pub = publicState as Pub;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
   useTicker();
@@ -45,7 +47,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
     const left = secLeft(room.phaseEndsAt, now);
     return (
       <div className="flex flex-col items-center justify-center gap-6 pt-6 text-center" style={{ ["--accent" as string]: accent }}>
-        <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">Runda {pub.round} — litera</p>
+        <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">{t("pm.roundLetter", { round: pub.round })}</p>
         <div
           className="flex h-40 w-40 items-center justify-center rounded-3xl text-8xl font-bold"
           style={{ background: accent, color: "#0b0a12", boxShadow: `0 0 50px ${accent}88`, fontFamily: "var(--font-display)" }}
@@ -73,25 +75,25 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
           <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
             Weryfikacja · litera {pub.letter}
           </p>
-          <p className="text-xs text-[var(--color-ink-muted)]">Przejrzyjcie odpowiedzi i zgłoście wątpliwe <Flag size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></p>
+          <p className="text-xs text-[var(--color-ink-muted)]">{t("pm.review")} <Flag size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></p>
         </div>
 
         {active && (
           <div className="card sticky top-2 z-10 flex flex-col gap-3 p-4" style={{ borderColor: accent }}>
-            <p className="text-sm text-[var(--color-ink-muted)]">Kwestia: odpowiedź <b>{nickOf(active.targetUid)}</b></p>
+            <p className="text-sm text-[var(--color-ink-muted)]">{t("pm.challengeOf")} <b>{nickOf(active.targetUid)}</b></p>
             {active.justification && <p className="text-center text-sm italic text-[var(--color-ink-muted)]">— {active.justification}</p>}
             {priv?.amTarget ? (
               <JustifyBox dispatch={dispatch} />
             ) : priv?.myVote || sent ? (
-              <p className="text-center text-sm text-[var(--color-ink-muted)]">Zagłosowano — czekamy…</p>
+              <p className="text-center text-sm text-[var(--color-ink-muted)]">{t("pm.voted")}</p>
             ) : (
               <div className="flex gap-2">
-                <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "uznaje" }); }}>UZNAJĘ</button>
-                <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "odrzucam" }); }} style={{ color: "var(--color-magenta)" }}>ODRZUCAM</button>
+                <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "uznaje" }); }}>{t("pm.accept")}</button>
+                <button className="btn flex-1" onClick={() => { markSent(); dispatch({ type: "VOTE", verdict: "odrzucam" }); }} style={{ color: "var(--color-magenta)" }}>{t("pm.reject")}</button>
               </div>
             )}
             <p className="text-center text-xs text-[var(--color-ink-muted)]">
-              UZNAJĘ {active.tally.uznaje} · ODRZUCAM {active.tally.odrzucam} (remis = uznana)
+              {t("pm.tally", { yes: active.tally.uznaje, no: active.tally.odrzucam })}
             </p>
           </div>
         )}
@@ -106,13 +108,13 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
                   <span className={`flex-1 truncate font-semibold ${e.rejected || e.autoZero ? "text-[var(--color-ink-muted)] line-through" : ""}`}>
                     {e.answer || <span className="italic text-[var(--color-ink-muted)]">—</span>}
                   </span>
-                  {e.autoZero && <span title="zła litera" className="text-xs text-[var(--color-magenta)]">zła litera</span>}
+                  {e.autoZero && <span title={t("pm.wrongLetter")} className="text-xs text-[var(--color-magenta)]">{t("pm.wrongLetter")}</span>}
                   {e.rejected && <span className="text-xs text-[var(--color-magenta)]">odrzucona</span>}
                   {!active && !sent && !e.autoZero && !e.rejected && e.answer && e.uid !== meUid && (
                     <button
                       onClick={() => { markSent(); dispatch({ type: "CHALLENGE", targetUid: e.uid, cat: c.cat }); }}
                       className="rounded-md border border-[var(--color-stroke)] px-2 py-1 text-xs"
-                      aria-label="Kwestionuję"
+                      aria-label={t("pm.challenge")}
                     >
                       <Flag size={16} strokeWidth={2.5} aria-hidden />
                     </button>
@@ -125,7 +127,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
 
         {isHost && (
           <button className="btn btn-accent mt-2" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>
-            {active ? "Zamknij głosowanie" : "Podlicz wyniki →"}
+            {active ? t("pm.closeVote") : t("pm.countScores")}
           </button>
         )}
       </div>
@@ -136,12 +138,12 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
   return (
     <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
       <h2 className="text-center text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
-        {pub.phase === "koniec" ? <>Koniec gry <FlagTriangleRight size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : `Runda ${pub.round} — wyniki`}
+        {pub.phase === "koniec" ? <>{t("pm.gameOver")} <FlagTriangleRight size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : t("pm.roundResults", { round: pub.round })}
       </h2>
       <ul className="flex flex-col gap-1">
         {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
           <li key={p.uid} className="card flex items-center justify-between px-4 py-2">
-            <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"}</span>
+            <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && ` ${t("common.you")}`}</span>
             <span className="tabular">
               <b>{p.score}</b>
               {p.roundDelta > 0 && <span className="ml-2 text-sm" style={{ color: accent }}>+{p.roundDelta}</span>}
@@ -152,7 +154,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
 
       {pub.breakdown && (
         <details className="text-sm">
-          <summary className="cursor-pointer text-[var(--color-ink-muted)]">Szczegóły kategorii</summary>
+          <summary className="cursor-pointer text-[var(--color-ink-muted)]">{t("pm.categoryDetails")}</summary>
           <div className="mt-2 flex flex-col gap-3">
             {pub.breakdown.map((c) => (
               <div key={c.category}>
@@ -170,24 +172,25 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
       )}
 
       {isHost && pub.phase === "wyniki" && (
-        <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Dalej →</button>
+        <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>{t("common.next")}</button>
       )}
     </div>
   );
 }
 
 function JustifyBox({ dispatch }: { dispatch: (a: unknown) => Promise<void> }) {
+  const t = useT();
   const [text, setText] = useState("");
   const [sent, setSent] = useState(false);
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-center text-sm text-[var(--color-ink-muted)]">To Twoja odpowiedź — możesz się bronić (15 s):</p>
+      <p className="text-center text-sm text-[var(--color-ink-muted)]">{t("pm.yourAnswer")}</p>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         maxLength={200}
         rows={2}
-        placeholder="np. To realne miasto w…"
+        placeholder={t("pm.answerPlaceholder")}
         className="rounded-lg border border-[var(--color-stroke)] bg-[var(--color-panel)] p-2 text-sm"
       />
       <button
@@ -195,7 +198,7 @@ function JustifyBox({ dispatch }: { dispatch: (a: unknown) => Promise<void> }) {
         disabled={sent || !text.trim()}
         onClick={() => { dispatch({ type: "JUSTIFY", text }); setSent(true); }}
       >
-        {sent ? "Wysłano" : "Broń się"}
+        {sent ? t("pm.sent") : t("pm.defend")}
       </button>
     </div>
   );
@@ -289,15 +292,16 @@ function endModeOf(room: GameViewProps["room"]): string {
 }
 
 function StopOrHost({ allFilled, endMode, isHost, onStop, onClose, accent }: { allFilled: boolean; endMode: string; isHost: boolean; onStop: () => void; onClose: () => void; accent: string }) {
+  const t = useT();
   return (
     <>
       {endMode === "stop" && (
         <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!allFilled} onClick={onStop}>
-          {allFilled ? "STOP!" : "Wypełnij wszystkie pola"}
+          {allFilled ? "STOP!" : t("pm.fillAll")}
         </button>
       )}
       {isHost && endMode !== "stop" && (
-        <button className="btn" onClick={onClose}>Zamknij rundę (host)</button>
+        <button className="btn" onClick={onClose}>{t("pm.closeRoundHost")}</button>
       )}
     </>
   );

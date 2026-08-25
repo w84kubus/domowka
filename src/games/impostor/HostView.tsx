@@ -1,5 +1,6 @@
 "use client";
 import type { GameHostViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface Pub {
@@ -12,13 +13,14 @@ interface Pub {
 }
 
 export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
+  const t = useT();
   const pub = publicState as Pub;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
       <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-ink-muted)]">
-        Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.phase}
+        {t("common.round")} {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.phase}
       </p>
 
       {pub.phase === "rozdanie" && (
@@ -43,11 +45,11 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
         </div>
       )}
 
-      {pub.phase === "dyskusja" && <p className="text-4xl font-bold" style={{ color: accent }}>Dyskusja!</p>}
+      {pub.phase === "dyskusja" && <p className="text-4xl font-bold" style={{ color: accent }}>{t("impostor.discussion")}</p>}
 
       {pub.phase === "glosowanie" && (
         <div className="w-full max-w-md">
-          <p className="mb-3 text-center text-2xl">Głosowanie…</p>
+          <p className="mb-3 text-center text-2xl">{t("impostor.voting")}</p>
           <ul className="flex flex-col gap-2">
             {pub.players.map((p) => (
               <li key={p.uid} className="flex items-center justify-between text-lg">
@@ -62,10 +64,10 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
       {(pub.phase === "wynik" || pub.phase === "koniec") && (
         <div className="text-center">
           <p className="text-4xl font-bold" style={{ color: pub.result === "cywile" ? "#4ade80" : accent }}>
-            {pub.result === "cywile" ? "Cywile wygrywają!" : pub.byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!"}
+            {pub.result === "cywile" ? t("impostor.civiliansWin") : pub.byGuess ? t("impostor.guessedWord") : t("impostor.impostorsWin")}
           </p>
-          <p className="mt-3 text-2xl">Hasło: <b>{pub.word}</b> <span className="text-[var(--color-ink-muted)]">({pub.category})</span></p>
-          <p className="text-lg text-[var(--color-ink-muted)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
+          <p className="mt-3 text-2xl">{t("impostor.password")} <b>{pub.word}</b> <span className="text-[var(--color-ink-muted)]">({pub.category})</span></p>
+          <p className="text-lg text-[var(--color-ink-muted)]">{t("impostor.impostorsWere", { nicks: pub.impostors.map(nickOf).join(", ") })}</p>
         </div>
       )}
 

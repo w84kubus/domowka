@@ -3,7 +3,9 @@ import { GameIcon } from "@/components/GameIcon";
 import { Lightbulb, X } from "lucide-react";
 import { useState } from "react";
 import { GAME_RULES } from "@/games/rules";
+import { useI18n } from "@/lib/i18n/provider";
 import type { GameManifest } from "@/games/types";
+import { gameNameKey, gameTaglineKey } from "@/lib/i18n/game";
 
 // G3 (UPGRADE.md §G): ekran zasad gry — dostępny z lobby, jedna karta, bez ściany tekstu.
 
@@ -13,8 +15,9 @@ export function GameRulesCard({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   manifest: GameManifest<any>;
 }) {
+  const { t, locale } = useI18n();
   const [open, setOpen] = useState(false);
-  const rules = GAME_RULES[manifest.id];
+  const rules = GAME_RULES[locale][manifest.id];
   if (!rules) return null;
 
   return (
@@ -24,7 +27,7 @@ export function GameRulesCard({
         onClick={() => setOpen(true)}
         className="font-display text-sm font-bold uppercase tracking-[0.06em] text-ink-muted underline-offset-4 hover:text-ink hover:underline"
       >
-        Jak grać?
+        {t("rules.howToPlay")}
       </button>
 
       {open && (
@@ -34,7 +37,7 @@ export function GameRulesCard({
           onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
           role="dialog"
           aria-modal="true"
-          aria-label={`Zasady: ${manifest.name}`}
+          aria-label={t("rules.howToPlay")}
         >
           {/* tło */}
           <div className="fixed inset-0 bg-black/60 animate-[fadeIn_0.15s_ease]" aria-hidden />
@@ -57,15 +60,15 @@ export function GameRulesCard({
                 <GameIcon gameId={manifest.id} size={44} className="flex-none text-white" />
                 <div className="min-w-0 flex-1">
                   <h2 className="font-display truncate text-lg font-bold uppercase tracking-[0.04em] text-white">
-                    {manifest.name}
+                    {t(gameNameKey(manifest.id))}
                   </h2>
-                  <p className="truncate text-sm font-semibold text-white/80">{manifest.tagline}</p>
+                  <p className="truncate text-sm font-semibold text-white/80">{t(gameTaglineKey(manifest.id))}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   className="flex size-11 flex-none items-center justify-center rounded-lg text-xl font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint"
-                  aria-label="Zamknij"
+                  aria-label={t("common.close")}
                 >
                   <X size={20} strokeWidth={3} aria-hidden />
                 </button>
@@ -95,7 +98,7 @@ export function GameRulesCard({
                 )}
 
                 <p className="font-display text-center text-xs font-bold uppercase tracking-[0.06em] opacity-60">
-                  {manifest.minPlayers}–{manifest.maxPlayers} graczy · ~{manifest.estimatedMinutes[0]}–{manifest.estimatedMinutes[1]} min
+                  {t("rules.meta", { min: manifest.minPlayers, max: manifest.maxPlayers, from: manifest.estimatedMinutes[0], to: manifest.estimatedMinutes[1] })}
                 </p>
               </div>
             </div>

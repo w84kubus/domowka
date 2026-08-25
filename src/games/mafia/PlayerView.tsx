@@ -1,5 +1,6 @@
 "use client";
 import { useI18n } from "@/lib/i18n/provider";
+import type { Key } from "@/lib/i18n/dict";
 import { Vote } from "lucide-react";
 import { Check, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -16,11 +17,11 @@ interface Pub {
 }
 interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean }
 
-const ROLE_INFO: Record<Role, { Icon: LucideIcon; name: string; desc: string }> = {
-  mafia: { Icon: Swords, name: "Mafia", desc: "W nocy wybieracie ofiarę. Za dnia udawaj niewinnego." },
-  mieszkaniec: { Icon: House, name: "Mieszkaniec", desc: "Nie masz zdolności. Znajdź mafię rozmową i głosem." },
-  detektyw: { Icon: Search, name: "Detektyw", desc: "Co noc sprawdzasz jedną osobę: mafia czy nie." },
-  lekarz: { Icon: Stethoscope, name: "Lekarz", desc: "Co noc chronisz jedną osobę przed śmiercią." },
+const ROLE_INFO: Record<Role, { Icon: LucideIcon; nameKey: Key; descKey: Key }> = {
+  mafia: { Icon: Swords, nameKey: "mafia.role.mafia", descKey: "mafia.role.mafia.desc" },
+  mieszkaniec: { Icon: House, nameKey: "mafia.role.mieszkaniec", descKey: "mafia.role.mieszkaniec.desc" },
+  detektyw: { Icon: Search, nameKey: "mafia.role.detektyw", descKey: "mafia.role.detektyw.desc" },
+  lekarz: { Icon: Stethoscope, nameKey: "mafia.role.lekarz", descKey: "mafia.role.lekarz.desc" },
 };
 
 function useTicker(ms = 400) { const [, s] = useState(0); useEffect(() => { const id = setInterval(() => s((n) => n + 1), ms); return () => clearInterval(id); }, [ms]); }
@@ -47,7 +48,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
         <RoleCard priv={priv} nickOf={nickOf} accent={accent} />
         {me?.confirmed || sent
           ? <p className="text-[var(--color-ink-muted)]">Czekamy… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
-          : <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>Zapamiętałem</button>}
+          : <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>{t("mafia.remembered")}</button>}
       </div>
     );
   }
@@ -57,7 +58,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         <p className="text-3xl font-bold" style={{ color: pub.winner === "mafia" ? accent : "#4ade80" }}>
-          {pub.winner === "mafia" ? <>Mafia wygrywa! <Swords size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></> : <>Miasto wygrywa! <PartyPopper size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>}
+          {pub.winner === "mafia" ? <>{t("mafia.mafiaWins")} <Swords size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></> : <>{t("mafia.townWins")} <PartyPopper size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>}
         </p>
         {narrator}
         <RoleReveal pub={pub} meUid={meUid} accent={accent} />
@@ -71,17 +72,17 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         {narrator}
         {pub.deaths.length ? pub.deaths.map((d) => (
-          <p key={d} className="text-xl font-bold"><Skull size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /> {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${ROLE_INFO[pub.players.find((p) => p.uid === d)!.role!].name}` : ""}</p>
-        )) : <p className="text-lg text-[var(--color-ink-muted)]">Nikt nie zginął tej nocy.</p>}
+          <p key={d} className="text-xl font-bold"><Skull size={22} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /> {nickOf(d)}{pub.players.find((p) => p.uid === d)?.role ? ` — ${t(ROLE_INFO[pub.players.find((p) => p.uid === d)!.role!].nameKey)}` : ""}</p>
+        )) : <p className="text-lg text-[var(--color-ink-muted)]">{t("mafia.nobodyDied")}</p>}
         <AliveList pub={pub} meUid={meUid} />
-        {isHost && <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Dalej →</button>}
+        {isHost && <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>{t("common.next")}</button>}
       </div>
     );
   }
 
   // —— NOC ——
   if (pub.phase === "noc") {
-    if (!iAmAlive) return <div className="flex flex-col items-center gap-3">{narrator}<p className="text-[var(--color-ink-muted)]">Nie żyjesz — obserwujesz z zaświatów.</p></div>;
+    if (!iAmAlive) return <div className="flex flex-col items-center gap-3">{narrator}<p className="text-[var(--color-ink-muted)]">{t("mafia.youAreDead")}</p></div>;
     const role = priv?.role;
     const acted = priv?.acted;
     const targets = pub.players.filter((p) => p.alive);
@@ -89,7 +90,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         <p className="flex items-center justify-center gap-2 text-center text-2xl"><Moon size={24} strokeWidth={2.5} aria-hidden /> Noc {pub.night}</p>
         {narrator}
-        {role === "mieszkaniec" && <p className="text-center text-[var(--color-ink-muted)]">Śpisz spokojnie. Miasto działa bez Ciebie.</p>}
+        {role === "mieszkaniec" && <p className="text-center text-[var(--color-ink-muted)]">{t("mafia.sleepWell")}</p>}
         {role && role !== "mieszkaniec" && (
           acted || sent ? (
             <p className="text-center" style={{ color: accent }}>
@@ -103,7 +104,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
           ) : (
             <>
               <p className="text-center font-semibold">
-                {role === "mafia" ? "Kogo mafia dziś sprząta?" : role === "detektyw" ? "Kogo sprawdzasz?" : "Kogo chronisz?"}
+                {role === "mafia" ? t("mafia.whoMafia") : role === "detektyw" ? t("mafia.whoCheck") : t("mafia.whoProtect")}
                 {left != null ? ` · ${left}s` : ""}
               </p>
               <div className="grid w-full grid-cols-2 gap-2">
@@ -137,7 +138,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
         {narrator}
         <p className="text-[var(--color-ink-muted)]">Rozmawiajcie na żywo. {left != null ? `Zostało ${left}s.` : ""}</p>
         <AliveList pub={pub} meUid={meUid} />
-        {isHost && <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Do głosowania →</button>}
+        {isHost && <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>{t("mafia.toVote")}</button>}
       </div>
     );
   }
@@ -145,10 +146,10 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
   // —— GŁOSOWANIE ——
   return (
     <div className="flex flex-col gap-3" style={{ ["--accent" as string]: accent }}>
-      <p className="flex items-center justify-center gap-2 text-center text-xl"><Vote size={22} strokeWidth={2.5} aria-hidden /> Głosowanie {left != null ? `· ${left}s` : ""}</p>
+      <p className="flex items-center justify-center gap-2 text-center text-xl"><Vote size={22} strokeWidth={2.5} aria-hidden /> {t("mafia.voting")} {left != null ? `· ${left}s` : ""}</p>
       {narrator}
-      {!iAmAlive ? <p className="text-center text-[var(--color-ink-muted)]">Martwi nie głosują.</p> : me?.voted || sent ? (
-        <p className="text-center text-[var(--color-ink-muted)]">Zagłosowano. Czekamy…</p>
+      {!iAmAlive ? <p className="text-center text-[var(--color-ink-muted)]">{t("mafia.deadDontVote")}</p> : me?.voted || sent ? (
+        <p className="text-center text-[var(--color-ink-muted)]">{t("mafia.voted")}</p>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {pub.players.filter((p) => p.alive && p.uid !== meUid).map((p) => (
@@ -156,7 +157,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
               <AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{pub.votesTally[p.uid] ? ` (${pub.votesTally[p.uid]})` : ""}
             </button>
           ))}
-          <button className="btn col-span-2" onClick={() => { markSent(); dispatch({ type: "VOTE", target: "nikt" }); }}>Nikt</button>
+          <button className="btn col-span-2" onClick={() => { markSent(); dispatch({ type: "VOTE", target: "nikt" }); }}>{t("mafia.nobody")}</button>
         </div>
       )}
     </div>
@@ -164,6 +165,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
 }
 
 function RoleCard({ priv, nickOf, accent }: { priv: Priv | null; nickOf: (u: string) => string; accent: string }) {
+  const { t } = useI18n();
   const [show, setShow] = useState(false);
   const role = priv?.role;
   const info = role ? ROLE_INFO[role] : null;
@@ -174,25 +176,26 @@ function RoleCard({ priv, nickOf, accent }: { priv: Priv | null; nickOf: (u: str
       {show && info ? (
         <>
           <info.Icon size={56} strokeWidth={2.5} aria-hidden />
-          <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: role === "mafia" ? accent : "var(--color-ink)" }}>{info.name}</span>
-          <span className="text-sm text-[var(--color-ink-muted)]">{info.desc}</span>
+          <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: role === "mafia" ? accent : "var(--color-ink)" }}>{t(info.nameKey)}</span>
+          <span className="text-sm text-[var(--color-ink-muted)]">{t(info.descKey)}</span>
           {role === "mafia" && priv?.mafia && priv.mafia.length > 1 && (
             <span className="text-sm">Twoja mafia: {priv.mafia.map(nickOf).join(", ")}</span>
           )}
         </>
       ) : (
-        <><Spade size={44} strokeWidth={2.5} aria-hidden /><span className="text-[var(--color-ink-muted)]">Przytrzymaj palec, żeby zobaczyć rolę</span></>
+        <><Spade size={44} strokeWidth={2.5} aria-hidden /><span className="text-[var(--color-ink-muted)]">{t("mafia.holdToSeeRole")}</span></>
       )}
     </button>
   );
 }
 
 function AliveList({ pub, meUid }: { pub: Pub; meUid: string }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {pub.players.map((p) => (
         <span key={p.uid} className="rounded-lg px-2 py-1 text-sm" style={{ background: "var(--color-panel)", opacity: p.alive ? 1 : 0.4 }}>
-          {p.alive ? <AvatarIcon avatar={p.avatar} size={18} /> : <Skull size={18} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden />} {p.nick}{p.uid === meUid && " (Ty)"}
+          {p.alive ? <AvatarIcon avatar={p.avatar} size={18} /> : <Skull size={18} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden />} {p.nick}{p.uid === meUid && ` ${t("common.you")}`}
         </span>
       ))}
     </div>
@@ -200,11 +203,12 @@ function AliveList({ pub, meUid }: { pub: Pub; meUid: string }) {
 }
 
 function RoleReveal({ pub, meUid, accent }: { pub: Pub; meUid: string; accent: string }) {
+  const { t } = useI18n();
   return (
     <ul className="w-full max-w-sm">
       {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
         <li key={p.uid} className="flex items-center justify-between px-2 py-1 text-sm">
-          <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"} — <b style={{ color: p.role === "mafia" ? accent : undefined }}>{p.role ? ROLE_INFO[p.role].name : "?"}</b></span>
+          <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && ` ${t("common.you")}`} — <b style={{ color: p.role === "mafia" ? accent : undefined }}>{p.role ? t(ROLE_INFO[p.role].nameKey) : "?"}</b></span>
           <span className="tabular font-bold">{p.score}</span>
         </li>
       ))}

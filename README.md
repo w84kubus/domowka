@@ -29,9 +29,10 @@
 ---
 
 > **Note:** the app ships in **Polish and English** — there's a switcher in the corner.
-> The Polish half is complete; on the English side the shell (landing, entry, lobby,
-> privacy) is fully translated, while a few in-game screens still fall back to Polish.
-> Directory and route names stay Polish throughout, because that's the app's home language.
+> Both are complete: the shell, every in-game screen, the host screen and the rules cards.
+> Directory and route names stay Polish throughout, because that's the app's home language,
+> and so does the game *content* — the word lists for Hangman and Categories are Polish,
+> and so is the Hangman keyboard, since the phrases it spells are.
 
 ## About
 
@@ -73,8 +74,8 @@ The same three screens side by side in both languages — that's the whole i18n 
 </tr>
 </table>
 
-> Those last two are Polish-only for now — the in-game screens and the TV layout are the
-> part of the interface still waiting for translation.
+> These two are shown in Polish, but both screens read in English too — the switcher covers
+> the whole interface.
 
 ## Games
 
@@ -118,7 +119,7 @@ The same three screens side by side in both languages — that's the whole i18n 
 - **Exponential backoff** — 500ms → 1s → 2s → … → 16s max
 
 ### Language
-- **Polish and English** — a switcher in the corner, no language prefix in the URL (room codes live there)
+- **Polish and English** — a switcher in the corner, no language prefix in the URL (room codes live there); covers every screen, including the games and the TV layout
 - **Cookie-based** — the server reads it before the first render, so nothing flashes in the wrong language
 - **Link card** — `og:image` plus a title and description in the reader's language, because the room link gets pasted into group chats
 

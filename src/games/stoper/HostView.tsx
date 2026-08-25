@@ -1,6 +1,7 @@
 "use client";
 import { Target, TriangleAlert } from "lucide-react";
 import type { GameHostViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PublicState {
@@ -17,6 +18,7 @@ const fmt = (ms: number) => (ms / 1000).toFixed(2).replace(".", ",") + " s";
 const signed = (ms: number) => (ms > 0 ? "+" : ms < 0 ? "−" : "±") + (Math.abs(ms) / 1000).toFixed(2).replace(".", ",") + " s";
 
 export function StoperHostView({ publicState, accent }: GameHostViewProps) {
+  const t = useT();
   const pub = publicState as PublicState;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
 
@@ -24,18 +26,18 @@ export function StoperHostView({ publicState, accent }: GameHostViewProps) {
     <div className="flex w-full max-w-4xl flex-col items-center gap-8" style={{ ["--accent" as string]: accent }}>
       <div className="text-center">
         <p className="font-display text-lg font-bold uppercase tracking-[0.3em] text-mint">
-          Runda {pub.round}{pub.totalRounds ? ` / ${pub.totalRounds}` : ""}
+          {t("common.round")} {pub.round}{pub.totalRounds ? ` / ${pub.totalRounds}` : ""}
         </p>
         <p className="tabular text-7xl font-bold" style={{ color: accent, textShadow: `0 0 30px ${accent}66` }}>
           {fmt(pub.target)}
         </p>
-        <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">cel</p>
+        <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">{t("stoper.target")}</p>
       </div>
 
       {pub.phase === "pomiar" ? (
         <>
           <p className="font-display text-3xl font-bold uppercase text-ink">
-            {pub.submitted.length} / {pub.players.length} zatrzymało
+            {t("stoper.stopped", { done: pub.submitted.length, all: pub.players.length })}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             {pub.players.map((p) => {
@@ -54,7 +56,7 @@ export function StoperHostView({ publicState, accent }: GameHostViewProps) {
                     className="font-display text-sm font-bold uppercase tracking-[0.06em]"
                     style={{ color: done ? accent : "var(--color-ink-muted)" }}
                   >
-                    {done ? "gotowe" : "mierzy…"}
+                    {done ? t("stoper.ready") : t("stoper.measuring")}
                   </span>
                 </div>
               );
@@ -64,7 +66,7 @@ export function StoperHostView({ publicState, accent }: GameHostViewProps) {
       ) : (
         <div className="w-full max-w-2xl">
           <h2 className="font-display mb-4 text-center text-3xl font-bold uppercase tracking-wide text-ink">
-            {pub.phase === "koniec" ? "Wyniki końcowe" : "Odsłonięcie"}
+            {pub.phase === "koniec" ? t("stoper.finalResults") : t("stoper.reveal")}
           </h2>
           <ol className="flex flex-col gap-2">
             {(pub.reveal ?? []).map((r, i) => (

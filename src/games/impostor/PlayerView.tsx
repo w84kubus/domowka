@@ -2,6 +2,7 @@
 import { Flag, VenetianMask } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { useSent } from "@/games/useOptimistic";
 import { AvatarIcon } from "@/components/AvatarIcon";
 
@@ -24,6 +25,7 @@ function useTicker(ms = 400) {
 const secLeft = (e: number | null, now: number) => (e == null ? null : Math.max(0, Math.ceil((e - now) / 1000)));
 
 export function ImpostorPlayerView({ room, publicState, privateState, meUid, isHost, dispatch, serverNow, accent }: GameViewProps) {
+  const t = useT();
   const pub = publicState as Pub;
   const priv = privateState as Priv | null;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
@@ -35,7 +37,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
 
   const header = (
     <p className="text-center text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
-      Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}
+      {t("common.round")} {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}
     </p>
   );
 
@@ -48,7 +50,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
         {me?.confirmed || sent ? (
           <p className="text-[var(--color-ink-muted)]">Czekamy na resztę… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
         ) : (
-          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>Zapamiętałem</button>
+          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => { markSent(); dispatch({ type: "CONFIRM" }); }}>{t("impostor.remembered")}</button>
         )}
       </div>
     );
@@ -61,13 +63,13 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         {header}
         <p className="text-2xl font-bold" style={{ color: civWin ? "#4ade80" : accent }}>
-          {pub.phase === "koniec" ? <>Koniec gry <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : civWin ? "Cywile wygrywają!" : pub.byGuess ? "Impostor odgadł hasło!" : "Impostorzy wygrywają!"}
+          {pub.phase === "koniec" ? <>{t("impostor.gameOver")} <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : civWin ? t("impostor.civiliansWin") : pub.byGuess ? t("impostor.guessedWord") : t("impostor.impostorsWin")}
         </p>
-        <p>Hasło: <b>{pub.word}</b> {pub.category && <span className="text-[var(--color-ink-muted)]">({pub.category})</span>}</p>
-        <p className="text-sm text-[var(--color-ink-muted)]">Impostorzy: {pub.impostors.map(nickOf).join(", ")}</p>
+        <p>{t("impostor.password")} <b>{pub.word}</b> {pub.category && <span className="text-[var(--color-ink-muted)]">({pub.category})</span>}</p>
+        <p className="text-sm text-[var(--color-ink-muted)]">{t("impostor.impostorsWere", { nicks: pub.impostors.map(nickOf).join(", ") })}</p>
         <ScoreList pub={pub} meUid={meUid} accent={accent} />
         {isHost && pub.phase === "wynik" && (
-          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Dalej →</button>
+          <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>{t("common.next")}</button>
         )}
       </div>
     );
@@ -98,7 +100,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
         {header}
         <p className="text-center font-semibold" style={{ color: accent }}>Kto jest impostorem? {left != null ? `· ${left}s` : ""}</p>
         {me?.voted || sent ? (
-          <p className="text-center text-[var(--color-ink-muted)]">Zagłosowano — czekamy…</p>
+          <p className="text-center text-[var(--color-ink-muted)]">{t("impostor.voted")}</p>
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {pub.players.filter((p) => p.uid !== meUid).map((p) => (
@@ -107,7 +109,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
             ))}
           </div>
         )}
-        {me?.voted && <p className="text-center text-sm text-[var(--color-ink-muted)]">Zagłosowano. Czekamy…</p>}
+        {me?.voted && <p className="text-center text-sm text-[var(--color-ink-muted)]">{t("impostor.votedShort")}</p>}
       </div>
     );
   }
@@ -123,30 +125,30 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
       {pub.phase === "podpowiedzi" && (
         <div className="flex flex-col gap-3">
           <p className="text-center text-sm text-[var(--color-ink-muted)]">
-            Podpowiedzi {pub.clueRound}/{pub.totalClueRounds} · {pub.speakMode === "tekstowy" ? "wpisz jedno słowo" : "mówcie po kolei"}
+            {t("impostor.cluesRound", { round: pub.clueRound, total: pub.totalClueRounds })} · {pub.speakMode === "tekstowy" ? t("impostor.modeText") : t("impostor.modeVoice")}
           </p>
           {pub.speakMode === "tekstowy" ? (
-            myClueGiven ? <p className="text-center text-[var(--color-ink-muted)]">Podano. Czekamy na innych…</p>
+            myClueGiven ? <p className="text-center text-[var(--color-ink-muted)]">{t("impostor.clueGiven")}</p>
               : <ClueBox dispatch={dispatch} accent={accent} />
           ) : (
-            <p className="text-center text-lg">{amSpeaker ? "Twoja kolej — powiedz słowo!" : <>Teraz: <b>{nickOf(pub.currentSpeaker ?? "")}</b></>}</p>
+            <p className="text-center text-lg">{amSpeaker ? t("impostor.yourTurn") : <>{t("impostor.now")} <b>{nickOf(pub.currentSpeaker ?? "")}</b></>}</p>
           )}
           {pub.speakMode === "na_glos" && (amSpeaker || isHost) && (
-            <button className="btn" onClick={() => dispatch({ type: "NEXT_SPEAKER" })}>Następny mówca →</button>
+            <button className="btn" onClick={() => dispatch({ type: "NEXT_SPEAKER" })}>{t("impostor.nextSpeaker")}</button>
           )}
         </div>
       )}
 
       {pub.phase === "dyskusja" && (
         <div className="text-center">
-          <p className="text-lg font-semibold" style={{ color: accent }}>Dyskusja! {left != null ? `· ${left}s` : ""}</p>
-          {isHost && <button className="btn btn-accent mt-3" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>Do głosowania →</button>}
+          <p className="text-lg font-semibold" style={{ color: accent }}>{t("impostor.discussion")} {left != null ? `· ${left}s` : ""}</p>
+          {isHost && <button className="btn btn-accent mt-3" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>{t("impostor.toVote")}</button>}
         </div>
       )}
 
       {pub.speakMode === "tekstowy" && pub.clues.length > 0 && (
         <div className="card p-3">
-          <p className="mb-2 text-xs uppercase tracking-widest text-[var(--color-ink-muted)]">Słowa</p>
+          <p className="mb-2 text-xs uppercase tracking-widest text-[var(--color-ink-muted)]">{t("impostor.words")}</p>
           <ul className="flex flex-col gap-1 text-sm">
             {pub.clues.map((c, i) => <li key={i} className="flex justify-between"><span className="text-[var(--color-ink-muted)]">{nickOf(c.uid)}</span><span className="font-semibold">{c.word}</span></li>)}
           </ul>
@@ -157,6 +159,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
 }
 
 function RoleCard({ priv, accent }: { priv: Priv | null; accent: string }) {
+  const t = useT();
   const [show, setShow] = useState(false);
   const isImp = priv?.role === "impostor";
   return (
@@ -171,20 +174,20 @@ function RoleCard({ priv, accent }: { priv: Priv | null; accent: string }) {
         isImp ? (
           <>
             <span className="text-3xl font-bold" style={{ color: accent, fontFamily: "var(--font-display)" }}>IMPOSTOR</span>
-            {priv?.hint && <span className="text-lg">Podpowiedź: <b>{priv.hint}</b></span>}
+            {priv?.hint && <span className="text-lg">{t("impostor.hint")} <b>{priv.hint}</b></span>}
             {priv?.coImpostors && priv.coImpostors.length > 0 && <span className="text-sm text-[var(--color-ink-muted)]">Twoi: {priv.coImpostors.join(", ")}</span>}
-            <span className="text-xs text-[var(--color-ink-muted)]">Udawaj, że znasz hasło.</span>
+            <span className="text-xs text-[var(--color-ink-muted)]">{t("impostor.pretend")}</span>
           </>
         ) : (
           <>
-            <span className="text-sm text-[var(--color-ink-muted)]">Twoje hasło:</span>
+            <span className="text-sm text-[var(--color-ink-muted)]">{t("impostor.yourPassword")}</span>
             <span className="text-3xl font-bold" style={{ fontFamily: "var(--font-display)" }}>{priv?.word}</span>
           </>
         )
       ) : (
         <>
           <VenetianMask size={44} strokeWidth={2.5} aria-hidden />
-          <span className="text-[var(--color-ink-muted)]">Przytrzymaj palec, żeby zobaczyć</span>
+          <span className="text-[var(--color-ink-muted)]">{t("impostor.holdToSee")}</span>
         </>
       )}
     </button>
@@ -192,41 +195,45 @@ function RoleCard({ priv, accent }: { priv: Priv | null; accent: string }) {
 }
 
 function RoleReminder({ priv, accent }: { priv: Priv | null; accent: string }) {
+  const t = useT();
   const [show, setShow] = useState(false);
   return (
     <button onPointerDown={() => setShow(true)} onPointerUp={() => setShow(false)} onPointerLeave={() => setShow(false)}
       className="mx-auto rounded-full border px-4 py-1 text-sm" style={{ borderColor: accent }}>
-      {show ? (priv?.role === "impostor" ? `IMPOSTOR${priv?.hint ? ` · ${priv.hint}` : ""}` : `Hasło: ${priv?.word}`) : "Przytrzymaj: twoja rola"}
+      {show ? (priv?.role === "impostor" ? `IMPOSTOR${priv?.hint ? ` · ${priv.hint}` : ""}` : `${t("impostor.password")} ${priv?.word}`) : t("impostor.holdRole")}
     </button>
   );
 }
 
 function ClueBox({ dispatch, accent }: { dispatch: (a: unknown) => Promise<void>; accent: string }) {
+  const t = useT();
   const [word, setWord] = useState("");
   return (
     <div className="flex gap-2">
-      <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={30} autoComplete="off" placeholder="jedno słowo…"
+      <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={30} autoComplete="off" placeholder={t("impostor.wordPlaceholder")}
         className="min-h-[52px] flex-1 rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi" />
-      <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => dispatch({ type: "CLUE", word })}>Podaj</button>
+      <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => dispatch({ type: "CLUE", word })}>{t("impostor.give")}</button>
     </div>
   );
 }
 function GuessBox({ dispatch, accent }: { dispatch: (a: unknown) => Promise<void>; accent: string }) {
+  const t = useT();
   const [word, setWord] = useState("");
   return (
     <div className="flex gap-2">
-      <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={40} autoComplete="off" placeholder="hasło…"
+      <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={40} autoComplete="off" placeholder={t("impostor.passwordPlaceholder")}
         className="min-h-[52px] flex-1 rounded-[14px] border-[3px] border-stroke bg-panel px-3 font-bold text-ink shadow-[0_3px_0_rgb(0_0_0/0.35)] outline-none transition-colors placeholder:font-semibold placeholder:text-ink-muted/60 focus:border-mint focus:bg-panel-hi" />
-      <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => dispatch({ type: "GUESS_WORD", word })}>Zgaduję</button>
+      <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} disabled={!word.trim()} onClick={() => dispatch({ type: "GUESS_WORD", word })}>{t("impostor.guess")}</button>
     </div>
   );
 }
 function ScoreList({ pub, meUid, accent }: { pub: Pub; meUid: string; accent: string }) {
+  const t = useT();
   return (
     <ul className="w-full max-w-sm">
       {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
         <li key={p.uid} className="flex justify-between px-2 py-1 text-sm">
-          <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && " (Ty)"}{pub.impostors.includes(p.uid) && <> <VenetianMask size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}</span>
+          <span><AvatarIcon avatar={p.avatar} size={18} /> {p.nick}{p.uid === meUid && ` ${t("common.you")}`}{pub.impostors.includes(p.uid) && <> <VenetianMask size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}</span>
           <span className="tabular"><b>{p.score}</b>{p.roundDelta > 0 && <span className="ml-2" style={{ color: accent }}>+{p.roundDelta}</span>}</span>
         </li>
       ))}

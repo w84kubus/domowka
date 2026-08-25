@@ -12,7 +12,7 @@ export function MafiaSettingsPanel({ value, onChange, playerCount }: GameSetting
     <div className="flex flex-col gap-5">
       {playerCount < 6 && (
         <p className="rounded-[14px] border-2 border-bursztyn/50 bg-bursztyn/15 px-3 py-2 text-xs font-bold text-bursztyn">
-          Zalecane min. 6 graczy — przy mniejszej liczbie gra bywa krótka.
+          {t("mafia.minPlayersHint")}
         </p>
       )}
       <SegmentPicker label={t("set.maf.count")} value={value.mafiaCount} onChange={(v) => set({ mafiaCount: v as number })}

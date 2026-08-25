@@ -3,6 +3,7 @@ import { GameIcon } from "@/components/GameIcon";
 import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useT } from "@/lib/i18n/provider";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
 import { RoomQr } from "@/components/RoomQr";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
@@ -22,6 +23,7 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 // Język wizualny Arcade Party — ten sam gradient i halftone co reszta aplikacji.
 // Scanlines CRT zdjęte: DESIGN.md §0 wyklucza cienkie kreski jako element stylu.
 export default function EkranPage() {
+  const t = useT();
   const params = useParams<{ code: string }>();
   const code = normalizeRoomCode(params.code ?? "");
   const { uid, loading: authLoading } = useAnonAuth();
@@ -47,7 +49,7 @@ export default function EkranPage() {
       <main className="arcade-bg relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden">
         <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
         <p className="font-display relative text-4xl font-bold uppercase text-ink-muted">
-          Nie ma takiego pokoju.
+          {t("tv.noRoom")}
         </p>
       </main>
     );
@@ -93,7 +95,7 @@ export default function EkranPage() {
         {/* Lewa: kod + QR */}
         <section className="flex flex-none flex-col items-center gap-4">
           <span className="font-display text-xl font-bold uppercase tracking-[0.3em] text-mint">
-            Dołącz do pokoju
+            {t("tv.joinRoom")}
           </span>
           <RoomCodeNeon code={code} size="clamp(3.5rem, 9vh, 7rem)" />
           <div className="rounded-[20px] border-[3px] border-stroke bg-panel p-3 shadow-[0_5px_0_rgb(0_0_0/0.35)]">
@@ -107,11 +109,11 @@ export default function EkranPage() {
         {/* Prawa: gracze */}
         <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
           <h2 className="font-display flex-none text-left text-2xl font-bold uppercase tracking-widest text-mint">
-            Gracze ({players.length})
+            {t("tv.players", { count: players.length })}
           </h2>
           {players.length === 0 ? (
             <p className="flex flex-1 items-center justify-center text-2xl font-semibold text-ink-muted">
-              Zaproś znajomych i zaczynajcie.
+              {t("lobby.noPlayers")}
             </p>
           ) : (
             <ul className="grid min-h-0 flex-1 auto-rows-min grid-cols-[repeat(auto-fill,minmax(150px,1fr))] content-start gap-4 overflow-y-auto">

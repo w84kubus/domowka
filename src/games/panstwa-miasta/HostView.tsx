@@ -1,5 +1,6 @@
 "use client";
 import type { GameHostViewProps } from "@/games/view";
+import { useT } from "@/lib/i18n/provider";
 import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface Pub {
@@ -19,6 +20,7 @@ interface Pub {
 }
 
 export function PmHostView({ publicState, accent }: GameHostViewProps) {
+  const t = useT();
   const pub = publicState as Pub;
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
 
@@ -30,8 +32,8 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
           {pub.letter}
         </div>
         <div className="text-left">
-          <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}</p>
-          <p className="text-2xl font-bold">{phaseLabel(pub.phase)}</p>
+          <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">{t("common.round")} {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""}</p>
+          <p className="text-2xl font-bold">{phaseLabel(pub.phase, t)}</p>
         </div>
       </div>
 
@@ -52,7 +54,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
             <div className="card p-4 text-center" style={{ borderColor: accent }}>
               <p className="text-lg">Kwestia: „{pub.entries?.find((e) => e.uid === pub.active!.targetUid)?.answer}” ({nickOf(pub.active.targetUid)})</p>
               {pub.active.justification && <p className="italic text-[var(--color-ink-muted)]">— {pub.active.justification}</p>}
-              <p className="mt-2 text-xl">UZNAJĘ {pub.active.tally.uznaje} · ODRZUCAM {pub.active.tally.odrzucam}</p>
+              <p className="mt-2 text-xl">{t("pm.accept")} {pub.active.tally.uznaje} · {t("pm.reject")} {pub.active.tally.odrzucam}</p>
             </div>
           ) : (
             <ul className="flex flex-col gap-1 text-lg">
@@ -69,7 +71,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
 
       {(pub.phase === "wyniki" || pub.phase === "koniec") && (
         <div className="w-full max-w-md">
-          <h3 className="mb-3 text-center text-2xl font-bold">{pub.phase === "koniec" ? "Wyniki końcowe" : "Tabela"}</h3>
+          <h3 className="mb-3 text-center text-2xl font-bold">{pub.phase === "koniec" ? t("pm.finalResults") : t("pm.table")}</h3>
           <ol className="flex flex-col gap-2">
             {[...pub.players].sort((a, b) => b.score - a.score).map((p, i) => (
               <li key={p.uid} className="card flex items-center gap-3 px-4 py-2 text-lg">
@@ -88,6 +90,7 @@ export function PmHostView({ publicState, accent }: GameHostViewProps) {
   );
 }
 
-function phaseLabel(p: Pub["phase"]): string {
-  return { losowanie: "Losowanie litery", pisanie: "Piszcie!", weryfikacja: "Weryfikacja", wyniki: "Wyniki rundy", koniec: "Koniec" }[p];
+// `t` wędruje argumentem, bo to zwykła funkcja poza komponentem — hooka użyć nie może.
+function phaseLabel(p: Pub["phase"], t: ReturnType<typeof useT>): string {
+  return { losowanie: t("pm.phase.losowanie"), pisanie: t("pm.phase.pisanie"), weryfikacja: t("pm.phase.weryfikacja"), wyniki: t("pm.phase.wyniki"), koniec: t("pm.phase.koniec") }[p];
 }

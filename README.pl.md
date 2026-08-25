@@ -67,8 +67,8 @@ Te same trzy ekrany obok siebie w obu językach — cała historia dwujęzyczno�
 </tr>
 </table>
 
-> Te dwa ostatnie są na razie tylko po polsku — ekrany gier i układ na TV to ta część
-> interfejsu, która wciąż czeka na tłumaczenie.
+> Te dwa pokazuję po polsku, ale oba ekrany czytają się też po angielsku — przełącznik
+> obejmuje cały interfejs.
 
 ## Gry
 
@@ -111,7 +111,7 @@ Te same trzy ekrany obok siebie w obu językach — cała historia dwujęzyczno�
 - **Wykładniczy backoff** — 500ms → 1s → 2s → ... → 16s max
 
 ### Język
-- **Polski i angielski** — przełącznik w rogu, bez prefiksu języka w adresie (tam siedzą kody pokoi)
+- **Polski i angielski** — przełącznik w rogu, bez prefiksu języka w adresie (tam siedzą kody pokoi); obejmuje wszystkie ekrany, także gry i układ na TV
 - **Przez ciasteczko** — serwer czyta je przed pierwszym renderem, więc nic nie miga w złym języku
 - **Karta linku** — `og:image` plus tytuł i opis w języku czytelnika, bo link do pokoju ląduje w czatach grupowych
 
@@ -267,7 +267,7 @@ src/
 - **Dynamic imports** — komponenty gier ładowane dynamicznie (`next/dynamic`). Gracz pobiera tylko kod aktualnej gry, nie wszystkich siedmiu.
 - **Tajne dane w trzech warstwach** — `publicState` (wszyscy widzą), `secret/state` (nikt nie czyta, `allow read: if false`), `private/{uid}` (tylko Twoje).
 - **Timer bez crona** — serwer pisze `phaseEndsAt`, klienci odliczają, a po upływie czasu ponagla serwer **wyłącznie host**. Reszta wchodzi jako zapas dopiero po 3 s, gdyby host wypadł. Wcześniej ponaglali wszyscy naraz, co przy 8 graczach dawało ~6,6 transakcji/s na jednym dokumencie przy limicie Firestore ~1/s — transakcje wchodziły w konflikt i faza spóźniała się o kilka sekund.
-- **Polski jako pierwszy, angielski obok** — kod, trasy i nazwy katalogów zostają po polsku; interfejs czyta ze słownika. Bez biblioteki i18n: next-intl wymusiłby prefiks języka w adresie, a tam siedzą kody pokoi. Język trzyma ciasteczko, które serwer czyta przed pierwszym renderem, więc nic nie miga w złym języku.
+- **Polski jako pierwszy, angielski obok** — kod, trasy i nazwy katalogów zostają po polsku, podobnie jak TREŚĆ gier: listy haseł do Wisielca i Państw-miast są polskie, a klawiatura Wisielca razem z nimi. Interfejs czyta ze słownika. Bez biblioteki i18n: next-intl wymusiłby prefiks języka w adresie, a tam siedzą kody pokoi. Język trzyma ciasteczko, które serwer czyta przed pierwszym renderem, więc nic nie miga w złym języku.
 - **Fonty z `latin-ext`** (Ą Ć Ę Ł Ń Ó Ś Ź Ż) — sama obecność glifów to jednak za mało: Fredoka je ma, ale rysuje ogonek w Ą/Ę cienkim włosem oderwanym od litery. Stąd Baloo 2 — szczegóły w [`DESIGN.md`](DESIGN.md).
 - **Reguły komponentów w `@layer components`** — Tailwind układa kaskadę theme → base → components → utilities. Poza warstwą te reguły lądują *po* utility i wygrywają każdy remis, więc `px-4` obok `.card` po cichu nic nie robiło. Przed poprawką takich miejsc było około czterdziestu.
 - **Rdzeń nie zna żadnej gry** — dwie funkcje działają przez opt-in silnika, nie przez wiedzę rdzenia. Gra bez opt-inu po prostu działa, tylko bez danej funkcji:
