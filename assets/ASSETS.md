@@ -28,10 +28,10 @@ tym, po czym kod będzie sięgał po plik.
 | `howto-gra` | `public/assets/sceny/howto-gra@{1,2}x.webp` | 640×453 | 40 / 17 kB | `HowToPlay.tsx` — krok 3 | **P0** ✅ |
 | `og-tlo` | `public/assets/tla/og-tlo.webp` | 2400×1350 | 100 kB | `opengraph-image.tsx` | **P0** ✅ |
 | `ziomek-czeka` | `public/assets/postacie/ziomek-czeka@{1,2}x.webp` | 655×720 | 41 / 19 kB | lobby — pusty stan | P1 ✅ |
-| `ziomek-zgubiony` | `public/assets/postacie/ziomek-zgubiony@{1,2}x.webp` | 718×720 | 47 / 21 kB | błąd / offline / brak pokoju | P1 ⚠️ **do powtórzenia** |
+| `ziomek-zagubiony` | `public/assets/postacie/ziomek-zagubiony@{1,2}x.webp` | 718×720 | 47 / 21 kB | błąd / offline / brak pokoju | P1 ⚠️ **do powtórzenia** |
 | `ziomek-wygrana` | `public/assets/postacie/ziomek-wygrana@{1,2}x.webp` | 645×720 | 48 / 23 kB | `Podium.tsx` | P2 ✅ |
 
-> ⚠️ `ziomek-zgubiony` wyszedł z generatora jako niemal kopia `ziomek-czeka` — ta sama
+> ⚠️ `ziomek-zagubiony` wyszedł z generatora jako niemal kopia `ziomek-czeka` — ta sama
 > miętowa postać w tej samej pozie siedzącej (średnia różnica pikseli 28/255, kolor ciała
 > `#80E8B0` vs `#80F0B0`). Prompt prosił o magentę i pozę stojącą ze wzruszeniem ramion;
 > obraz referencyjny przeważył nad opisem. Do powtórzenia — patrz `PROMPTS.md`.
@@ -78,7 +78,7 @@ pierwszym ekranem i idą `loading="lazy"`.
 Reguły podawania (do etapu implementacji, nie teraz):
 - `hero-ekipa` — `priority`, `sizes` z breakpointami, `@2x` tylko przez `srcset`.
 - wszystko poniżej pierwszego ekranu — `loading="lazy"`, jawne `width`/`height` (żeby nie skakał layout).
-- `ziomek-zgubiony` na ekranie offline musi być **precache'owany przez Service Workera** —
+- `ziomek-zagubiony` na ekranie offline musi być **precache'owany przez Service Workera** —
   inaczej ekran „brak połączenia" nie pokaże obrazka właśnie wtedy, gdy jest potrzebny.
   To jedyny asset z tej listy, który trafia do `src/sw.ts`.
 

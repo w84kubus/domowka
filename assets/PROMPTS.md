@@ -124,7 +124,7 @@ or logos.
 
 ---
 
-## `ziomek-zgubiony`
+## `ziomek-zagubiony`
 
 ```
 One chunky bean-shaped cartoon character with a magenta #C0398F body standing and

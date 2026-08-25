@@ -8,7 +8,7 @@
 const DIMS = {
   "postacie/hero-ekipa": [1600, 893],
   "postacie/ziomek-czeka": [655, 720],
-  "postacie/ziomek-zgubiony": [718, 720],
+  "postacie/ziomek-zagubiony": [636, 720],
   "postacie/ziomek-wygrana": [645, 720],
   "sceny/howto-pokoj": [454, 640],
   "sceny/howto-kod": [640, 493],
@@ -25,7 +25,15 @@ export function Illustration({
 }: {
   id: IllustrationId;
   className?: string;
-  /** Hero nad linią zgięcia — ładuj od razu. Reszta czeka na przewinięcie. */
+  /**
+   * Ładuj od razu, bez czekania na przewinięcie.
+   *
+   * Konieczne wszędzie tam, gdzie ilustracja pojawia się dopiero po zmianie stanu
+   * (ekran błędu, offline, „nie ma takiego pokoju") — przy `loading="lazy"` obrazek
+   * montowany po pierwszym renderze potrafi w ogóle nie wystartować, mimo że leży
+   * w widoku, i zostaje po nim pusta dziura. Sprawdzone na ekranie „Nie udało się
+   * wejść": `currentSrc` pusty, `complete` false, element widoczny.
+   */
   priority?: boolean;
   /** Domyślnie dekoracja (alt=""). Podaj tekst tylko, gdy obrazek NIESIE treść. */
   alt?: string;

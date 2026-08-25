@@ -1,6 +1,6 @@
 "use client";
-import { Zap } from "lucide-react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Illustration } from "@/components/Illustration";
 
 // F1 (UPGRADE.md §F): Error boundary per trasa gry — awaria jednej gry nie wywala całej aplikacji.
 // Łapie render-time błędy w drzewie potomnym (nie w event handlerach ani asynchronicznych).
@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="arcade-bg screen relative items-center justify-center gap-5 overflow-hidden text-center">
           <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
-          <Zap size={56} strokeWidth={2.5} className="relative" aria-hidden />
+          <Illustration id="postacie/ziomek-zagubiony" priority className="relative h-40 w-auto sm:h-48" />
           <h2 className="font-display relative text-2xl font-bold uppercase tracking-wide text-ink">
             Coś się zepsuło
           </h2>

@@ -103,7 +103,7 @@ MANIFEST: tuple[Asset, ...] = (
     Asset("howto-gra", "cutout", "sceny", 640, 640),
     Asset("og-tlo", "background", "tla", 2400, 1350),
     Asset("ziomek-czeka", "cutout", "postacie", 720, 720),
-    Asset("ziomek-zgubiony", "cutout", "postacie", 720, 720),
+    Asset("ziomek-zagubiony", "cutout", "postacie", 720, 720),
     Asset("ziomek-wygrana", "cutout", "postacie", 720, 720),
 )
 

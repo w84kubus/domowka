@@ -85,6 +85,7 @@ export default function LobbyPage() {
     return (
       <main className="arcade-bg screen relative items-center justify-center gap-6 overflow-hidden text-center">
         <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+        <Illustration id="postacie/ziomek-zagubiony" priority className="relative h-40 w-auto sm:h-48" />
         <p className="font-display relative text-2xl font-bold uppercase text-ink">
           Nie ma takiego pokoju
         </p>
@@ -101,6 +102,7 @@ export default function LobbyPage() {
     return (
       <main className="arcade-bg screen relative items-center justify-center gap-5 overflow-hidden text-center">
         <div className="halftone pointer-events-none absolute inset-0" aria-hidden />
+        <Illustration id="postacie/ziomek-zagubiony" priority className="relative h-40 w-auto sm:h-48" />
         <p className="font-display relative text-2xl font-bold uppercase text-ink">
           Nie udało się wejść
         </p>
