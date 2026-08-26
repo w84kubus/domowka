@@ -6,6 +6,12 @@
       "runtimeExecutable": "sh",
       "runtimeArgs": ["-c", "cd /Users/jakub/domowka && npm run dev"],
       "port": 3000
+    },
+    {
+      "name": "domowka-prod",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "npm start"],
+      "port": 3000
     }
   ]
 }

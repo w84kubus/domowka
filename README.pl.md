@@ -40,35 +40,23 @@
 
 ## Zrzuty ekranu
 
-Te same trzy ekrany obok siebie w obu językach — cała historia dwujęzyczności w jednej tabeli.
+Cztery ekrany — strona główna, dołączanie, lobby i runda w trakcie — w obu językach.
+Interfejs przełącza się w całości: nic nie zostaje przetłumaczone do połowy.
 
-| | Polski | English |
-|---|---|---|
-| **Strona główna** | <img src="docs/screenshots/pl-landing.webp" width="230" alt="Strona główna po polsku" /> | <img src="docs/screenshots/en-landing.webp" width="230" alt="Strona główna po angielsku" /> |
-| **Wejście** | <img src="docs/screenshots/pl-wejscie.webp" width="230" alt="Ekran wejścia po polsku" /> | <img src="docs/screenshots/en-wejscie.webp" width="230" alt="Ekran wejścia po angielsku" /> |
-| **Lobby** | <img src="docs/screenshots/pl-lobby.webp" width="230" alt="Lobby po polsku" /> | <img src="docs/screenshots/en-lobby.webp" width="230" alt="Lobby po angielsku" /> |
+**Polski**
 
-<table>
-<tr>
-<td width="50%" valign="top">
+![Domówka po polsku: strona główna, dołączanie do pokoju, lobby i runda Wisielca](docs/screenshots/telefony-pl.webp)
 
-**W trakcie gry** — Stoper, tryb CEL. Cyfry są zasłonięte, więc liczysz w głowie.
+**English**
 
-<img src="docs/screenshots/pl-gra.webp" width="230" alt="Stoper w trakcie rundy" />
+![Domówka po angielsku: strona główna, dołączanie do pokoju, lobby i runda Wisielca](docs/screenshots/telefony-en.webp)
 
-</td>
-<td width="50%" valign="top">
+### Ekran hosta (TV)
 
-**Ekran hosta (TV)** — osobny układ poziomy na laptopa albo telewizor: wielki kod pokoju, QR i kto już jest.
+Osobny układ poziomy na laptopa albo telewizor — wielki kod pokoju, QR do zeskanowania i kto już jest.
+Otwierasz go z lobby; gracze zostają przy swoich telefonach.
 
-<img src="docs/screenshots/pl-tv.webp" width="420" alt="Ekran hosta na telewizorze" />
-
-</td>
-</tr>
-</table>
-
-> Te dwa pokazuję po polsku, ale oba ekrany czytają się też po angielsku — przełącznik
-> obejmuje cały interfejs.
+![Ekran hosta na telewizorze: kod pokoju YK73, kod QR i pięcioro graczy](docs/screenshots/ekran-tv.webp)
 
 ## Gry
 

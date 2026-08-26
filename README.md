@@ -47,35 +47,23 @@
 
 ## Screenshots
 
-The same three screens side by side in both languages — that's the whole i18n story in one table.
+Four screens — landing, joining, lobby, and a round in progress — in both languages.
+The interface switches whole: nothing is left half-translated.
 
-| | Polski | English |
-|---|---|---|
-| **Landing** | <img src="docs/screenshots/pl-landing.webp" width="230" alt="Landing page in Polish" /> | <img src="docs/screenshots/en-landing.webp" width="230" alt="Landing page in English" /> |
-| **Entry** | <img src="docs/screenshots/pl-wejscie.webp" width="230" alt="Entry screen in Polish" /> | <img src="docs/screenshots/en-wejscie.webp" width="230" alt="Entry screen in English" /> |
-| **Lobby** | <img src="docs/screenshots/pl-lobby.webp" width="230" alt="Lobby in Polish" /> | <img src="docs/screenshots/en-lobby.webp" width="230" alt="Lobby in English" /> |
+**Polski**
 
-<table>
-<tr>
-<td width="50%" valign="top">
+![Domówka in Polish: landing, joining a room, lobby and a Hangman round](docs/screenshots/telefony-pl.webp)
 
-**In-game** — Stopwatch, TARGET mode. The digits are masked, so you count in your head.
+**English**
 
-<img src="docs/screenshots/pl-gra.webp" width="230" alt="Stopwatch mid-round" />
+![Domówka in English: landing, joining a room, lobby and a Hangman round](docs/screenshots/telefony-en.webp)
 
-</td>
-<td width="50%" valign="top">
+### Host screen (TV)
 
-**Host screen (TV)** — a separate landscape layout for a laptop or TV: huge room code, QR, and who's already in.
+A separate landscape layout for a laptop or TV — huge room code, QR to scan, and who's already in.
+Open it from the lobby; players keep their own phones.
 
-<img src="docs/screenshots/pl-tv.webp" width="420" alt="Host screen on a TV" />
-
-</td>
-</tr>
-</table>
-
-> These two are shown in Polish, but both screens read in English too — the switcher covers
-> the whole interface.
+![Host screen on a TV: room code YK73, QR code and five players](docs/screenshots/ekran-tv.webp)
 
 ## Games
 
