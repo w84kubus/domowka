@@ -83,11 +83,11 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
         {header}
         {amEjected ? (
           <>
-            <p className="text-center">Wyleciałeś! Odgadnij hasło ({left ?? 0}s):</p>
+            <p className="text-center">{t("impostor.ejectedGuess", { sec: left ?? 0 })}</p>
             <GuessBox dispatch={dispatch} accent={accent} />
           </>
         ) : (
-          <p className="text-center text-[var(--color-ink-muted)]">{nickOf(pub.ejected ?? "")} był impostorem i zgaduje hasło… ({left ?? 0}s)</p>
+          <p className="text-center text-[var(--color-ink-muted)]">{t("impostor.ejectedWas", { nick: nickOf(pub.ejected ?? "") })} ({left ?? 0}s)</p>
         )}
       </div>
     );
@@ -98,7 +98,7 @@ export function ImpostorPlayerView({ room, publicState, privateState, meUid, isH
     return (
       <div className="flex flex-col gap-3" style={{ ["--accent" as string]: accent }}>
         {header}
-        <p className="text-center font-semibold" style={{ color: accent }}>Kto jest impostorem? {left != null ? `· ${left}s` : ""}</p>
+        <p className="text-center font-semibold" style={{ color: accent }}>{t("impostor.whoIs")} {left != null ? `· ${left}s` : ""}</p>
         {me?.voted || sent ? (
           <p className="text-center text-[var(--color-ink-muted)]">{t("impostor.voted")}</p>
         ) : (

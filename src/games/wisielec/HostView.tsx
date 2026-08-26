@@ -30,7 +30,11 @@ export function WisielecHostView({ publicState, accent }: GameHostViewProps) {
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
       <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-ink-muted)]">
-        Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.category}
+        {t("wisielec.roundCategory", {
+          round: pub.round,
+          total: pub.totalRounds ? `/${pub.totalRounds}` : "",
+          category: pub.category,
+        })}
       </p>
 
       {pub.mode === "wyscig" ? (

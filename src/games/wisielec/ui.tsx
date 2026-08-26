@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/provider";
 
 // Polska klawiatura ekranowa (SPEC §5.4) — własna, nie systemowa. 6 kolumn na telefon.
 const BASE = "A Ą B C Ć D E Ę F G H I J K L Ł M N Ń O Ó P R S Ś T U W Y Z Ź Ż".split(" ");
@@ -14,6 +15,7 @@ export function PolishKeyboard({
   extraLetters: boolean;
   pending?: Set<string>;
 }) {
+  const t = useT();
   const letters = extraLetters ? [...BASE, ...EXTRA] : BASE;
   return (
     <div className="grid grid-cols-6 gap-1.5">
@@ -28,7 +30,7 @@ export function PolishKeyboard({
             type="button"
             disabled={disabled || used}
             onClick={() => onLetter(l)}
-            aria-label={`Litera ${l}`}
+            aria-label={t("wisielec.letter", { letter: l })}
             className="font-display flex h-11 items-center justify-center rounded-[10px] border-[3px] text-lg font-bold transition-transform duration-75 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-mint active:translate-y-[3px] active:shadow-none disabled:active:translate-y-0"
             style={{
               borderColor: hit ? "var(--color-mint)" : miss ? "var(--color-czerwien)" : isPending ? "var(--color-bursztyn)" : "var(--color-stroke)",

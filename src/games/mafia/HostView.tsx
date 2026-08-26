@@ -21,8 +21,8 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent, filter: night ? "brightness(0.85)" : undefined }}>
       <p className="flex items-center justify-center gap-2 text-2xl">
-        {pub.phase === "noc" ? <><Moon size={26} strokeWidth={2.5} aria-hidden /> Noc {pub.night}</> :
-         pub.phase === "dzien" ? <><Sun size={26} strokeWidth={2.5} aria-hidden /> Dzień {pub.night}</> :
+        {pub.phase === "noc" ? <><Moon size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.night", { n: pub.night })}</> :
+         pub.phase === "dzien" ? <><Sun size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.day", { n: pub.night })}</> :
          pub.phase === "glosowanie" ? <><Vote size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.voting")}</> :
          pub.phase === "switt" ? <><Sunrise size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.dawn")}</> :
          pub.phase === "koniec" ? <><Flag size={26} strokeWidth={2.5} aria-hidden /> {t("mafia.end")}</> :

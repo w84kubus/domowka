@@ -73,7 +73,7 @@ export function PmPlayerView({ room, publicState, privateState, meUid, isHost, d
       <div className="flex flex-col gap-4" style={{ ["--accent" as string]: accent }}>
         <div className="text-center">
           <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
-            Weryfikacja · litera {pub.letter}
+            {t("pm.verifyLetter", { letter: pub.letter })}
           </p>
           <p className="text-xs text-[var(--color-ink-muted)]">{t("pm.review")} <Flag size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></p>
         </div>

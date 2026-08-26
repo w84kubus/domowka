@@ -88,16 +88,16 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
     const targets = pub.players.filter((p) => p.alive);
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
-        <p className="flex items-center justify-center gap-2 text-center text-2xl"><Moon size={24} strokeWidth={2.5} aria-hidden /> Noc {pub.night}</p>
+        <p className="flex items-center justify-center gap-2 text-center text-2xl"><Moon size={24} strokeWidth={2.5} aria-hidden /> {t("mafia.night", { n: pub.night })}</p>
         {narrator}
         {role === "mieszkaniec" && <p className="text-center text-[var(--color-ink-muted)]">{t("mafia.sleepWell")}</p>}
         {role && role !== "mieszkaniec" && (
           acted || sent ? (
             <p className="text-center" style={{ color: accent }}>
-              Wybór zapisany. Czekaj na świt… {left != null ? `(${left}s)` : ""}
+              {t("mafia.choiceSaved")} {left != null ? `(${left}s)` : ""}
               {role === "detektyw" && priv?.checks && priv.checks.length > 0 && (
                 <span className="mt-2 block text-sm text-[var(--color-ink-muted)]">
-                  Ostatni wynik: {nickOf(priv.checks[priv.checks.length - 1].target)} — {priv.checks[priv.checks.length - 1].isMafia ? <>MAFIA <Swords size={14} strokeWidth={2.5} className="inline-block align-[-0.15em]" /></> : <>czysty <Check size={14} strokeWidth={3} className="inline-block align-[-0.15em]" /></>}
+                  {t("mafia.lastCheck", { nick: nickOf(priv.checks[priv.checks.length - 1].target) })} {priv.checks[priv.checks.length - 1].isMafia ? <>{t("mafia.isMafia")} <Swords size={14} strokeWidth={2.5} className="inline-block align-[-0.15em]" /></> : <>{t("mafia.isClean")} <Check size={14} strokeWidth={3} className="inline-block align-[-0.15em]" /></>}
                 </span>
               )}
             </p>
@@ -121,7 +121,7 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
                 })}
               </div>
               {role === "mafia" && priv?.mafia && priv.mafia.length > 1 && (
-                <p className="text-xs text-[var(--color-ink-muted)]">Twoja mafia: {priv.mafia.filter((u) => u !== meUid).map(nickOf).join(", ")}</p>
+                <p className="text-xs text-[var(--color-ink-muted)]">{t("mafia.yourMafia", { nicks: priv.mafia.filter((u) => u !== meUid).map(nickOf).join(", ") })}</p>
               )}
             </>
           )
@@ -134,9 +134,9 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
   if (pub.phase === "dzien") {
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
-        <p className="flex items-center gap-2 text-2xl"><Sun size={24} strokeWidth={2.5} aria-hidden /> Dzień {pub.night}</p>
+        <p className="flex items-center gap-2 text-2xl"><Sun size={24} strokeWidth={2.5} aria-hidden /> {t("mafia.day", { n: pub.night })}</p>
         {narrator}
-        <p className="text-[var(--color-ink-muted)]">Rozmawiajcie na żywo. {left != null ? `Zostało ${left}s.` : ""}</p>
+        <p className="text-[var(--color-ink-muted)]">{t("mafia.talkLive")} {left != null ? t("mafia.timeLeft", { sec: left }) : ""}</p>
         <AliveList pub={pub} meUid={meUid} />
         {isHost && <button className="btn btn-accent" style={{ ["--accent" as string]: accent }} onClick={() => dispatch({ type: "NEXT" })}>{t("mafia.toVote")}</button>}
       </div>
@@ -179,7 +179,7 @@ function RoleCard({ priv, nickOf, accent }: { priv: Priv | null; nickOf: (u: str
           <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: role === "mafia" ? accent : "var(--color-ink)" }}>{t(info.nameKey)}</span>
           <span className="text-sm text-[var(--color-ink-muted)]">{t(info.descKey)}</span>
           {role === "mafia" && priv?.mafia && priv.mafia.length > 1 && (
-            <span className="text-sm">Twoja mafia: {priv.mafia.map(nickOf).join(", ")}</span>
+            <span className="text-sm">{t("mafia.yourMafia", { nicks: priv.mafia.map(nickOf).join(", ") })}</span>
           )}
         </>
       ) : (

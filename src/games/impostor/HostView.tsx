@@ -20,17 +20,17 @@ export function ImpostorHostView({ publicState, accent }: GameHostViewProps) {
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6" style={{ ["--accent" as string]: accent }}>
       <p className="text-lg uppercase tracking-[0.3em] text-[var(--color-ink-muted)]">
-        {t("common.round")} {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.phase}
+        {t("common.round")} {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {t(`impostor.phase.${pub.phase}` as "impostor.phase.rozdanie")}
       </p>
 
       {pub.phase === "rozdanie" && (
-        <p className="text-2xl">Wszyscy sprawdzają swoje karty… ({pub.players.filter((p) => p.confirmed).length}/{pub.players.length})</p>
+        <p className="text-2xl">{t("impostor.allChecking", { done: pub.players.filter((p) => p.confirmed).length, total: pub.players.length })}</p>
       )}
 
       {pub.phase === "podpowiedzi" && (
         <div className="text-center">
-          <p className="mb-3 text-xl">Kolejność: {pub.speakingOrder.map(nickOf).join(" → ")}</p>
-          {pub.speakMode === "na_glos" && pub.currentSpeaker && <p className="text-3xl font-bold" style={{ color: accent }}>Mówi: {nickOf(pub.currentSpeaker)}</p>}
+          <p className="mb-3 text-xl">{t("impostor.order", { nicks: pub.speakingOrder.map(nickOf).join(" → ") })}</p>
+          {pub.speakMode === "na_glos" && pub.currentSpeaker && <p className="text-3xl font-bold" style={{ color: accent }}>{t("impostor.speaking", { nick: nickOf(pub.currentSpeaker) })}</p>}
         </div>
       )}
 

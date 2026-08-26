@@ -49,9 +49,17 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
   const header = (
     <div className="text-center">
       <p className="text-sm uppercase tracking-widest text-[var(--color-ink-muted)]">
-        Runda {pub.round}{pub.totalRounds ? `/${pub.totalRounds}` : ""} · {pub.mode}
+        {t("wisielec.roundMode", {
+          round: pub.round,
+          total: pub.totalRounds ? `/${pub.totalRounds}` : "",
+          mode: t(`wisielec.mode.${pub.mode}` as const),
+        })}
       </p>
-      {pub.category && <p className="text-lg font-semibold" style={{ color: accent }}>Kategoria: {pub.category}</p>}
+      {pub.category && (
+        <p className="text-lg font-semibold" style={{ color: accent }}>
+          {t("wisielec.category", { category: pub.category })}
+        </p>
+      )}
     </div>
   );
 
@@ -63,7 +71,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
         {header}
         {priv?.amSetter ? <SetterInput dispatch={dispatch} accent={accent} /> : (
           <p className="text-center text-[var(--color-ink-muted)]">
-            {nickOf(pub.setterUid ?? "")} układa hasło… za chwilę zgadujecie.
+            {t("wisielec.setterWorking", { nick: nickOf(pub.setterUid ?? "") })}
           </p>
         )}
       </div>
@@ -80,7 +88,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
         <p className="text-2xl font-bold" style={{ color: won ? "#4ade80" : "var(--color-czerwien)" }}>
           {pub.phase === "koniec" ? <>{t("wisielec.gameOver")} <Flag size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : won ? <>{t("wisielec.solved")} <PartyPopper size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></> : <>{t("wisielec.hanged")} <Skull size={20} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></>}
         </p>
-        {pub.winners.length > 0 && <p className="text-sm text-[var(--color-ink-muted)]">Wygrywają: {pub.winners.map(nickOf).join(", ")}</p>}
+        {pub.winners.length > 0 && <p className="text-sm text-[var(--color-ink-muted)]">{t("wisielec.winners", { nicks: pub.winners.map(nickOf).join(", ") })}</p>}
         <ul className="w-full max-w-sm">
           {[...pub.players].sort((a, b) => b.score - a.score).map((p) => (
             <li key={p.uid} className="flex justify-between px-2 py-1 text-sm">
@@ -132,7 +140,7 @@ export function WisielecPlayerView({ room, publicState, privateState, meUid, isH
         <p className="text-center text-[var(--color-ink-muted)]">{t("wisielec.youSet")}</p>
       ) : myTurn ? (
         <>
-          <p className="text-sm font-semibold" style={{ color: accent }}>Twoja tura {left != null ? `· ${left}s` : ""}</p>
+          <p className="text-sm font-semibold" style={{ color: accent }}>{t("wisielec.yourTurn")} {left != null ? `· ${left}s` : ""}</p>
           <GuessControls hits={pub.hits ?? []} misses={pub.misses ?? []} dispatch={dispatch} disabled={false} extraLetters={pub.extraLetters} accent={accent} resetKey={room.version} />
         </>
       ) : (

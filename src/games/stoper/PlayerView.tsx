@@ -150,7 +150,7 @@ export function StoperPlayerView({ publicState, privateState, meUid, isHost, dis
               <span className="tabular w-6 text-center text-lg font-bold text-ink-muted">{i + 1}</span>
               <span className="flex-1 truncate font-bold text-ink">
                 {nickOf(r.uid)}
-                {r.uid === meUid && " (Ty)"}
+                {r.uid === meUid && <> {t("common.you")}</>}
                 {r.suspicious && <span title={t("stoper.suspicious")}> <TriangleAlert size={15} strokeWidth={2.5} className="inline-block align-[-0.18em]" aria-hidden /></span>}
               </span>
               <span className="tabular text-right text-sm">

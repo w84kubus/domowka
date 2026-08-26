@@ -88,7 +88,7 @@ export function ZgadnijView({
             <span className="flex size-24 items-center justify-center rounded-full border-[5px] border-white bg-panel-hi">
               <AvatarIcon avatar={runner?.avatar ?? ""} size={52} />
             </span>
-            <p className="text-lg font-bold text-ink">Biegnie {runner?.nick ?? "…"}</p>
+            <p className="text-lg font-bold text-ink">{t("zgadnij.running", { nick: runner?.nick ?? "…" })}</p>
             <p className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
               <Ear size={18} strokeWidth={2.5} aria-hidden /> {t("zgadnij.listen")}
             </p>
@@ -118,7 +118,7 @@ export function ZgadnijView({
             <Square size={26} strokeWidth={3} aria-hidden /> {t("zgadnij.stop")}
           </button>
         ) : (
-          <p className="text-lg font-bold text-ink">{runner?.nick ?? "Biegacz"} biegnie… licz w głowie!</p>
+          <p className="text-lg font-bold text-ink">{t("zgadnij.countInHead", { nick: runner?.nick ?? "…" })}</p>
         )}
       </div>
     );
@@ -134,7 +134,7 @@ export function ZgadnijView({
           <>
             <p className="text-lg font-bold text-ink">{t("zgadnij.saved")}</p>
             <p className="font-display text-sm font-bold uppercase tracking-[0.06em] text-mint">
-              {pub.guessed.length} / {pub.players.length} gotowych
+              {t("zgadnij.readyCount", { done: pub.guessed.length, total: pub.players.length })}
             </p>
           </>
         ) : (
@@ -177,7 +177,7 @@ export function ZgadnijView({
                 dispatch({ type: "GUESS", valueMs: Math.round(guess * 1000) }).catch(() => setSent(false));
               }}
             >
-              Zgaduję {fmt(Math.round(guess * 1000))}
+              {t("zgadnij.iGuess", { time: fmt(Math.round(guess * 1000)) })}
             </button>
           </>
         )}
@@ -189,9 +189,10 @@ export function ZgadnijView({
 }
 
 function Runda({ pub }: { pub: ZgadnijPublic }) {
+  const t = useT();
   return (
     <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
-      Runda {pub.round}
+      {t("zgadnij.round", { round: pub.round })}
       {pub.totalRounds ? ` / ${pub.totalRounds}` : ""}
     </p>
   );
