@@ -9,7 +9,9 @@ Do sierpnia 2026 aplikacja nazywała się Domówka. Stąd klucze `domowka-locale
 `domowka-session` i projekt Firebase `domowka-39gd0` — **tych nazw nie zmieniamy**:
 identyfikują dane już zapisane w przeglądarkach graczy i w backendzie.
 
-Gry: kółko i krzyżyk, Stoper, Państwa-miasta, Wisielec, Impostor, Mafia.
+Gry (7, wszystkie w `registry.ts`): Stoper, Państwa-miasta, Wisielec, Impostor,
+Mafia, Odcień, Kasyno. Kółko i krzyżyk NIE powstało — pominięte na życzenie Jakuba
+w fazie 2, mimo że wciąż figuruje w SPEC.
 
 Stack: Next.js 15 (App Router) + TypeScript strict + Tailwind v4 + Firebase (Firestore + Anonymous Auth) + Vercel.
 
@@ -74,10 +76,26 @@ firebase deploy --only firestore:rules
 - [x] Faza C — realtime: resync zegara po tła, powrót do pokoju (localStorage), migracja hosta na rozłączeniu (>30s via ping), actionId idempotencja, reset w transakcji, pasek połączenia, wykładniczy backoff
 - [x] Faza D — wygląd: skeleton lobby, neon click-to-copy + ambient glow, slideIn/fadeIn animacje, timer-urgent pulsacja, nowe SFX (join/phaseChange/neonBuzz/defeat), ekran hosta TV (8rem kod, duże awatary), prefers-reduced-motion
 - [x] Faza E — wydajność: dynamic imports gier (next/dynamic), manifests.ts (klient bez engines), selektywne private writes (JSON diff), debounce pingów 10s, /pokoj 339→314kB, / 110kB OK
-- [x] Faza F — jakość: ErrorBoundary per trasa gry, strukturalny logger (room/game/phase), tsconfig strict OK, zero any w prod, istniejące 74 testy pokrywają pełne partie + bezpieczeństwo
+- [x] Faza F — jakość: ErrorBoundary per trasa gry, strukturalny logger (room/game/phase), tsconfig strict OK, zero any w prod, testy pokrywają pełne partie + bezpieczeństwo (dziś **206 testów w 14 plikach**)
 - [x] Faza G — dopracowanie: ShareButton (navigator.share + fallback clipboard), deep link /?kod=XYZW, GameRulesCard (modal z krokami per gra), rules.ts (5 gier), rekordy pokoju. Zostało: unikalne awatary, tryb obserwatora
+- [x] Faza H — dwujęzyczność PL/EN: cały interfejs, widoki wszystkich gier, ekran TV,
+      karty zasad i polityka prywatności. 425 kluczy na język w `dict.ts`
+- [x] Faza I — rebranding Domówka → **Doplay** i własna domena `doplay.pl`
+      (apex 308 → `www`, `domowka.vercel.app` 308 → `www`; repo: `w84kubus/doplay`)
+- [x] Faza J — porządki w warstwach Tailwinda (`@layer components`), przebudowa
+      zrzutów w README, koordynacja pasków przy dolnej krawędzi
+
+### Co realnie zostało
+
+- Mafia: role dodatkowe (SPEC §5.6) + tryb z prowadzącym
+- Stoper: tryb treningowy solo
+- Kasyno: tryby `double` i `wheel` **nigdy nie sprawdzone w żywej rozgrywce**
+  (silnik i UI są, ale nikt nimi nie zagrał)
+- Unikalne awatary, tryb obserwatora, dopieszczenie dźwięków
 
 ## Konwencje, które łatwo przeoczyć
+
+### Opt-in silnika
 
 Rdzeń nie zna żadnej konkretnej gry — dwie rzeczy działają przez opt-in silnika, nie przez
 wiedzę rdzenia o grach. Dzięki temu zasada 4 zostaje nienaruszona: nowa gra bez tych opt-inów
@@ -91,3 +109,39 @@ po prostu działa, tylko bez danej funkcji.
   implementacja dla wszystkich gier — a poza tą fazą awaryjne „Przerwij i wróć do lobby".
   Różnica jest istotna: zakończenie daje podium i zapisuje rekordy, przerwanie nie.
   Kontrakt pilnuje `src/games/finish.test.ts`, iterując po całym rejestrze.
+
+### Dwujęzyczność (PL/EN)
+
+Interfejs jest tłumaczony, **kod i komentarze zostają po polsku**. Każdy tekst
+widoczny dla gracza idzie przez `t("klucz")` z `src/lib/i18n/dict.ts`.
+
+- Język trzyma ciasteczko `domowka-locale`; serwer czyta je **przed pierwszym
+  renderem** (layout.tsx), więc nie ma migotania. Świadomie bez biblioteki:
+  `next-intl` wymusiłby prefiks języka w adresie, a w URL-ach siedzą kody pokoi.
+- Pułapka, w którą łatwo wpaść: **skanowanie źródeł nie wystarczy** do sprawdzenia,
+  czy wszystko przetłumaczone. Część napisów powstaje przez interpolację
+  (`` `Runda ${n}` ``) albo doklejenie (`" (Ty)"`) i grep ich nie łapie. Jedyna
+  pewna metoda: przełączyć aplikację na EN i przeczytać realny render.
+- Wisielec **celowo** zostaje częściowo polski: klawiatura ekranowa i nazwy
+  kategorii („Zwierzęta"), bo listy haseł są polskie. Angielska etykieta nad
+  polskimi słowami myliłaby bardziej niż pomagała.
+
+### Paski przy dolnej krawędzi
+
+`src/lib/client/notices.ts` koordynuje wszystko, co jest `fixed` przy dole:
+informację o prywatności i zachętę do instalacji PWA.
+
+- Zasada: **jeden komunikat naraz i nigdy na sterowaniu**. Nie układamy w stos.
+- Ekran może zgłosić `claimBottom()`, że dolna krawędź należy do niego —
+  `GameShell` robi to na czas gry, więc oba paski milkną i nie wchodzą na
+  „Przerwij i wróć do lobby". Rdzeń nie wie, że to gra: zgłosić się może dowolny
+  komponent, więc zasada 4 zostaje nienaruszona.
+- Informacja o prywatności jest wtedy **odkładana, nie oznaczana jako zobaczona** —
+  inaczej gracz, który dołączył w trakcie rundy, nigdy by jej nie zobaczył.
+
+### Style
+
+Klasy komponentów (`.btn`, `.card`, `.screen`) żyją w `@layer components`
+w `globals.css`. To nie kosmetyka: bez warstwy miały tę samą specyficzność co
+utility Tailwinda i wygrywała kolejność w pliku, więc `rounded-tr-none` po cichu
+nie nadpisywało `.card`.
