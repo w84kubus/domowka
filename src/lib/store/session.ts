@@ -28,6 +28,8 @@ export const useSession = create<SessionState>()(
       setActiveRoom: (activeRoom) => set({ activeRoom }),
     }),
     {
+      // Nazwa sprzed rebrandingu na Doplay — patrz LOCALE_COOKIE w i18n/types.ts.
+      // Zmiana odcięłaby wracających graczy od zapisanego nicku, awatara i pokoju.
       name: "domowka-session",
       // v1: awatary z emoji na identyfikatory ikon. Bez migracji wracający gracz
       // ma w localStorage np. "🦊", nic nie jest zaznaczone w siatce i wybór

@@ -7,6 +7,10 @@ export const DEFAULT_LOCALE: Locale = "pl";
  * MUSI żyć w module bez "use client": Next.js zamienia moduły klienckie na referencje,
  * więc stała zaimportowana z provider.tsx do layoutu serwerowego byłaby `undefined`,
  * a cookies().get(undefined) po cichu zwracałoby brak języka.
+ *
+ * Wartość pochodzi z czasów, gdy aplikacja nazywała się Domówka — NIE zmieniać przy
+ * rebrandingu: klucz identyfikuje dane już zapisane w przeglądarkach graczy. Zmiana =
+ * wracający gracz traci ustawienia i wygląda to jak wyczyszczenie danych bez powodu.
  */
 export const LOCALE_COOKIE = "domowka-locale";
 

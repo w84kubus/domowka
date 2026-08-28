@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/icon-512.png" width="96" height="96" alt="Domówka logo" style="border-radius: 20px" />
+  <img src="public/icon-512.png" width="96" height="96" alt="Doplay logo" style="border-radius: 20px" />
 </p>
 
-<h1 align="center">Domówka</h1>
+<h1 align="center">Doplay</h1>
 
 <p align="center">
   <a href="README.md">English</a> · <b>Polski</b>
@@ -11,7 +11,7 @@
 <p align="center">
   Imprezowe gry multiplayer w przeglądarce. Każdy na swoim telefonie, jeden wspólny pokój.
   <br />
-  <a href="https://domowka.vercel.app"><strong>🔗 domowka.vercel.app</strong></a>
+  <a href="https://doplay.pl"><strong>🔗 doplay.pl</strong></a>
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@
 
 ## O aplikacji
 
-**Domówka** to zestaw imprezowych gier multiplayer, w które gracie na jednym spotkaniu — każdy na swoim telefonie. Bez kont, bez pobierania, bez tłumaczenia zasad. Jedna osoba zakłada pokój, reszta wpisuje 4-znakowy kod i za **15 sekund gracie**.
+**Doplay** to zestaw imprezowych gier multiplayer, w które gracie na jednym spotkaniu — każdy na swoim telefonie. Bez kont, bez pobierania, bez tłumaczenia zasad. Jedna osoba zakłada pokój, reszta wpisuje 4-znakowy kod i za **15 sekund gracie**.
 
 ### Jak to działa?
 
@@ -45,18 +45,18 @@ Interfejs przełącza się w całości: nic nie zostaje przetłumaczone do poło
 
 **Polski**
 
-![Domówka po polsku: strona główna, dołączanie do pokoju, lobby i runda Wisielca](docs/screenshots/telefony-pl.webp)
+![Doplay po polsku: strona główna, dołączanie do pokoju, lobby i runda Wisielca](docs/screenshots/telefony-pl.webp)
 
 **English**
 
-![Domówka po angielsku: strona główna, dołączanie do pokoju, lobby i runda Wisielca](docs/screenshots/telefony-en.webp)
+![Doplay po angielsku: strona główna, dołączanie do pokoju, lobby i runda Wisielca](docs/screenshots/telefony-en.webp)
 
 ### Ekran hosta (TV)
 
 Osobny układ poziomy na laptopa albo telewizor — wielki kod pokoju, QR do zeskanowania i kto już jest.
 Otwierasz go z lobby; gracze zostają przy swoich telefonach.
 
-![Ekran hosta na telewizorze: kod pokoju YK73, kod QR i pięcioro graczy](docs/screenshots/ekran-tv.webp)
+![Ekran hosta na telewizorze: kod pokoju M2R5, kod QR i pięcioro graczy](docs/screenshots/ekran-tv.webp)
 
 ## Gry
 
@@ -80,7 +80,7 @@ Otwierasz go z lobby; gracze zostają przy swoich telefonach.
 ### Pokój i lobby
 - **4-znakowy kod pokoju** — klocowate litery, kliknij żeby skopiować
 - **QR code** — skan z telefonu, zero wpisywania
-- **Deep link** — `domowka.vercel.app/?kod=XYZW` wchodzi prosto do pokoju
+- **Deep link** — `doplay.pl/?kod=XYZW` wchodzi prosto do pokoju
 - **Udostępnianie** — przycisk Share (native share / clipboard fallback)
 - **Ekran hosta (TV)** — osobny układ poziomy na laptop/TV, czytelny z kanapy
 - **Awatary** — 30 ilustrowanych ikon w kolorowych kafelkach

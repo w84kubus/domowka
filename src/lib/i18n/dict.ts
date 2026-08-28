@@ -43,7 +43,7 @@ const pl = {
   "entry.randomAvatar": "Losuj",
 
   // — instalacja PWA —
-  "install.title": "Zainstaluj Domówkę",
+  "install.title": "Zainstaluj Doplay",
   "install.label": "Zainstaluj",
   "install.add": "Dodaj",
   "install.iosHint": "Kliknij Udostępnij, a potem Dodaj do ekranu początkowego.",
@@ -503,7 +503,7 @@ const en: Record<Key, string> = {
   "entry.randomAvatar": "Random",
 
   // — PWA install —
-  "install.title": "Install Domówka",
+  "install.title": "Install Doplay",
   "install.label": "Install",
   "install.add": "Add",
   "install.iosHint": "Tap Share, then Add to Home Screen.",

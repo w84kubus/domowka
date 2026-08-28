@@ -14,7 +14,7 @@ export default function OfflinePage() {
           Brak połączenia
         </h1>
         <p className="max-w-xs text-base font-semibold leading-relaxed text-ink-muted">
-          Domówka potrzebuje internetu, żeby zsynchronizować graczy. Sprawdź
+          Doplay potrzebuje internetu, żeby zsynchronizować graczy. Sprawdź
           Wi-Fi i spróbuj ponownie.
         </p>
       </div>

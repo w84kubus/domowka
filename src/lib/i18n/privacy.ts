@@ -35,7 +35,7 @@ const pl: PrivacyContent = {
   title: "Prywatność i dane",
   updated: "Ostatnia aktualizacja: 20 sierpnia 2026",
   intro:
-    "Domówka nie ma kont, nie prosi o e-mail i nie zbiera danych do celów marketingowych. Poniżej dokładnie to, co aplikacja zapisuje na Twoim urządzeniu i po co.",
+    "Doplay nie ma kont, nie prosi o e-mail i nie zbiera danych do celów marketingowych. Poniżej dokładnie to, co aplikacja zapisuje na Twoim urządzeniu i po co.",
   noTrackingTitle: "Bez śledzenia",
   noTracking:
     "Nie używamy analityki, reklam, pikseli ani narzędzi profilujących. Nie przekazujemy niczego reklamodawcom. Dlatego nie ma tu banera „akceptuj ciasteczka” — nie ma czego odrzucić: wszystko poniżej jest albo niezbędne do działania gry, albo zapisywane dopiero wtedy, gdy sam coś ustawisz.",
@@ -71,7 +71,7 @@ const en: PrivacyContent = {
   title: "Privacy and data",
   updated: "Last updated: 20 August 2026",
   intro:
-    "Domówka has no accounts, never asks for your email, and collects nothing for marketing. Below is exactly what the app stores on your device and why.",
+    "Doplay has no accounts, never asks for your email, and collects nothing for marketing. Below is exactly what the app stores on your device and why.",
   noTrackingTitle: "No tracking",
   noTracking:
     "We use no analytics, no ads, no pixels and no profiling tools. Nothing is shared with advertisers. That's why there's no “accept cookies” banner here — there is nothing to reject: everything below is either required for the game to work, or saved only once you change a setting yourself.",

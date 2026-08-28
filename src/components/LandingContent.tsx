@@ -39,7 +39,7 @@ export function LandingContent() {
             aria-hidden
           />
           <h1 className="font-display text-5xl font-bold uppercase tracking-wide text-ink drop-shadow-[0_4px_0_rgb(0_0_0/0.35)] sm:text-6xl">
-            Domówka
+            Doplay
           </h1>
           <p className="max-w-md text-lg font-semibold leading-relaxed text-ink-muted">
             {t("landing.tagline")}
@@ -93,7 +93,7 @@ export function LandingContent() {
           <GithubMark />
           {t("footer.madeBy", { name: "Jakub Bondel" })}
         </a>
-        <span className="opacity-70">domowka.vercel.app</span>
+        <span className="opacity-70">doplay.pl</span>
       </footer>
     </main>
   );

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/icon-512.png" width="96" height="96" alt="Domówka logo" style="border-radius: 20px" />
+  <img src="public/icon-512.png" width="96" height="96" alt="Doplay logo" style="border-radius: 20px" />
 </p>
 
-<h1 align="center">Domówka</h1>
+<h1 align="center">Doplay</h1>
 
 <p align="center">
   <b>English</b> · <a href="README.pl.md">Polski</a>
@@ -11,7 +11,7 @@
 <p align="center">
   Multiplayer party games in the browser. Everyone on their own phone, one shared room.
   <br />
-  <a href="https://domowka.vercel.app"><strong>🔗 domowka.vercel.app</strong></a>
+  <a href="https://doplay.pl"><strong>🔗 doplay.pl</strong></a>
 </p>
 
 <p align="center">
@@ -36,7 +36,7 @@
 
 ## About
 
-**Domówka** ("house party" in Polish) is a set of multiplayer party games you play in a single sitting — everyone on their own phone. No accounts, no downloads, no explaining the rules. One person creates a room, everyone else types a 4-character code, and **you're playing in 15 seconds**.
+**Doplay** is a set of multiplayer party games you play in a single sitting — everyone on their own phone. No accounts, no downloads, no explaining the rules. One person creates a room, everyone else types a 4-character code, and **you're playing in 15 seconds**.
 
 ### How it works
 
@@ -52,18 +52,18 @@ The interface switches whole: nothing is left half-translated.
 
 **Polski**
 
-![Domówka in Polish: landing, joining a room, lobby and a Hangman round](docs/screenshots/telefony-pl.webp)
+![Doplay in Polish: landing, joining a room, lobby and a Hangman round](docs/screenshots/telefony-pl.webp)
 
 **English**
 
-![Domówka in English: landing, joining a room, lobby and a Hangman round](docs/screenshots/telefony-en.webp)
+![Doplay in English: landing, joining a room, lobby and a Hangman round](docs/screenshots/telefony-en.webp)
 
 ### Host screen (TV)
 
 A separate landscape layout for a laptop or TV — huge room code, QR to scan, and who's already in.
 Open it from the lobby; players keep their own phones.
 
-![Host screen on a TV: room code YK73, QR code and five players](docs/screenshots/ekran-tv.webp)
+![Host screen on a TV: room code M2R5, QR code and five players](docs/screenshots/ekran-tv.webp)
 
 ## Games
 
@@ -88,7 +88,7 @@ Open it from the lobby; players keep their own phones.
 ### Room and lobby
 - **4-character room code** — chunky letters, click to copy
 - **QR code** — scan from a phone, no typing
-- **Deep link** — `domowka.vercel.app/?kod=XYZW` goes straight into the room
+- **Deep link** — `doplay.pl/?kod=XYZW` goes straight into the room
 - **Sharing** — Share button (native share / clipboard fallback)
 - **Host screen (TV)** — separate landscape layout for a laptop/TV, readable from the couch
 - **Avatars** — 30 illustrated icons on colored tiles

@@ -1,4 +1,4 @@
-# SPEC — „Domówka" · multiplayerowe gry imprezowe w przeglądarce
+# SPEC — „Doplay" · multiplayerowe gry imprezowe w przeglądarce
 
 > **Jak użyć tego pliku (instrukcja dla Jakuba, nie dla Claude Code):**
 > Nie wklejaj tego do czatu Claude Code. Zapisz jako `SPEC.md` w pustym repo, obok zrób `CLAUDE.md` (treść w Załączniku A), a w terminalu odpal prompt startowy z Załącznika B. Dzięki temu spec przeżyje `/compact` i `/clear` — Claude Code będzie mógł do niego wracać zamiast trzymać wszystko w kontekście.

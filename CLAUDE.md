@@ -1,8 +1,15 @@
-# Domówka — pamięć projektu
+# Doplay — pamięć projektu
 
 ## Co to jest
 
-Multiplayerowe gry imprezowe w przeglądarce. Każdy gracz na swoim telefonie, wspólny pokój z 4-znakowym kodem. Gry: kółko i krzyżyk, Stoper, Państwa-miasta, Wisielec, Impostor, Mafia.
+Multiplayerowe gry imprezowe w przeglądarce. Każdy gracz na swoim telefonie,
+wspólny pokój z 4-znakowym kodem. Domena: **doplay.pl**
+
+Do sierpnia 2026 aplikacja nazywała się Domówka. Stąd klucze `domowka-locale`,
+`domowka-session` i projekt Firebase `domowka-39gd0` — **tych nazw nie zmieniamy**:
+identyfikują dane już zapisane w przeglądarkach graczy i w backendzie.
+
+Gry: kółko i krzyżyk, Stoper, Państwa-miasta, Wisielec, Impostor, Mafia.
 
 Stack: Next.js 15 (App Router) + TypeScript strict + Tailwind v4 + Firebase (Firestore + Anonymous Auth) + Vercel.
 

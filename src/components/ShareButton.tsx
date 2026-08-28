@@ -17,7 +17,7 @@ export function ShareButton({ code, compact }: { code: string; compact?: boolean
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Domówka", text, url });
+        await navigator.share({ title: "Doplay", text, url });
         vibrate(15);
         return;
       } catch {

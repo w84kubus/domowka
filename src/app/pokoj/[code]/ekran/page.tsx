@@ -102,7 +102,7 @@ export default function EkranPage() {
             <RoomQr code={code} size={180} />
           </div>
           <span className="font-display text-base font-bold uppercase tracking-[0.06em] text-ink-muted">
-            domowka.vercel.app
+            doplay.pl
           </span>
         </section>
 

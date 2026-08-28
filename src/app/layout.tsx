@@ -33,7 +33,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const SITE_URL = "https://domowka.vercel.app";
+const SITE_URL = "https://doplay.pl";
 
 // Kartę linku budujemy w języku czytelnika. Link do pokoju wkleja się do czatu
 // grupowego i to on jest pierwszym kontaktem z aplikacją — obrazek bierze się
@@ -45,11 +45,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: "Domówka",
+    title: "Doplay",
     description,
     manifest: "/manifest.webmanifest",
-    applicationName: "Domówka",
-    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Domówka" },
+    applicationName: "Doplay",
+    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Doplay" },
     icons: {
       icon: [
         { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
@@ -59,13 +59,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      siteName: "Domówka",
-      title: "Domówka",
+      siteName: "Doplay",
+      title: "Doplay",
       description,
       url: SITE_URL,
       locale: locale === "pl" ? "pl_PL" : "en_US",
     },
-    twitter: { card: "summary_large_image", title: "Domówka", description },
+    twitter: { card: "summary_large_image", title: "Doplay", description },
   };
 }
 
