@@ -32,7 +32,7 @@ Pełny spec: **`SPEC.md`** w rootcie repo. Nie jest ładowany automatycznie — 
 
 4. Dodanie nowej gry = nowy folder w `src/games/` + jedna linia w `registry.ts`. **Zero zmian w rdzeniu.** Jeśli uważasz, że rdzeń wymaga zmiany — zatrzymaj się i zapytaj. Nie zmieniaj po cichu.
 
-5. Wszystko po polsku. Fonty muszą mieć `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). **Press Start 2P, Orbitron i VT323 nie mają polskich znaków — nie używaj.**
+5. **Kod i komentarze po polsku. Interfejs dwujęzyczny** — każdy tekst widoczny dla gracza przez `t("klucz")` z `dict.ts`, zero napisów na sztywno. Fonty muszą mieć `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). **Press Start 2P, Orbitron i VT323 nie mają polskich znaków — nie używaj.**
 
 6. Mobile-first. Przyciski min. 56 px. `100dvh`, nie `100vh`. Pomiar czasu w Stoperze: `performance.now()`, nigdy `setInterval`.
 
@@ -112,8 +112,7 @@ po prostu działa, tylko bez danej funkcji.
 
 ### Dwujęzyczność (PL/EN)
 
-Interfejs jest tłumaczony, **kod i komentarze zostają po polsku**. Każdy tekst
-widoczny dla gracza idzie przez `t("klucz")` z `src/lib/i18n/dict.ts`.
+Reguła jest w zasadzie 5; tu rzeczy, które z niej nie wynikają.
 
 - Język trzyma ciasteczko `domowka-locale`; serwer czyta je **przed pierwszym
   renderem** (layout.tsx), więc nie ma migotania. Świadomie bez biblioteki:
