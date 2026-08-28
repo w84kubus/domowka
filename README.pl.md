@@ -272,8 +272,8 @@ src/
 ### Instalacja
 
 ```bash
-git clone https://github.com/w84kubus/domowka.git
-cd domowka
+git clone https://github.com/w84kubus/doplay.git
+cd doplay
 npm install
 ```
 
