@@ -16,7 +16,7 @@ export const PRIVACY_SEEN_KEY = "privacy-notice-seen";
 /** Zdarzenie na `window` po zamknięciu informacji — zwalnia miejsce na dole. */
 export const PRIVACY_DISMISSED_EVENT = "domowka:privacy-dismissed";
 
-/** Czy dół ekranu jest wolny (informacja o prywatności już zamknięta)? */
+/** Czy informacja o prywatności została już zamknięta (albo nie da się jej zapamiętać)? */
 export function privacyNoticeSeen(): boolean {
   try {
     return localStorage.getItem(PRIVACY_SEEN_KEY) !== null;
@@ -39,12 +39,14 @@ export function markPrivacyNoticeSeen(): void {
 // ——— Zajętość dołu przez ekran, nie przez komunikat ———
 //
 // Trwająca gra ma własne sterowanie przy dolnej krawędzi („Przerwij i wróć do
-// lobby", „Zakończ grę"). Pasek instalacji jest `fixed bottom-4` i po prostu na nie
-// wchodził — zgłoszone przy sprawdzaniu na telefonie.
+// lobby", „Zakończ grę"). Paski są `fixed` przy dole i po prostu na nie wchodziły —
+// zgłoszone przy sprawdzaniu na telefonie.
 //
 // Rozwiązanie jest tą samą zasadą co wyżej: nie układamy w stos, tylko czekamy.
-// Ekran może zgłosić, że zajmuje dół; komunikat wstrzymuje się do czasu, aż ekran
-// zniknie. Rdzeń nie wie, KTÓRA to gra ani nawet że to gra — zgłasza się dowolny
+// Ekran może zgłosić, że zajmuje dół; OBA komunikaty wstrzymują się do czasu, aż
+// ekran zniknie. Informacja o prywatności jest wtedy tylko odkładana, nie
+// oznaczana jako zobaczona — inaczej gracz, który dołączył w trakcie rundy,
+// nigdy by jej nie zobaczył. Rdzeń nie wie, KTÓRA to gra ani nawet że to gra — zgłasza się dowolny
 // komponent, więc zasada „rdzeń nie zna konkretnej gry" zostaje nienaruszona.
 //
 // Licznik, nie flaga: dwa ekrany mogą się na chwilę nałożyć przy przejściu (stary

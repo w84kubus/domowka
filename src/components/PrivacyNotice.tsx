@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
-import { markPrivacyNoticeSeen, privacyNoticeSeen } from "@/lib/client/notices";
+import { BOTTOM_CLAIM_EVENT, bottomClaimed, markPrivacyNoticeSeen, privacyNoticeSeen } from "@/lib/client/notices";
 
 // Informacja przy pierwszej wizycie — NIE baner zgody. Aplikacja nie ma analityki ani
 // trackerów, więc nie ma czego odrzucać; RODO wymaga tu poinformowania, nie pytania o zgodę.
@@ -15,9 +15,15 @@ export function PrivacyNotice() {
   const t = useT();
   const [show, setShow] = useState(false);
 
+  // Informacja czeka, gdy dół ekranu należy do sterowania grą (patrz lib/client/notices).
+  // Tylko ODKŁADAMY wyświetlenie — nie oznaczamy jej jako zobaczonej, więc pokaże się
+  // po powrocie do lobby. Inaczej gracz, który dołączył w trakcie rundy, nigdy by jej
+  // nie zobaczył.
   useEffect(() => {
-    // Prywatne okno bez dostępu do localStorage — po prostu nie pokazujemy.
-    if (!privacyNoticeSeen()) setShow(true);
+    const przelicz = () => setShow(!privacyNoticeSeen() && !bottomClaimed());
+    przelicz();
+    window.addEventListener(BOTTOM_CLAIM_EVENT, przelicz);
+    return () => window.removeEventListener(BOTTOM_CLAIM_EVENT, przelicz);
   }, []);
 
   if (!show) return null;
