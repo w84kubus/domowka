@@ -2,7 +2,7 @@
 import { Smartphone, X } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useT } from "@/lib/i18n/provider";
-import { PRIVACY_DISMISSED_EVENT, privacyNoticeSeen } from "@/lib/client/notices";
+import { BOTTOM_CLAIM_EVENT, PRIVACY_DISMISSED_EVENT, bottomClaimed, privacyNoticeSeen } from "@/lib/client/notices";
 
 // Prompt instalacji PWA (UPGRADE.md §B3).
 // - Android/Chrome: przechwytuje beforeinstallprompt, pokazuje dyskretny przycisk.
@@ -58,15 +58,22 @@ export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIOSHint, setShowIOSHint] = useState(false);
   const [visible, setVisible] = useState(false);
-  // Dół ekranu zajmuje informacja o prywatności. Zaczynamy od `false`, żeby na
-  // pierwszej wizycie oba paski nie mignęły razem, zanim efekt zdąży sprawdzić stan.
+  // Zaczynamy od `false`, żeby na pierwszej wizycie pasek nie mignął, zanim efekt
+  // zdąży sprawdzić, czy dół jest wolny.
   const [dolWolny, setDolWolny] = useState(false);
 
+  // Dół zajmuje albo informacja o prywatności, albo ekran, który sam zgłosił
+  // zajętość (np. trwająca gra). Oba warunki liczymy w jednym miejscu, żeby nie
+  // dało się pokazać paska w chwili, gdy tylko jeden z nich właśnie ustąpił.
   useEffect(() => {
-    setDolWolny(privacyNoticeSeen());
-    const zwolnij = () => setDolWolny(true);
-    window.addEventListener(PRIVACY_DISMISSED_EVENT, zwolnij);
-    return () => window.removeEventListener(PRIVACY_DISMISSED_EVENT, zwolnij);
+    const przelicz = () => setDolWolny(privacyNoticeSeen() && !bottomClaimed());
+    przelicz();
+    window.addEventListener(PRIVACY_DISMISSED_EVENT, przelicz);
+    window.addEventListener(BOTTOM_CLAIM_EVENT, przelicz);
+    return () => {
+      window.removeEventListener(PRIVACY_DISMISSED_EVENT, przelicz);
+      window.removeEventListener(BOTTOM_CLAIM_EVENT, przelicz);
+    };
   }, []);
 
   useEffect(() => {

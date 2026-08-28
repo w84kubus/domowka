@@ -14,6 +14,7 @@ import { newActionId } from "@/lib/action-id";
 import { isMuted, setMuted, unlockAudio, sfx } from "@/lib/sound";
 import { celebrate } from "@/lib/confetti";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
+import { claimBottom } from "@/lib/client/notices";
 import type { Room } from "@/lib/types/room";
 
 // Harness kliencki gry: podpina private/{uid}, tick fazy, dispatch akcji i renderuje PlayerView.
@@ -37,6 +38,9 @@ export function GameShell({
   const privateState = usePrivate(room.code, meUid, true);
   const { supported: wakeSupported } = useWakeLock(true); // ekran nie gaśnie w grze
   useVisualViewport(); // --vvh, --vv-offset dla klawiatury na mobile
+  // Dolna krawędź należy teraz do sterowania grą — pasek instalacji ma poczekać
+  // do lobby, zamiast wchodzić na „Przerwij i wróć do lobby".
+  useEffect(() => claimBottom(), []);
   const [muted, setMutedState] = useState(false);
   const [confirmAbort, setConfirmAbort] = useState(false);
   const [confirmFinish, setConfirmFinish] = useState(false);
