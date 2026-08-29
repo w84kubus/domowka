@@ -91,7 +91,6 @@ firebase deploy --only firestore:rules
      eskalacja wpisowego co 5 rund, bankructwo i eliminacja. Sloty i jackpot działały wcześniej. -->
 
 - Mafia: role dodatkowe (SPEC §5.6) + tryb z prowadzącym
-- Stoper: tryb treningowy solo
 - Dopieszczenie dźwięków
 - Kółko i krzyżyk **nadal figuruje w SPEC §5.x**, choć zostało pominięte w fazie 2.
   Albo je zrobić, albo wykreślić ze SPEC-u — dziś przy każdym czytaniu specyfikacji

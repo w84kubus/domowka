@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { Dumbbell } from "lucide-react";
 import { GameIcon } from "@/components/GameIcon";
 import { gameNameKey, gameTaglineKey } from "@/lib/i18n/game";
 import { useT } from "@/lib/i18n/provider";
@@ -33,6 +35,17 @@ export function GameCard({
       <p className="font-display mt-auto pt-1 text-xs font-bold uppercase tracking-[0.06em] opacity-60">
         {t("landing.playerRange", { min: manifest.minPlayers, max: manifest.maxPlayers })}
       </p>
+      {/* Odnośnik pojawia się tylko dla gier, które zgłosiły soloPath — karta nie
+          wie, która to gra. Karta sama w sobie nie jest klikalna, więc link nie
+          zabiera jej żadnej interakcji. */}
+      {manifest.soloPath && (
+        <Link
+          href={manifest.soloPath}
+          className="font-display inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.06em] underline underline-offset-2 opacity-80 hover:opacity-100"
+        >
+          <Dumbbell size={13} strokeWidth={2.5} aria-hidden /> {t("landing.practice")}
+        </Link>
+      )}
     </li>
   );
 }

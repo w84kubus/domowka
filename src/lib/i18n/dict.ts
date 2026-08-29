@@ -28,6 +28,7 @@ const pl = {
   "landing.games": "Sekcja gier",
   "landing.moreSoon": "Wkrótce",
   "landing.moreSoonBody": "Kolejne gry są w drodze.",
+  "landing.practice": "Potrenuj sam",
   "landing.howTo": "Jak grać",
   "landing.step1": "Załóż pokój na telefonie",
   "landing.step2": "Podaj kod znajomym",
@@ -73,6 +74,11 @@ const pl = {
   "tv.players": "Gracze ({count})",
 
   // — Stoper —
+  "trening.title": "Trening Stopera",
+  "trening.again": "Jeszcze raz",
+  "trening.late": "Za późno",
+  "trening.early": "Za wcześnie",
+  "trening.best": "Twój rekord: {time} s",
   "stoper.target": "cel",
   "stoper.stopped": "{done} / {all} zatrzymało",
   "stoper.ready": "gotowe",
@@ -517,6 +523,7 @@ const en: Record<Key, string> = {
   "landing.games": "The games",
   "landing.moreSoon": "Coming soon",
   "landing.moreSoonBody": "More games are on the way.",
+  "landing.practice": "Practice solo",
   "landing.howTo": "How to play",
   "landing.step1": "Create a room on your phone",
   "landing.step2": "Give the code to your friends",
@@ -560,6 +567,11 @@ const en: Record<Key, string> = {
   "tv.players": "Players ({count})",
 
   // — Stopwatch —
+  "trening.title": "Stopwatch practice",
+  "trening.again": "Again",
+  "trening.late": "Too late",
+  "trening.early": "Too early",
+  "trening.best": "Your best: {time} s",
   "stoper.target": "target",
   "stoper.stopped": "{done} / {all} stopped",
   "stoper.ready": "done",

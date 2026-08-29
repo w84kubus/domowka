@@ -84,6 +84,14 @@ export interface GameManifest<C = unknown> {
   minPlayers: number;
   maxPlayers: number;
   supportsHostScreen: boolean;
+  /**
+   * Ścieżka do trybu treningowego solo, jeśli gra taki ma (SPEC §5.2).
+   *
+   * Opt-in, jak `canFinish` i `meta.rekord`: rdzeń nie wie, KTÓRA gra ma trening —
+   * karta gry pokazuje odnośnik, gdy pole jest ustawione, i nie pokazuje, gdy nie.
+   * Nowa gra bez tego pola po prostu działa, tylko bez treningu (zasada 4).
+   */
+  soloPath?: string;
   estimatedMinutes: [number, number];
   defaultSettings: C;
   settingsSchema: ZodType<C>;

@@ -48,6 +48,7 @@ export const stoperManifest: GameManifest<StoperSettings> = {
   minPlayers: 1,
   maxPlayers: 16,
   supportsHostScreen: true,
+  soloPath: "/gry/stoper/trening",
   estimatedMinutes: [5, 15],
   defaultSettings: stoperSettingsSchema.parse({}),
   settingsSchema: stoperSettingsSchema,
