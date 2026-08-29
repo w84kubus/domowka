@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mafiaEngine, resolveNight, type MafiaState, type Role } from "./engine";
+import { chainDeaths, mafiaEngine, resolveNight, type MafiaState, type Role } from "./engine";
 import { mafiaSettingsSchema, type MafiaSettings } from "./manifest";
 import { mulberry32 } from "@/games/rng";
 import type { Player, PlayerMap } from "@/lib/types/room";
@@ -205,5 +205,65 @@ describe("mafia — szeryf, barman, snajper", () => {
   it("bez extraRoles rozdanie zostaje na rdzeniu", () => {
     const s = mafiaEngine.init({ players, seatOrder: uids, settings: mafiaSettingsSchema.parse({}), now: 1000, rng: mulberry32(7), seed: 7 });
     expect(Object.values(s.roles).some((r) => ["snajper", "barman", "szeryf"].includes(r))).toBe(false);
+  });
+});
+
+// —— reakcje łańcuchowe na śmierć (SPEC §5.6.4) ——
+describe("mafia — kamikadze i zakochani", () => {
+  // seatOrder: host, a, b, c, d
+  const ustaw = (roles: Record<string, Role>, over: Partial<MafiaSettings> = {}): MafiaState => {
+    const s = confirmAll(game(over));
+    return { ...s, roles, settings: { ...s.settings, ...over } as MafiaSettings };
+  };
+
+  it("KAMIKADZE zabiera sąsiada z lewej", () => {
+    const s = ustaw({ host: "mafia", a: "kamikadze", b: "mieszkaniec", c: "mieszkaniec", d: "mieszkaniec" }, { kamikazeSide: "left" });
+    expect(new Set(chainDeaths(s, ["a"]))).toEqual(new Set(["a", "host"]));
+  });
+
+  it("KAMIKADZE z ustawieniem w prawo zabiera drugą stronę", () => {
+    const s = ustaw({ host: "mafia", a: "kamikadze", b: "mieszkaniec", c: "mieszkaniec", d: "mieszkaniec" }, { kamikazeSide: "right" });
+    expect(new Set(chainDeaths(s, ["a"]))).toEqual(new Set(["a", "b"]));
+  });
+
+  it("ZAKOCHANI: śmierć jednego zabija drugie", () => {
+    const s = ustaw({ host: "mafia", a: "zakochani", b: "zakochani", c: "mieszkaniec", d: "mieszkaniec" });
+    expect(new Set(chainDeaths(s, ["a"]))).toEqual(new Set(["a", "b"]));
+  });
+
+  it("łańcuch się nie zapętla: zakochany kamikadze", () => {
+    // a i b zakochani; a jest też sąsiadem host-a. Łańcuch musi się zatrzymać.
+    const s = ustaw({ host: "kamikadze", a: "zakochani", b: "zakochani", c: "mieszkaniec", d: "mieszkaniec" }, { kamikazeSide: "right" });
+    const wynik = chainDeaths(s, ["host"]);
+    expect(new Set(wynik)).toEqual(new Set(["host", "a", "b"]));
+    expect(wynik.length).toBe(new Set(wynik).size); // bez duplikatów
+  });
+
+  it("kamikadze pomija martwych przy szukaniu sąsiada", () => {
+    const s = ustaw({ host: "mafia", a: "kamikadze", b: "mieszkaniec", c: "mieszkaniec", d: "mieszkaniec" }, { kamikazeSide: "left" });
+    const zHostemMartwym = { ...s, alive: { ...s.alive, host: false } };
+    expect(new Set(chainDeaths(zHostemMartwym, ["a"]))).toEqual(new Set(["a", "d"]));
+  });
+
+  it("ZAKOCHANI wygrywają, gdy zostaną tylko oni dwoje", () => {
+    let s = ustaw({ host: "mafia", a: "zakochani", b: "zakochani", c: "mieszkaniec", d: "mieszkaniec" }, { loversWin: true });
+    // Warunek sprawdza się PRZY ŚMIERCI, więc ktoś musi zginąć: zostaje trójka,
+    // wygłosowujemy c i przy stole zostaje sama para.
+    s = { ...s, alive: { host: false, a: true, b: true, c: true, d: false }, phase: "glosowanie", votes: {} };
+    let po = mafiaEngine.reduce(s, { type: "VOTE", target: "c" }, ctx("a"));
+    po = mafiaEngine.reduce(po, { type: "VOTE", target: "c" }, ctx("b"));
+    const koniec = mafiaEngine.reduce(po, { type: "VOTE", target: "nikt" }, ctx("c"));
+    expect(koniec.winner).toBe("zakochani");
+  });
+
+  it("rozdanie daje zakochanych PARĄ, nigdy pojedynczo", () => {
+    const s = mafiaEngine.init({
+      players, seatOrder: uids,
+      settings: { ...mafiaSettingsSchema.parse({}), extraRoles: ["zakochani"] } as MafiaSettings,
+      now: 1000, rng: mulberry32(3), seed: 3,
+    });
+    const ilu = Object.values(s.roles).filter((r) => r === "zakochani").length;
+    expect(ilu === 0 || ilu === 2).toBe(true);
+    expect(ilu).toBe(2);
   });
 });

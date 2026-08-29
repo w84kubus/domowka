@@ -63,6 +63,11 @@ export function MafiaSettingsPanel({ value, onChange, playerCount }: GameSetting
         </p>
       </div>
 
+      {value.extraRoles.includes("kamikadze") && (
+        <SegmentPicker label={t("set.maf.kamikazeSide")} value={value.kamikazeSide}
+          onChange={(v) => set({ kamikazeSide: v as MafiaSettings["kamikazeSide"] })}
+          options={[{ v: "left", l: t("opt.maf.left") }, { v: "right", l: t("opt.maf.right") }]} />
+      )}
       <SegmentPicker label={t("set.maf.norepeat")} value={value.doctorNoRepeat} onChange={(v) => set({ doctorNoRepeat: v as boolean })}
         options={[{ v: true, l: t("opt.wis.forbidden") }, { v: false, l: t("opt.wis.allowed") }]} />
     </div>

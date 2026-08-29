@@ -4,7 +4,7 @@ import { GameError, type GameEngine, type GameEvent, type InitContext, type With
 import { shuffle } from "@/games/rng";
 import { narratorLine } from "./data/narrator";
 import { autoMafiaCount, type MafiaSettings } from "./manifest";
-import { leftNeighbour, ROLE_SPECS, WAKE_ORDER, type Role } from "./roles";
+import { leftNeighbour, neighbourOnSide, OPTIONAL_ROLES, ROLE_SPECS, type Role } from "./roles";
 
 // Mafia — rdzeń (SPEC §5.6): mafia, mieszkańcy, detektyw, lekarz + auto-narrator.
 // BEZPIECZEŃSTWO: role żyją tylko w secret/state i private/{uid}. publicView ujawnia rolę
@@ -49,7 +49,7 @@ export interface MafiaState extends WithEvents {
   narrator: string;
   /** Klucz tłumaczenia kwestii narratora; UI woli go od `narrator` (polski zapas). */
   narratorKey: string | null;
-  winner: "miasto" | "mafia" | null;
+  winner: "miasto" | "mafia" | "zakochani" | null;
   scores: Record<string, number>;
 }
 
@@ -79,7 +79,14 @@ function countFactions(s: MafiaState) {
   }
   return { mafia, inni };
 }
-function checkWin(s: MafiaState): "miasto" | "mafia" | null {
+function checkWin(s: MafiaState): "miasto" | "mafia" | "zakochani" | null {
+  // Zakochani sprawdzani PRZED frakcjami. Dziś obie role się wykluczają, więc para
+  // nigdy nie jest mafią i wynik frakcyjny wyszedłby ten sam — ale komunikat już nie:
+  // bez tego warunku ocalała para zobaczyłaby „Miasto wygrywa" zamiast swojej wygranej.
+  if (s.settings.loversWin) {
+    const zywi = s.playerUids.filter((u) => s.alive[u]);
+    if (zywi.length === 2 && zywi.every((u) => s.roles[u] === "zakochani")) return "zakochani";
+  }
   const { mafia, inni } = countFactions(s);
   if (mafia === 0) return "miasto";
   if (mafia >= inni) return "mafia"; // mafiozi ≥ pozostali żywi (SPEC §5.6)
@@ -159,10 +166,16 @@ function assignRoles(playerUids: string[], settings: MafiaSettings, rng: () => n
   // Role opcjonalne w kolejności z WAKE_ORDER, żeby rozdanie było powtarzalne przy
   // tym samym seedzie. Walidacja „suma ról specjalnych ≤ gracze − mafiozi" (SPEC §5.6)
   // wychodzi tu naturalnie: kończą się miejsca, więc reszta zostaje mieszkańcami.
-  for (const rola of WAKE_ORDER) {
-    if (i >= n) break;
-    if (ROLE_SPECS[rola].core) continue;
-    if (settings.extraRoles.includes(rola)) roles[shuffled[i++]] = rola;
+  // Iterujemy po OPTIONAL_ROLES, nie po WAKE_ORDER: role reagujące na śmierć
+  // (kamikadze, zakochani) nie budzą się w nocy, więc w WAKE_ORDER ich nie ma
+  // i nigdy nie trafiłyby do rozdania.
+  for (const rola of OPTIONAL_ROLES) {
+    if (!settings.extraRoles.includes(rola)) continue;
+    // Zakochani wchodzą parą — albo obaj, albo wcale. Pojedynczy zakochany nie ma
+    // z kim zginąć i cicho psułby warunek zwycięstwa pary.
+    const miejsca = ROLE_SPECS[rola].slots;
+    if (i + miejsca > n) continue;
+    for (let k = 0; k < miejsca; k++) roles[shuffled[i++]] = rola;
   }
   for (; i < n; i++) roles[shuffled[i]] = "mieszkaniec";
   return roles;
@@ -205,7 +218,40 @@ function nightComplete(s: MafiaState): boolean {
   );
 }
 
-function toReveal(s: MafiaState, deaths: string[], after: "dzien" | "noc", now: number, rng: () => number): MafiaState {
+/**
+ * Reakcje łańcuchowe na śmierć (SPEC §5.6.4). Wpięte w toReveal, bo przechodzą
+ * przez nią OBIE ścieżki śmierci — nocna i wygłosowanie. Spec opisuje je pod
+ * „ŚWIT", ale przy stole kamikadze zabiera sąsiada także wtedy, gdy zostanie
+ * zlinczowany za dnia, więc stosujemy je do każdej śmierci.
+ *
+ * Kolejka + zbiór `martwi` daje terminację za darmo: para zakochanych zabija się
+ * nawzajem tylko raz, a łańcuch kamikadze nie może się zapętlić.
+ */
+export function chainDeaths(s: MafiaState, poczatkowe: string[]): string[] {
+  const martwi = new Set(poczatkowe);
+  const kolejka = [...poczatkowe];
+  const zyje = (u: string) => !!s.alive[u] && !martwi.has(u);
+
+  while (kolejka.length) {
+    const u = kolejka.shift()!;
+    const dodaj = (kandydat: string | null) => {
+      if (kandydat && !martwi.has(kandydat) && s.alive[kandydat]) {
+        martwi.add(kandydat);
+        kolejka.push(kandydat);
+      }
+    };
+    if (s.roles[u] === "kamikadze") {
+      dodaj(neighbourOnSide(s.playerUids, u, s.settings.kamikazeSide, zyje));
+    }
+    if (s.roles[u] === "zakochani") {
+      dodaj(s.playerUids.find((x) => x !== u && s.roles[x] === "zakochani") ?? null);
+    }
+  }
+  return [...martwi];
+}
+
+function toReveal(s: MafiaState, wejsciowe: string[], after: "dzien" | "noc", now: number, rng: () => number): MafiaState {
+  const deaths = chainDeaths(s, wejsciowe);
   const alive = { ...s.alive };
   const revealed = { ...s.revealed };
   for (const d of deaths) { alive[d] = false; if (s.settings.revealRoles) revealed[d] = s.roles[d]; }
@@ -224,10 +270,13 @@ function toReveal(s: MafiaState, deaths: string[], after: "dzien" | "noc", now: 
   };
 }
 
-function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
+function toKoniec(s: MafiaState, winner: "miasto" | "mafia" | "zakochani"): MafiaState {
   const scores = { ...s.scores };
   for (const u of s.playerUids) {
-    const win = winner === "mafia" ? s.roles[u] === "mafia" : s.roles[u] !== "mafia";
+    const win =
+      winner === "zakochani" ? s.roles[u] === "zakochani"
+      : winner === "mafia" ? s.roles[u] === "mafia"
+      : s.roles[u] !== "mafia";
     if (win) scores[u] = (scores[u] ?? 0) + 1;
   }
   const zyjacaMafia = s.playerUids.filter((u) => s.alive[u] && s.roles[u] === "mafia");
@@ -238,10 +287,22 @@ function toKoniec(s: MafiaState, winner: "miasto" | "mafia"): MafiaState {
     phaseEndsAt: null,
     revealed: { ...s.roles }, // na końcu odsłaniamy wszystkie role
     scores,
-    narrator: winner === "mafia" ? "Mafia przejęła miasto." : "Miasto oczyszczone. Mafia pokonana.",
-    narratorKey: winner === "mafia" ? "mafia.narrator.winMafia" : "mafia.narrator.winTown",
+    narrator:
+      winner === "zakochani" ? "Zostali tylko oni dwoje."
+      : winner === "mafia" ? "Mafia przejęła miasto."
+      : "Miasto oczyszczone. Mafia pokonana.",
+    narratorKey:
+      winner === "zakochani" ? "mafia.narrator.winLovers"
+      : winner === "mafia" ? "mafia.narrator.winMafia"
+      : "mafia.narrator.winTown",
     pendingEvents: [
-      { type: "koniec", text: winner === "mafia" ? "Mafia wygrywa!" : "Miasto wygrywa!" },
+      {
+        type: "koniec",
+        text:
+          winner === "zakochani" ? "Zakochani wygrywają!"
+          : winner === "mafia" ? "Mafia wygrywa!"
+          : "Miasto wygrywa!",
+      },
       // Ostatni żyjący mafioso dowiózł wygraną sam — wyczyn wart zapamiętania.
       // meta.rekord === true → rdzeń dopisuje do „Rekordów pokoju" (UPGRADE.md §8).
       ...(winner === "mafia" && zyjacaMafia.length === 1
@@ -452,6 +513,9 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
       base.acted = state.detectiveCheck != null;
     }
     if (role === "lekarz") base.acted = state.doctorSave != null;
+    if (role === "zakochani") {
+      base.lover = state.playerUids.find((u) => u !== uid && state.roles[u] === "zakochani") ?? null;
+    }
     if (role === "barman") base.acted = state.barmanTarget != null;
     if (role === "snajper") base.acted = state.sniperActed;
     if (role === "szeryf") {

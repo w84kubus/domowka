@@ -15,6 +15,10 @@ export const mafiaSettingsSchema = z.object({
    * startuje na rdzeniu, tak jak dotąd, więc włączenie tej listy niczego nie psuje
    * istniejącym pokojom.
    */
+  /** Po której stronie siedzi sąsiad, którego zabiera kamikadze (SPEC §5.6.4). */
+  kamikazeSide: z.enum(["left", "right"]).default("left"),
+  /** Zakochani wygrywają razem, gdy zostaną tylko oni dwoje (SPEC §5.6.8, opcja). */
+  loversWin: z.boolean().default(true),
   extraRoles: z.array(z.enum(OPTIONAL_ROLES as [string, ...string[]])).default([]),
 });
 

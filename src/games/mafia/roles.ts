@@ -12,7 +12,9 @@ export type Role =
   | "lekarz"
   | "szeryf"
   | "barman"
-  | "snajper";
+  | "snajper"
+  | "kamikadze"
+  | "zakochani";
 
 export type Faction = "mafia" | "miasto";
 
@@ -25,16 +27,22 @@ export interface RoleSpec {
   oncePerGame: boolean;
   /** Rola podstawowa — zawsze w rozdaniu. Reszta wchodzi przez ustawienia. */
   core: boolean;
+  /** Ilu graczy dostaje tę rolę. Zakochani występują parą, więc 2. */
+  slots: number;
 }
 
 export const ROLE_SPECS: Record<Role, RoleSpec> = {
-  mafia: { id: "mafia", faction: "mafia", nightAction: true, oncePerGame: false, core: true },
-  mieszkaniec: { id: "mieszkaniec", faction: "miasto", nightAction: false, oncePerGame: false, core: true },
-  detektyw: { id: "detektyw", faction: "miasto", nightAction: true, oncePerGame: false, core: true },
-  lekarz: { id: "lekarz", faction: "miasto", nightAction: true, oncePerGame: false, core: true },
-  szeryf: { id: "szeryf", faction: "miasto", nightAction: true, oncePerGame: true, core: false },
-  barman: { id: "barman", faction: "miasto", nightAction: true, oncePerGame: false, core: false },
-  snajper: { id: "snajper", faction: "miasto", nightAction: true, oncePerGame: false, core: false },
+  mafia: { id: "mafia", faction: "mafia", nightAction: true, oncePerGame: false, core: true, slots: 1 },
+  mieszkaniec: { id: "mieszkaniec", faction: "miasto", nightAction: false, oncePerGame: false, core: true, slots: 1 },
+  detektyw: { id: "detektyw", faction: "miasto", nightAction: true, oncePerGame: false, core: true, slots: 1 },
+  lekarz: { id: "lekarz", faction: "miasto", nightAction: true, oncePerGame: false, core: true, slots: 1 },
+  szeryf: { id: "szeryf", faction: "miasto", nightAction: true, oncePerGame: true, core: false, slots: 1 },
+  barman: { id: "barman", faction: "miasto", nightAction: true, oncePerGame: false, core: false, slots: 1 },
+  snajper: { id: "snajper", faction: "miasto", nightAction: true, oncePerGame: false, core: false, slots: 1 },
+  // Reagują na śmierć, nie budzą się w nocy — dlatego nightAction: false i brak
+  // pozycji w WAKE_ORDER. Ich efekt wchodzi dopiero przy świcie.
+  kamikadze: { id: "kamikadze", faction: "miasto", nightAction: false, oncePerGame: false, core: false, slots: 1 },
+  zakochani: { id: "zakochani", faction: "miasto", nightAction: false, oncePerGame: false, core: false, slots: 2 },
 };
 
 /**
@@ -59,16 +67,28 @@ export const OPTIONAL_ROLES: Role[] = Object.values(ROLE_SPECS)
  * wcześniej jest po lewej ręce. Pomijamy martwych — przekierowanie na trupa
  * oznaczałoby, że mafia traci noc przez przypadek.
  */
+export function neighbourOnSide(
+  seatOrder: string[],
+  uid: string,
+  side: "left" | "right",
+  isAlive: (u: string) => boolean,
+): string | null {
+  const i = seatOrder.indexOf(uid);
+  if (i < 0) return null;
+  const krok = side === "left" ? -1 : 1;
+  const n = seatOrder.length;
+  for (let k = 1; k < n; k++) {
+    const kandydat = seatOrder[((i + krok * k) % n + n) % n];
+    if (kandydat !== uid && isAlive(kandydat)) return kandydat;
+  }
+  return null;
+}
+
+/** Barman zawsze przekierowuje w lewo — strona jest ustalona w SPEC §5.6.2. */
 export function leftNeighbour(
   seatOrder: string[],
   uid: string,
   isAlive: (u: string) => boolean,
 ): string | null {
-  const i = seatOrder.indexOf(uid);
-  if (i < 0) return null;
-  for (let k = 1; k < seatOrder.length; k++) {
-    const kandydat = seatOrder[((i - k) % seatOrder.length + seatOrder.length) % seatOrder.length];
-    if (kandydat !== uid && isAlive(kandydat)) return kandydat;
-  }
-  return null;
+  return neighbourOnSide(seatOrder, uid, "left", isAlive);
 }

@@ -2,7 +2,7 @@
 import { useI18n } from "@/lib/i18n/provider";
 import type { Key } from "@/lib/i18n/dict";
 import { Vote } from "lucide-react";
-import { Ban, Beer, Check, Crosshair, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
+import { Ban, Beer, Bomb, Check, Crosshair, Heart, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import type { Role } from "./engine";
@@ -12,10 +12,10 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; confirmed: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
   phase: "rozdanie" | "noc" | "switt" | "dzien" | "glosowanie" | "koniec";
-  night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | null; afterReveal: string;
+  night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | "zakochani" | null; afterReveal: string;
   players: PlayerV[]; votesTally: Record<string, number>; aliveCount: number;
 }
-interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean; blockUsed?: boolean }
+interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean; blockUsed?: boolean; lover?: string | null }
 
 const ROLE_INFO: Record<Role, { Icon: LucideIcon; nameKey: Key; descKey: Key }> = {
   mafia: { Icon: Swords, nameKey: "mafia.role.mafia", descKey: "mafia.role.mafia.desc" },
@@ -25,6 +25,8 @@ const ROLE_INFO: Record<Role, { Icon: LucideIcon; nameKey: Key; descKey: Key }> 
   szeryf: { Icon: Ban, nameKey: "mafia.role.szeryf", descKey: "mafia.role.szeryf.desc" },
   barman: { Icon: Beer, nameKey: "mafia.role.barman", descKey: "mafia.role.barman.desc" },
   snajper: { Icon: Crosshair, nameKey: "mafia.role.snajper", descKey: "mafia.role.snajper.desc" },
+  kamikadze: { Icon: Bomb, nameKey: "mafia.role.kamikadze", descKey: "mafia.role.kamikadze.desc" },
+  zakochani: { Icon: Heart, nameKey: "mafia.role.zakochani", descKey: "mafia.role.zakochani.desc" },
 };
 
 // Pytanie i akcja nocna per rola — tabelą, nie łańcuchem ternarnych. Przy trzech
@@ -80,7 +82,11 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
     return (
       <div className="flex flex-col items-center gap-4" style={{ ["--accent" as string]: accent }}>
         <p className="text-3xl font-bold" style={{ color: pub.winner === "mafia" ? accent : "#4ade80" }}>
-          {pub.winner === "mafia" ? <>{t("mafia.mafiaWins")} <Swords size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></> : <>{t("mafia.townWins")} <PartyPopper size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>}
+          {pub.winner === "zakochani"
+            ? <>{t("mafia.loversWin")} <Heart size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>
+            : pub.winner === "mafia"
+            ? <>{t("mafia.mafiaWins")} <Swords size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>
+            : <>{t("mafia.townWins")} <PartyPopper size={26} strokeWidth={2.5} className="inline-block align-[-0.18em]" /></>}
         </p>
         {narrator}
         <RoleReveal pub={pub} meUid={meUid} accent={accent} />
@@ -211,6 +217,9 @@ function RoleCard({ priv, nickOf, accent }: { priv: Priv | null; nickOf: (u: str
           <span className="text-sm text-[var(--color-ink-muted)]">{t(info.descKey)}</span>
           {role === "mafia" && priv?.mafia && priv.mafia.length > 1 && (
             <span className="text-sm">{t("mafia.yourMafia", { nicks: priv.mafia.map(nickOf).join(", ") })}</span>
+          )}
+          {role === "zakochani" && priv?.lover && (
+            <span className="text-sm">{t("mafia.yourLover", { nick: nickOf(priv.lover) })}</span>
           )}
         </>
       ) : (

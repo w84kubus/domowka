@@ -7,12 +7,13 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 
 interface PlayerV { uid: string; nick: string; avatar: string; alive: boolean; voted: boolean; role: Role | null; score: number }
 interface Pub {
-  phase: string; night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | null;
+  phase: string; night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | "zakochani" | null;
   players: PlayerV[]; votesTally: Record<string, number>; aliveCount: number;
 }
 const ROLE_NAME: Record<Role, string> = {
   mafia: "Mafia", mieszkaniec: "Mieszkaniec", detektyw: "Detektyw", lekarz: "Lekarz",
   szeryf: "Szeryf", barman: "Barman", snajper: "Snajper",
+  kamikadze: "Kamikadze", zakochani: "Zakochani",
 };
 
 export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
@@ -44,7 +45,7 @@ export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
       {pub.phase === "koniec" ? (
         <>
           <p className="text-4xl font-bold" style={{ color: pub.winner === "mafia" ? accent : "#4ade80" }}>
-            {pub.winner === "mafia" ? t("mafia.mafiaWins") : t("mafia.townWins")}
+            {pub.winner === "zakochani" ? t("mafia.loversWin") : pub.winner === "mafia" ? t("mafia.mafiaWins") : t("mafia.townWins")}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {pub.players.map((p) => (
