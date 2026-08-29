@@ -126,3 +126,84 @@ describe("mafia — akcje i przebieg", () => {
     expect(s.winner).toBe("mafia");
   });
 });
+
+// —— role dodatkowe (SPEC §5.6, DoD §10) ——
+// Kolejność kroków rozliczenia jest tu całą trudnością, więc każdy krok ma
+// osobny przypadek, a nie jeden test „wszystko naraz".
+describe("mafia — szeryf, barman, snajper", () => {
+  // host=mafia, a=detektyw, b=lekarz, c=snajper, d=barman/szeryf wg testu
+  const ROLE_X: Record<string, Role> = { host: "mafia", a: "detektyw", b: "lekarz", c: "snajper", d: "barman" };
+  const nocX = (over: Partial<MafiaState>, role = ROLE_X): MafiaState => {
+    const s = confirmAll(game());
+    return { ...s, roles: role, ...over };
+  };
+
+  it("SZERYF BLOKUJE: zablokowany mafioso nie oddaje głosu, nikt nie ginie", () => {
+    const s = nocX(
+      { mafiaVotes: { host: "c" }, sheriffTarget: "host" },
+      { host: "mafia", a: "detektyw", b: "lekarz", c: "mieszkaniec", d: "szeryf" },
+    );
+    expect(resolveNight(s).deaths).toEqual([]);
+  });
+
+  it("SZERYF BLOKUJE lekarza: ochrona nie działa, cel ginie", () => {
+    const s = nocX(
+      { mafiaVotes: { host: "c" }, doctorSave: "c", sheriffTarget: "b" },
+      { host: "mafia", a: "detektyw", b: "lekarz", c: "mieszkaniec", d: "szeryf" },
+    );
+    expect(resolveNight(s).deaths).toEqual(["c"]);
+  });
+
+  it("BARMAN PRZEKIEROWUJE: upity mafioso → cios spada na sąsiada z lewej ofiary", () => {
+    // seatOrder: host,a,b,c,d — sąsiad z lewej „c" to „b"
+    const s = nocX({ mafiaVotes: { host: "c" }, barmanTarget: "host" });
+    expect(resolveNight(s).deaths).toEqual(["b"]);
+  });
+
+  it("BARMAN nie przekierowuje, gdy upił nie-mafioza", () => {
+    const s = nocX({ mafiaVotes: { host: "c" }, barmanTarget: "a" });
+    expect(resolveNight(s).deaths).toEqual(["c"]);
+  });
+
+  it("SNAJPER TRAFIA mafioza: ginie tylko mafioso", () => {
+    const s = nocX({ mafiaVotes: {}, sniperTarget: "host", sniperActed: true });
+    expect(resolveNight(s).deaths).toEqual(["host"]);
+  });
+
+  it("SNAJPER PUDŁUJE: trafił niewinnego → giną obaj", () => {
+    const s = nocX({ mafiaVotes: {}, sniperTarget: "d", sniperActed: true });
+    expect(new Set(resolveNight(s).deaths)).toEqual(new Set(["d", "c"]));
+  });
+
+  it("SNAJPER się wstrzymuje: nikt nie ginie od strzału", () => {
+    const s = nocX({ mafiaVotes: {}, sniperTarget: null, sniperActed: true });
+    expect(resolveNight(s).deaths).toEqual([]);
+  });
+
+  it("LEKARZ ratuje ofiarę snajpera, ale kara za pudło zostaje", () => {
+    const s = nocX({ mafiaVotes: {}, sniperTarget: "d", sniperActed: true, doctorSave: "d" });
+    expect(resolveNight(s).deaths).toEqual(["c"]);
+  });
+
+  it("blokada szeryfa unieważnia strzał snajpera", () => {
+    const s = nocX(
+      { mafiaVotes: {}, sniperTarget: "host", sniperActed: true, sheriffTarget: "c" },
+      { host: "mafia", a: "detektyw", b: "lekarz", c: "snajper", d: "szeryf" },
+    );
+    expect(resolveNight(s).deaths).toEqual([]);
+  });
+
+  it("rozdanie honoruje extraRoles: snajper trafia do gry", () => {
+    const s = mafiaEngine.init({
+      players, seatOrder: uids,
+      settings: { ...mafiaSettingsSchema.parse({}), extraRoles: ["snajper"] } as MafiaSettings,
+      now: 1000, rng: mulberry32(7), seed: 7,
+    });
+    expect(Object.values(s.roles)).toContain("snajper");
+  });
+
+  it("bez extraRoles rozdanie zostaje na rdzeniu", () => {
+    const s = mafiaEngine.init({ players, seatOrder: uids, settings: mafiaSettingsSchema.parse({}), now: 1000, rng: mulberry32(7), seed: 7 });
+    expect(Object.values(s.roles).some((r) => ["snajper", "barman", "szeryf"].includes(r))).toBe(false);
+  });
+});

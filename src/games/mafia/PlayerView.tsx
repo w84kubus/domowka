@@ -2,7 +2,7 @@
 import { useI18n } from "@/lib/i18n/provider";
 import type { Key } from "@/lib/i18n/dict";
 import { Vote } from "lucide-react";
-import { Check, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
+import { Ban, Beer, Check, Crosshair, House, Moon, PartyPopper, Search, Skull, Spade, Stethoscope, Sun, Swords, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { GameViewProps } from "@/games/view";
 import type { Role } from "./engine";
@@ -15,13 +15,35 @@ interface Pub {
   night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | null; afterReveal: string;
   players: PlayerV[]; votesTally: Record<string, number>; aliveCount: number;
 }
-interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean }
+interface Priv { role?: Role; alive?: boolean; mafia?: string[]; mafiaVotes?: Record<string, string>; checks?: { target: string; isMafia: boolean }[]; acted?: boolean; blockUsed?: boolean }
 
 const ROLE_INFO: Record<Role, { Icon: LucideIcon; nameKey: Key; descKey: Key }> = {
   mafia: { Icon: Swords, nameKey: "mafia.role.mafia", descKey: "mafia.role.mafia.desc" },
   mieszkaniec: { Icon: House, nameKey: "mafia.role.mieszkaniec", descKey: "mafia.role.mieszkaniec.desc" },
   detektyw: { Icon: Search, nameKey: "mafia.role.detektyw", descKey: "mafia.role.detektyw.desc" },
   lekarz: { Icon: Stethoscope, nameKey: "mafia.role.lekarz", descKey: "mafia.role.lekarz.desc" },
+  szeryf: { Icon: Ban, nameKey: "mafia.role.szeryf", descKey: "mafia.role.szeryf.desc" },
+  barman: { Icon: Beer, nameKey: "mafia.role.barman", descKey: "mafia.role.barman.desc" },
+  snajper: { Icon: Crosshair, nameKey: "mafia.role.snajper", descKey: "mafia.role.snajper.desc" },
+};
+
+// Pytanie i akcja nocna per rola — tabelą, nie łańcuchem ternarnych. Przy trzech
+// rolach ternarne jeszcze się czytało, przy sześciu przestaje, a docelowo ról jest 21.
+const PYTANIE_ROLI: Partial<Record<Role, Key>> = {
+  mafia: "mafia.whoMafia",
+  detektyw: "mafia.whoCheck",
+  lekarz: "mafia.whoProtect",
+  barman: "mafia.whoBartend",
+  szeryf: "mafia.whoBlock",
+  snajper: "mafia.whoSnipe",
+};
+const AKCJA_ROLI: Partial<Record<Role, string>> = {
+  mafia: "MAFIA_KILL",
+  detektyw: "INVESTIGATE",
+  lekarz: "PROTECT",
+  barman: "BARTEND",
+  szeryf: "BLOCK",
+  snajper: "SNIPE",
 };
 
 function useTicker(ms = 400) { const [, s] = useState(0); useEffect(() => { const id = setInterval(() => s((n) => n + 1), ms); return () => clearInterval(id); }, [ms]); }
@@ -91,7 +113,9 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
         <p className="flex items-center justify-center gap-2 text-center text-2xl"><Moon size={24} strokeWidth={2.5} aria-hidden /> {t("mafia.night", { n: pub.night })}</p>
         {narrator}
         {role === "mieszkaniec" && <p className="text-center text-[var(--color-ink-muted)]">{t("mafia.sleepWell")}</p>}
-        {role && role !== "mieszkaniec" && (
+        {role === "szeryf" && priv?.blockUsed && !priv?.acted ? (
+          <p className="text-center text-[var(--color-ink-muted)]">{t("mafia.blockUsed")}</p>
+        ) : role && role !== "mieszkaniec" && (
           acted || sent ? (
             <p className="text-center" style={{ color: accent }}>
               {t("mafia.choiceSaved")} {left != null ? `(${left}s)` : ""}
@@ -104,14 +128,14 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
           ) : (
             <>
               <p className="text-center font-semibold">
-                {role === "mafia" ? t("mafia.whoMafia") : role === "detektyw" ? t("mafia.whoCheck") : t("mafia.whoProtect")}
+                {PYTANIE_ROLI[role] ? t(PYTANIE_ROLI[role]!) : t("mafia.whoProtect")}
                 {left != null ? ` · ${left}s` : ""}
               </p>
               <div className="grid w-full grid-cols-2 gap-2">
                 {targets.map((p) => {
                   const blocked = role === "mafia" && priv?.mafia?.includes(p.uid);
                   if (blocked) return null;
-                  const type = role === "mafia" ? "MAFIA_KILL" : role === "detektyw" ? "INVESTIGATE" : "PROTECT";
+                  const type = AKCJA_ROLI[role] ?? "PROTECT";
                   const mafiaVoteCount = role === "mafia" && priv?.mafiaVotes ? Object.values(priv.mafiaVotes).filter((t) => t === p.uid).length : 0;
                   return (
                     <button key={p.uid} className="btn" onClick={() => { markSent(); dispatch({ type, target: p.uid }); }}>
@@ -120,6 +144,13 @@ export function MafiaPlayerView({ room, publicState, privateState, meUid, isHost
                   );
                 })}
               </div>
+              {/* Snajper strzela ALBO świadomie pasuje — bez tego przycisku noc stoi
+                  do wygaśnięcia timera, gdy nie chce ryzykować pudła. */}
+              {role === "snajper" && (
+                <button className="btn btn-ghost" onClick={() => { markSent(); dispatch({ type: "SNIPE", target: null }); }}>
+                  {t("mafia.hold")}
+                </button>
+              )}
               {role === "mafia" && priv?.mafia && priv.mafia.length > 1 && (
                 <p className="text-xs text-[var(--color-ink-muted)]">{t("mafia.yourMafia", { nicks: priv.mafia.filter((u) => u !== meUid).map(nickOf).join(", ") })}</p>
               )}

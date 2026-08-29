@@ -10,7 +10,10 @@ interface Pub {
   phase: string; night: number; narrator: string; narratorKey: string | null; deaths: string[]; winner: "miasto" | "mafia" | null;
   players: PlayerV[]; votesTally: Record<string, number>; aliveCount: number;
 }
-const ROLE_NAME: Record<Role, string> = { mafia: "Mafia", mieszkaniec: "Mieszkaniec", detektyw: "Detektyw", lekarz: "Lekarz" };
+const ROLE_NAME: Record<Role, string> = {
+  mafia: "Mafia", mieszkaniec: "Mieszkaniec", detektyw: "Detektyw", lekarz: "Lekarz",
+  szeryf: "Szeryf", barman: "Barman", snajper: "Snajper",
+};
 
 export function MafiaHostView({ publicState, accent }: GameHostViewProps) {
   const { t } = useI18n();

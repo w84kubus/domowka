@@ -4,6 +4,7 @@ import { SegmentPicker } from "@/components/SegmentPicker";
 import type { GameSettingsProps } from "@/games/view";
 import type { MafiaSettings } from "./manifest";
 import { autoMafiaCount } from "./manifest";
+import { OPTIONAL_ROLES } from "./roles";
 
 export function MafiaSettingsPanel({ value, onChange, playerCount }: GameSettingsProps<MafiaSettings>) {
   const t = useT();
@@ -26,6 +27,42 @@ export function MafiaSettingsPanel({ value, onChange, playerCount }: GameSetting
         options={[{ v: false, l: t("opt.maf.open") }, { v: true, l: t("opt.maf.secret") }]} />
       <SegmentPicker label={t("set.maf.selfsave")} value={value.doctorSelfSave} onChange={(v) => set({ doctorSelfSave: v as boolean })}
         options={[{ v: true, l: t("opt.yes") }, { v: false, l: t("opt.no") }]} />
+      {/* Role dodatkowe: przełączniki, nie liczniki — każda z tych ról występuje
+          w rozdaniu najwyżej raz, więc licznik sugerowałby możliwość, której nie ma.
+          Limit „suma ról ≤ gracze − mafiozi" pilnuje samo rozdanie. */}
+      <div className="flex flex-col gap-2">
+        <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">
+          {t("mafia.extraRoles")}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {OPTIONAL_ROLES.map((rola) => {
+            const wlaczona = value.extraRoles.includes(rola);
+            return (
+              <button
+                key={rola}
+                type="button"
+                aria-pressed={wlaczona}
+                onClick={() =>
+                  set({
+                    extraRoles: wlaczona
+                      ? value.extraRoles.filter((r) => r !== rola)
+                      : [...value.extraRoles, rola],
+                  })
+                }
+                className={`font-display rounded-[14px] border-[3px] px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] transition-transform duration-75 active:translate-y-[2px] ${
+                  wlaczona ? "border-mint bg-mint/20 text-ink" : "border-stroke bg-panel text-ink-muted"
+                }`}
+              >
+                {t(`mafia.role.${rola}` as "mafia.role.szeryf")}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs font-semibold leading-snug text-ink-muted">
+          {value.extraRoles.map((r) => t(`mafia.role.${r}.desc` as "mafia.role.szeryf.desc")).join(" ")}
+        </p>
+      </div>
+
       <SegmentPicker label={t("set.maf.norepeat")} value={value.doctorNoRepeat} onChange={(v) => set({ doctorNoRepeat: v as boolean })}
         options={[{ v: true, l: t("opt.wis.forbidden") }, { v: false, l: t("opt.wis.allowed") }]} />
     </div>

@@ -4,12 +4,14 @@ import { GameError, type GameEngine, type GameEvent, type InitContext, type With
 import { shuffle } from "@/games/rng";
 import { narratorLine } from "./data/narrator";
 import { autoMafiaCount, type MafiaSettings } from "./manifest";
+import { leftNeighbour, ROLE_SPECS, WAKE_ORDER, type Role } from "./roles";
 
 // Mafia — rdzeń (SPEC §5.6): mafia, mieszkańcy, detektyw, lekarz + auto-narrator.
 // BEZPIECZEŃSTWO: role żyją tylko w secret/state i private/{uid}. publicView ujawnia rolę
 // wyłącznie zmarłych (jeśli włączone) i wszystkich na końcu.
 
-export type Role = "mafia" | "mieszkaniec" | "detektyw" | "lekarz";
+// Role mieszkają w roles.ts — tu tylko re-eksport, żeby nie ruszać importów w UI.
+export type { Role };
 type Phase = "rozdanie" | "noc" | "switt" | "dzien" | "glosowanie" | "koniec";
 
 const NIGHT_MS = 30000;
@@ -29,6 +31,15 @@ export interface MafiaState extends WithEvents {
   mafiaVotes: Record<string, string>;
   doctorSave: string | null;
   detectiveCheck: string | null;
+  /** Barman: kogo upił tej nocy. */
+  barmanTarget: string | null;
+  /** Szeryf: czyją zdolność blokuje tej nocy (raz na grę). */
+  sheriffTarget: string | null;
+  sheriffUsed: boolean;
+  /** Snajper: do kogo strzela; null = wstrzymał się. */
+  sniperTarget: string | null;
+  /** Czy snajper w ogóle zagrał tej nocy — `sniperTarget: null` to też decyzja. */
+  sniperActed: boolean;
   lastDoctorSave: string | null;
   detectiveHistory: Record<string, { target: string; isMafia: boolean }[]>;
   votes: Record<string, string>;
@@ -47,6 +58,9 @@ export const mafiaActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("MAFIA_KILL"), target: z.string() }),
   z.object({ type: z.literal("INVESTIGATE"), target: z.string() }),
   z.object({ type: z.literal("PROTECT"), target: z.string() }),
+  z.object({ type: z.literal("BARTEND"), target: z.string() }),
+  z.object({ type: z.literal("BLOCK"), target: z.string() }),
+  z.object({ type: z.literal("SNIPE"), target: z.string().nullable() }),
   z.object({ type: z.literal("VOTE"), target: z.string() }),
   z.object({ type: z.literal("NEXT") }),
   z.object({ type: z.literal("FINISH") }), // host: zakończ grę (tryb rund „∞")
@@ -73,9 +87,26 @@ function checkWin(s: MafiaState): "miasto" | "mafia" | null {
 }
 
 // —— rozliczenie nocy: CZYSTE (SPEC §5.6.3, DoD §10) ——
-export function resolveNight(s: MafiaState): { deaths: string[]; detective: { target: string; isMafia: boolean } | null } {
+//
+// Kolejność kroków jest wprost ze specyfikacji i to ona jest tu całą trudnością:
+// szeryf działa PRZED wszystkimi, bo unieważnia cudzą akcję, a lekarz PO
+// zabójstwach, bo anuluje ich skutek. Zamiana miejscami dwóch kroków daje
+// cichego buga, którego nie widać w rozgrywce — stąd testy na każdy krok osobno.
+export function resolveNight(s: MafiaState): {
+  deaths: string[];
+  detective: { target: string; isMafia: boolean } | null;
+} {
+  const zyje = (u: string) => !!s.alive[u];
+
+  // 1. SZERYF — zablokowana zdolność nie działa wcale. Blokada dotyczy osoby,
+  //    więc jeśli szeryf trafi mafioza, ginie jego głos, a nie całe zabójstwo mafii.
+  const zablokowany = s.sheriffTarget;
+  // Uwaga: blokada dotyczy WYKONAWCY zdolności, nie jej celu. Sprawdzanie tu celu
+  // daje buga, który w rozgrywce wygląda jak losowa niekonsekwencja lekarza.
+  const dziala = (wykonawca: string | null) => wykonawca != null && wykonawca !== zablokowany;
+
   // cel mafii = większość głosów żywych mafiozów; remis → głos pierwszego z listy
-  const mafiozi = aliveOf(s, "mafia");
+  const mafiozi = aliveOf(s, "mafia").filter((m) => dziala(m));
   const tally: Record<string, number> = {};
   for (const m of mafiozi) { const t = s.mafiaVotes[m]; if (t) tally[t] = (tally[t] ?? 0) + 1; }
   let target: string | null = null, max = 0;
@@ -83,13 +114,37 @@ export function resolveNight(s: MafiaState): { deaths: string[]; detective: { ta
   const top = Object.keys(tally).filter((t) => tally[t] === max);
   if (top.length > 1) for (const m of mafiozi) if (s.mafiaVotes[m] && top.includes(s.mafiaVotes[m])) { target = s.mafiaVotes[m]; break; }
 
-  // lekarz anuluje zabójstwo, jeśli chronił cel
-  const deaths = target && s.doctorSave !== target ? [target] : [];
+  // 2. BARMAN — upił mafioza? zabójstwo mafii idzie na sąsiada z lewej OFIARY.
+  //    Barman zablokowany przez szeryfa nie upija nikogo.
+  const upity = dziala(firstAlive(s, "barman")) ? s.barmanTarget : null;
+  if (target && upity && s.roles[upity] === "mafia") {
+    target = leftNeighbour(s.playerUids, target, zyje) ?? target;
+  }
 
-  const detective = s.detectiveCheck
+  // 3. ZABÓJSTWA: mafia + snajper.
+  const zabici = new Set<string>();
+  if (target) zabici.add(target);
+
+  // 4. SNAJPER — trafił mafioza: ginie mafioso. Trafił mieszkańca: GINĄ OBAJ.
+  //    Kara za pudło jest niezależna od tego, czy lekarz uratuje ofiarę: snajper
+  //    strzelił do niewinnego i to jego przewinienie, nie skutek śmierci.
+  const snajper = firstAlive(s, "snajper");
+  const strzal = dziala(snajper) ? s.sniperTarget : null;
+  if (snajper && strzal) {
+    zabici.add(strzal);
+    if (s.roles[strzal] !== "mafia") zabici.add(snajper);
+  }
+
+  // 5. LEKARZ — anuluje zabójstwo na osobie, którą chronił.
+  const ochrona = dziala(firstAlive(s, "lekarz")) ? s.doctorSave : null;
+  if (ochrona) zabici.delete(ochrona);
+
+  const detektyw = firstAlive(s, "detektyw");
+  const detective = dziala(detektyw) && s.detectiveCheck
     ? { target: s.detectiveCheck, isMafia: s.roles[s.detectiveCheck] === "mafia" }
     : null;
-  return { deaths, detective };
+
+  return { deaths: [...zabici], detective };
 }
 
 function assignRoles(playerUids: string[], settings: MafiaSettings, rng: () => number): Record<string, Role> {
@@ -101,6 +156,14 @@ function assignRoles(playerUids: string[], settings: MafiaSettings, rng: () => n
   for (; i < mafiaCount; i++) roles[shuffled[i]] = "mafia";
   if (i < n) roles[shuffled[i++]] = "detektyw";
   if (i < n) roles[shuffled[i++]] = "lekarz";
+  // Role opcjonalne w kolejności z WAKE_ORDER, żeby rozdanie było powtarzalne przy
+  // tym samym seedzie. Walidacja „suma ról specjalnych ≤ gracze − mafiozi" (SPEC §5.6)
+  // wychodzi tu naturalnie: kończą się miejsca, więc reszta zostaje mieszkańcami.
+  for (const rola of WAKE_ORDER) {
+    if (i >= n) break;
+    if (ROLE_SPECS[rola].core) continue;
+    if (settings.extraRoles.includes(rola)) roles[shuffled[i++]] = rola;
+  }
   for (; i < n; i++) roles[shuffled[i]] = "mieszkaniec";
   return roles;
 }
@@ -114,6 +177,10 @@ function startNight(s: MafiaState, now: number, rng: () => number): MafiaState {
     mafiaVotes: {},
     doctorSave: null,
     detectiveCheck: null,
+    barmanTarget: null,
+    sheriffTarget: null,
+    sniperTarget: null,
+    sniperActed: false,
     deaths: [],
     ...(({ text, key }) => ({ narrator: text, narratorKey: key }))(narratorLine("noc", rng)),
     pendingEvents: [{ type: "noc", text: `Noc ${s.night + 1}. Miasto zasypia.` }],
@@ -121,10 +188,21 @@ function startNight(s: MafiaState, now: number, rng: () => number): MafiaState {
 }
 
 function nightComplete(s: MafiaState): boolean {
+  const zagral = (rola: Role, czy: (s: MafiaState) => boolean) => {
+    const kto = firstAlive(s, rola);
+    return !kto || czy(s);
+  };
   const mafiaActed = aliveOf(s, "mafia").every((m) => s.mafiaVotes[m]);
-  const det = firstAlive(s, "detektyw");
-  const lek = firstAlive(s, "lekarz");
-  return mafiaActed && (!det || s.detectiveCheck != null) && (!lek || s.doctorSave != null);
+  // Szeryfa świadomie NIE wymagamy: ma jedno użycie na całą grę i ma prawo je
+  // przetrzymać. Gdyby był wymagany, noc stałaby do wygaśnięcia timera za każdym
+  // razem, gdy postanowi nie strzelać blokadą.
+  return (
+    mafiaActed &&
+    zagral("detektyw", (x) => x.detectiveCheck != null) &&
+    zagral("lekarz", (x) => x.doctorSave != null) &&
+    zagral("barman", (x) => x.barmanTarget != null) &&
+    zagral("snajper", (x) => x.sniperActed)
+  );
 }
 
 function toReveal(s: MafiaState, deaths: string[], after: "dzien" | "noc", now: number, rng: () => number): MafiaState {
@@ -222,6 +300,7 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
       settings: ctx.settings, hostUid, playerUids, roles, alive,
       phase: "rozdanie", phaseEndsAt: null, night: 0, confirmed: [], narratorKey: null,
       mafiaVotes: {}, doctorSave: null, detectiveCheck: null, lastDoctorSave: null,
+      barmanTarget: null, sheriffTarget: null, sheriffUsed: false, sniperTarget: null, sniperActed: false,
       detectiveHistory: {}, votes: {}, deaths: [], revealed: {}, afterReveal: "dzien",
       narrator: "Rozdanie ról… zapamiętajcie, kim jesteście.", winner: null, scores: {},
       pendingEvents: [{ type: "start", text: "Role rozdane." }],
@@ -293,6 +372,37 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
       return nightComplete(next) ? applyNight(next, resolveNight(next), ctx.now, ctx.rng) : next;
     }
 
+    if (action.type === "BARTEND") {
+      if (state.phase !== "noc") throw new GameError("Nie ta faza.");
+      requireAliveRole(state, ctx.uid, "barman");
+      requireAliveTarget(state, action.target);
+      if (action.target === ctx.uid) throw new GameError("Nie upijasz sam siebie.");
+      const next = { ...state, barmanTarget: action.target, pendingEvents: [] };
+      return nightComplete(next) ? applyNight(next, resolveNight(next), ctx.now, ctx.rng) : next;
+    }
+
+    if (action.type === "BLOCK") {
+      if (state.phase !== "noc") throw new GameError("Nie ta faza.");
+      requireAliveRole(state, ctx.uid, "szeryf");
+      requireAliveTarget(state, action.target);
+      if (state.sheriffUsed) throw new GameError("Blokady używa się raz na grę.");
+      if (action.target === ctx.uid) throw new GameError("Nie blokujesz samego siebie.");
+      const next = { ...state, sheriffTarget: action.target, sheriffUsed: true, pendingEvents: [] };
+      return nightComplete(next) ? applyNight(next, resolveNight(next), ctx.now, ctx.rng) : next;
+    }
+
+    if (action.type === "SNIPE") {
+      if (state.phase !== "noc") throw new GameError("Nie ta faza.");
+      requireAliveRole(state, ctx.uid, "snajper");
+      // null = świadome wstrzymanie się; celowanie w siebie nie ma sensu.
+      if (action.target != null) {
+        requireAliveTarget(state, action.target);
+        if (action.target === ctx.uid) throw new GameError("Nie strzelasz do siebie.");
+      }
+      const next = { ...state, sniperTarget: action.target, sniperActed: true, pendingEvents: [] };
+      return nightComplete(next) ? applyNight(next, resolveNight(next), ctx.now, ctx.rng) : next;
+    }
+
     if (action.type === "VOTE") {
       if (state.phase !== "glosowanie") throw new GameError("Nie ta faza.");
       if (!state.alive[ctx.uid]) throw new GameError("Martwi nie głosują.", 403);
@@ -342,6 +452,13 @@ export const mafiaEngine: GameEngine<MafiaState, MafiaAction, MafiaSettings> = {
       base.acted = state.detectiveCheck != null;
     }
     if (role === "lekarz") base.acted = state.doctorSave != null;
+    if (role === "barman") base.acted = state.barmanTarget != null;
+    if (role === "snajper") base.acted = state.sniperActed;
+    if (role === "szeryf") {
+      base.acted = state.sheriffTarget != null;
+      // Jedno użycie na grę — UI musi wiedzieć, czy blokada jest jeszcze w ręku.
+      base.blockUsed = state.sheriffUsed;
+    }
     return base;
   },
 

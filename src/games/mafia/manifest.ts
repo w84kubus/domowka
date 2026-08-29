@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { GameManifest } from "@/games/types";
+import { OPTIONAL_ROLES } from "./roles";
 
 export const mafiaSettingsSchema = z.object({
   mafiaCount: z.number().int().min(0).max(5).default(0), // 0 = auto-balans
@@ -9,6 +10,12 @@ export const mafiaSettingsSchema = z.object({
   doctorSelfSave: z.boolean().default(true),
   doctorNoRepeat: z.boolean().default(true), // lekarz nie może ratować tej samej osoby 2× z rzędu
   secretVoting: z.boolean().default(false),
+  /**
+   * Role dodatkowe włączone przez hosta (SPEC §5.6). Domyślnie pusto — partia
+   * startuje na rdzeniu, tak jak dotąd, więc włączenie tej listy niczego nie psuje
+   * istniejącym pokojom.
+   */
+  extraRoles: z.array(z.enum(OPTIONAL_ROLES as [string, ...string[]])).default([]),
 });
 
 export type MafiaSettings = z.infer<typeof mafiaSettingsSchema>;
