@@ -385,7 +385,12 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
       {/* Zakłady wszystkich — jawne od razu, to połowa zabawy */}
       <section className="flex w-full max-w-md flex-col gap-2">
         <span className="font-display text-xs font-bold uppercase tracking-[0.06em] text-ink-muted">
-          {t("kasyno.pot")}: <span className="tabular text-bursztyn">{pub.pot}</span>
+          {/* „Pula" tylko tam, gdzie naprawdę jest do wygrania: w Jackpocie ktoś ją
+              zgarnia w całości. W Double i Wheel płaci bank wg stałych kursów, a ta
+              liczba to tylko suma stawek — nazywanie jej pulą obiecywało nagrodę,
+              której nie ma. Sloty mają własną fazę i tu nie trafiają. */}
+          {t(pub.mode === "jackpot" ? "kasyno.pot" : "kasyno.stakes")}:{" "}
+          <span className="tabular text-bursztyn">{pub.pot}</span>
         </span>
         {pub.bets.length === 0 ? (
           <p className="text-sm font-semibold text-ink-muted">{t("kasyno.noBets")}</p>
