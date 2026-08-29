@@ -317,4 +317,9 @@ Po instalacji działa w pełnym ekranie z własną ikoną. Ekran hosta (TV) utrz
 
 ## Licencja
 
-Projekt prywatny. Kod źródłowy dostępny publicznie w celach edukacyjnych.
+**Wszelkie prawa zastrzeżone** — patrz [LICENSE](LICENSE).
+
+Kod jest publiczny **wyłącznie do wglądu**: do czytania, nauki i oceny warsztatu.
+To nie jest open source. Kopiowanie, użycie w innym projekcie czy uruchomienie
+jako własnej usługi wymaga pisemnej zgody. Nazwa, domena, logo i ilustracje nie
+są objęte nawet tym ograniczonym udostępnieniem.

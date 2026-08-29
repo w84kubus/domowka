@@ -328,4 +328,9 @@ Once installed it runs full-screen with its own icon. The host screen (TV) stays
 
 ## License
 
-Private project. Source code published for educational purposes.
+**All rights reserved** — see [LICENSE](LICENSE).
+
+The source is public **for reference only**: to be read, studied and reviewed.
+This is not open source. Copying, reusing it in another project or running it as
+your own service requires written permission. The name, domain, logo and
+illustrations are not covered even by that limited publication.
