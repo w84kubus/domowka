@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/lib/i18n/provider";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RoomCodeNeon } from "@/components/RoomCodeNeon";
 import { RoomQr } from "@/components/RoomQr";
@@ -17,6 +17,7 @@ import { useServerClock } from "@/hooks/useServerClock";
 import { useRoom } from "@/hooks/useRoom";
 import { usePresence } from "@/hooks/usePresence";
 import { LobbySkeleton } from "@/components/LobbySkeleton";
+import { SpectatorRoom } from "@/components/SpectatorRoom";
 import { apiPost } from "@/lib/client/api";
 import { normalizeRoomCode } from "@/lib/room-code";
 import { useSession } from "@/lib/store/session";
@@ -37,8 +38,20 @@ export default function LobbyPage() {
   const { room, loading, error, notFound } = useRoom(code, !authLoading && !!uid);
   const setActiveRoom = useSession((s) => s.setActiveRoom);
 
+  // Widz wchodzi z ?widz=1. Flaga musi być jawna, bo „nie jestem w players" znaczy
+  // też „zostałem wyrzucony" — a te dwa przypadki kończą się zupełnie inaczej.
+  const chceOgladac = useSearchParams().get("widz") === "1";
   const amMember = !!(uid && room?.players[uid]);
+  const jestWidzem = chceOgladac && !amMember;
   usePresence(code, amMember);
+
+  // Bez wpisu w observers reguły Firestore nie pozwolą widzowi czytać pokoju.
+  useEffect(() => {
+    if (!chceOgladac || authLoading || !uid) return;
+    apiPost(`/api/rooms/${code}/observe`).catch(() => {
+      /* i tak spróbujemy czytać — brak wpisu objawi się błędem subskrypcji */
+    });
+  }, [chceOgladac, authLoading, uid, code]);
 
   // C1: Zapamiętaj aktywny pokój, żeby dało się wrócić po odświeżeniu.
   useEffect(() => {
@@ -57,7 +70,7 @@ export default function LobbyPage() {
   useEffect(() => {
     if (loading || authLoading) return;
     if (notFound) return;
-    if (room && uid && !room.players[uid]) {
+    if (room && uid && !room.players[uid] && !chceOgladac) {
       setActiveRoom(null); // C1: wyrzucony/wyszedł — czyść sesję
       router.replace(wasMemberRef.current ? "/" : `/p/${code}`);
     }
@@ -66,7 +79,7 @@ export default function LobbyPage() {
       setActiveRoom(null);
       router.replace("/");
     }
-  }, [room, uid, loading, authLoading, notFound, error, code, router, setActiveRoom]);
+  }, [room, uid, loading, authLoading, notFound, error, code, router, setActiveRoom, chceOgladac]);
 
   const leave = async () => {
     try {
@@ -129,6 +142,10 @@ export default function LobbyPage() {
 
   if (loading || authLoading || !room) {
     return <LobbySkeleton />;
+  }
+
+  if (jestWidzem) {
+    return <SpectatorRoom room={room} serverNow={serverNow} />;
   }
 
   // Gra w toku (lub zakończona) → oddajemy ekran harnessowi gry.

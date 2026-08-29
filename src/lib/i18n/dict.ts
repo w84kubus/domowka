@@ -53,6 +53,11 @@ const pl = {
   "entry.error": "Coś poszło nie tak.",
 
   // — lobby —
+  "spectate.badge": "Oglądasz",
+  "spectate.action": "Oglądam",
+  "spectate.waiting": "Czekasz na start. Gdy host odpali grę, zobaczysz ją tutaj.",
+  "spectate.join": "Chcę jednak grać",
+  "spectate.leave": "Wyjdź",
   "lobby.room": "Pokój",
   "lobby.share": "Udostępnij",
   "lobby.shareRoom": "Udostępnij pokój",
@@ -535,6 +540,11 @@ const en: Record<Key, string> = {
   "entry.joining": "Join",
   "entry.error": "Something went wrong.",
 
+  "spectate.badge": "Watching",
+  "spectate.action": "Watch",
+  "spectate.waiting": "Waiting for the start. Once the host launches a game, you'll see it here.",
+  "spectate.join": "Actually, let me play",
+  "spectate.leave": "Leave",
   "lobby.room": "Room",
   "lobby.share": "Share",
   "lobby.shareRoom": "Share the room",

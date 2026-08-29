@@ -1,4 +1,5 @@
 import { EntryForm } from "@/components/EntryForm";
+import { WatchLink } from "@/components/WatchLink";
 import { normalizeRoomCode } from "@/lib/room-code";
 
 // Deep link /p/K7QM (SPEC §4): od razu ekran nicku, kod wypełniony. Cel skanu QR.
@@ -15,6 +16,9 @@ export default async function DeepLinkPage({
         Dołącz
       </h1>
       <EntryForm mode="join" initialCode={normalizeRoomCode(code)} />
+      {/* Wejście dla widza — obok dołączania, nie zamiast. Kto dostał kod, nie
+          zawsze chce grać: dochodzi w połowie partii albo tylko patrzy. */}
+      <WatchLink code={normalizeRoomCode(code)} />
     </main>
   );
 }

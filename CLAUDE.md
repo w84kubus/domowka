@@ -92,10 +92,6 @@ firebase deploy --only firestore:rules
 
 - Mafia: role dodatkowe (SPEC §5.6) + tryb z prowadzącym
 - Stoper: tryb treningowy solo
-- Dołączanie do pokoju **jako widz**. Uwaga na mylącą nazwę: „tryb obserwatora"
-  brzmi jak brakujący ekran TV, a ten **działa** — `/pokoj/{kod}/ekran` rejestruje
-  się przez `/api/rooms/{kod}/observe` i ma `HostView` we wszystkich 7 grach.
-  Brakuje wejścia do pokoju bez zajmowania miejsca w rozgrywce.
 - Dopieszczenie dźwięków
 - Kółko i krzyżyk **nadal figuruje w SPEC §5.x**, choć zostało pominięte w fazie 2.
   Albo je zrobić, albo wykreślić ze SPEC-u — dziś przy każdym czytaniu specyfikacji
