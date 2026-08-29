@@ -281,24 +281,23 @@ nie lepsza.
 
 ## ETAP 10 — ikona ósmej gry: Kółko i krzyżyk
 
-> **Załącz do rozmowy którąś z gotowych ikon gier** (np. `kasyno.png` albo `odcien.png`).
-> Bez wzorca pojedyncza nowa ikona wyjdzie w innym stylu i będzie odstawać od reszty.
+> **Załącz do rozmowy którąś z gotowych ikon gier** (np. `wisielec.png` albo `kasyno.png`).
 
-> **Czego uczy pierwsze podejście:** wersja bez kratki (sam gruby X obok grubego O)
-> wyszła ładnie, ale czyta się jako **logotyp XO** — całuski, nie gra. Sama para znaków
-> nie niesie znaczenia „kółko i krzyżyk". Potrzebna jest kratka.
+> **Czego uczą dwa nieudane podejścia — warto przeczytać, zanim zmienisz prompt:**
 >
-> Kratka MUSI być z czterech grubych, bąbelkowych belek w kształcie `#` — nie z cienkich
-> linii i nie jako pełna plansza 3×3 z ramką. Cienka kratka przy 40 px zlewa się w szarą
-> plamę i to był powód pierwotnego zakazu; grube belki tego problemu nie mają.
-
-> **Kolory:** X w cyjanie `#22D3EE` (akcent tej gry), O w magencie `#FF2D95`, belki
-> kratki w ciemnym fiolecie — mają być tłem dla znaków, nie konkurencją. W samej grze
-> O jest białe, ale ikona leży na JASNYM tle karty i białe kółko by zniknęło.
-
-> **Bez białej obwódki.** Pozostałe siedem ikon ma wyłącznie ciemnofioletowy kontur.
-> Generator lubi dokleić białą ramkę naklejki — trzeba jej zabronić wprost, inaczej
-> ikona odstaje w siatce.
+> 1. **Sam X obok O** wyszedł ładnie, ale czyta się jako logotyp „XO" (całuski), nie jako
+>    gra. Para znaków bez planszy nie niesie znaczenia.
+> 2. **Latający hasztag `#`** wyszedł ciężki i brzydki, z dwóch powodów, oba wynikały
+>    z błędu w prompcie:
+>    - Kazano zrobić belki ciemnofioletowe, a **ETAP 1 zakazuje fioletu jako koloru
+>      dominującego ikony** — bo ikony leżą też na fioletowo-różowym tle. Największy
+>      element w kolorze tła daje ciemną plamę.
+>    - Hasztag to **znak pisarski, nie przedmiot**. Wszystkie pozostałe ikony pakietu są
+>      RZECZAMI: szubienica z desek, globus, jednoręki bandyta, paleta malarska — każda
+>      z jasnym, ciepłym korpusem. Abstrakcyjny glif nie pasuje i pasować nie będzie.
+>
+> Wniosek: plansza ma być **przedmiotem** — małą deseczką do gry, w duchu szubienicy.
+> Korpus jasny i ciepły, kratka wyżłobiona w nim, a X i O to jedyne mocne kolory.
 
 ```
 I am attaching one icon from my existing game-icon set as a style reference.
@@ -307,45 +306,51 @@ Generate ONE new icon in exactly the same style: chunky cartoon 3D, bubbly volum
 thick solid dark purple #2A1758 outline, soft highlight from the upper left, saturated
 colours, flat readable silhouette.
 
-SUBJECT: a tic-tac-toe grid with two pieces on it, tilted a few degrees so it feels
-playful rather than diagrammatic.
+SUBJECT: a small physical tic-tac-toe board, like a chunky toy tile you could pick up,
+tilted a few degrees so it feels playful rather than diagrammatic.
 
-- The grid is a hash / pound shape "#": exactly four fat rounded bars, two vertical
-  and two horizontal, crossing each other. The bars are dark violet #3B2470 with the
-  same soft 3D shading as everything else. They are a backdrop, not the hero.
-- The bars must be THICK and pillowy, each roughly one eighth of the icon's height.
-  No thin lines. No outer frame or box around the grid.
-- On the grid sit exactly TWO pieces, placed diagonally from each other, each clearly
-  inside a different cell:
+- The board is a rounded square with soft pillowy edges, filling most of the canvas.
+  Its body is warm light wood / cream #F2D8A8, the same friendly material as the wooden
+  gallows in my reference set. The body is the object; it carries the whole silhouette.
+- The 3x3 grid is CARVED INTO the board as four shallow grooves, slightly darker than
+  the body (#D9B77E). The grooves are simple straight channels. They are texture on the
+  object, not free-floating bars, and they must never be the loudest thing in the icon.
+- Exactly TWO pieces sit in the cells, placed diagonally from each other, resting on
+  the surface with a soft contact shadow:
   a cyan #22D3EE X made of two fat rounded crossing bars,
   a magenta #FF2D95 O, a thick chunky ring, clearly hollow in the middle.
-- The X and the O are the brightest, most saturated things in the icon and read first.
-  The remaining cells stay empty.
+  Each piece nearly fills its cell. They are the brightest things in the icon and the
+  eye must land on them first.
+- The other seven cells stay empty.
 
-The icon must stay recognisable when scaled down to 40 px, so keep it to these three
-elements and nothing else.
+COLOUR RULE, important: violet and purple appear ONLY in the thin outline. The board
+body must stay warm and light. Do not make any large element violet, dark blue or
+near-black.
 
-Solid flat #00FF00 background for later cutout. Aspect ratio 1:1, the object centred
-with roughly 10% margin on every side so the outline is never cropped. Minimum 512x512.
+The icon must stay recognisable when scaled down to 40 px: two loud pieces on a calm
+light board.
+
+Solid flat #00FF00 background for later cutout. Aspect ratio 1:1, the board centred
+with roughly 10% margin on every side so nothing touches or crosses the canvas edge.
+Minimum 512x512.
 
 avoid: photorealism, photographic textures, cast shadows on the background, watermarks,
-text, captions, a white sticker border or any white outline around the object, thin
-lines, a square frame around the grid, more than two pieces, paper or notebook texture,
-pencil or chalk look.
+text, captions, a white sticker border or any white outline around the object, a large
+violet or dark shape, a floating hash / pound / hashtag symbol, pieces hanging outside
+the board, more than two pieces, paper or notebook texture, pencil or chalk look.
 
 File name: kolko.png
 ```
 
-### Wariant alternatywny (jeśli kratka zdominuje znaki)
+### Wariant alternatywny (jeśli deseczka wyjdzie nudno)
 
 ```
 Same style and same technical requirements as above.
 
-Simplify: keep the hash "#" grid but make the bars thinner in proportion, about one
-tenth of the icon height, and push them further back by darkening them to #2A1758,
-almost the same value as the outline. Enlarge the cyan X and the magenta O so each
-piece slightly overflows its cell and overlaps the bars. The pieces should look like
-chunky plastic tokens dropped onto a board.
+Instead of a flat tile: a chunky wooden board standing at a slight three-quarter angle,
+with the cyan X and the magenta O as thick separate tokens lying ON it, one of them
+slightly overlapping the board's edge as if just placed. Keep the board body warm cream
+#F2D8A8 and keep violet out of everything except the outline.
 
 File name: kolko.png
 ```
@@ -363,3 +368,7 @@ File name: kolko.png
    pozostałe siedem) i dopisać `"kolko"` do zbioru `ILLUSTRATED` w
    `src/components/GameIcon.tsx`. Do tego czasu gra pokazuje zapasową ikonę Lucide
    (`Grid3x3`) i nic się nie psuje.
+
+> **Jak ocenić wynik w pół sekundy:** zmniejsz obrazek do 40 px i spójrz. Powinieneś
+> widzieć jasną deseczkę i dwie kolorowe plamy. Jeśli widzisz ciemną bryłę — jest źle,
+> niezależnie od tego, jak ładnie wygląda w dużym rozmiarze.
