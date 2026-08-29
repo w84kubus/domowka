@@ -48,7 +48,12 @@ function odczytajRekord(): number | null {
 
 export default function TreningStoperaPage() {
   const t = useT();
+  // `celMs` to cel, w który REALNIE celujesz i który widzisz. W trybie losowym
+  // jest losowany przed każdą próbą z zakresu do `limitMs` — cel zostaje jawny,
+  // bo bez niego nie ma w co trafiać. Losowość ma tylko zapobiec wyuczeniu się
+  // jednej liczby (SPEC §5.2: „cel losowany z zakresu", ale widoczny dla wszystkich).
   const [celMs, setCelMs] = useState(10000);
+  const [limitMs, setLimitMs] = useState(10000);
   const [losowy, setLosowy] = useState(false);
   const [wpis, setWpis] = useState("10");
   const [faza, setFaza] = useState<Faza>("gotowy");
@@ -56,9 +61,8 @@ export default function TreningStoperaPage() {
   const [proby, setProby] = useState<Proba[]>([]);
   const [rekord, setRekord] = useState<number | null>(null);
   const t0 = useRef(0);
-  // Cel, na którym NAPRAWDĘ mierzyliśmy. Przy losowym celu `celMs` zmienia się
-  // zaraz po stopie, więc wynik musi pamiętać własny cel — inaczej błąd
-  // wyliczałby się względem następnego losowania.
+  // Cel, na którym NAPRAWDĘ mierzyliśmy — potrzebny, bo po „Jeszcze raz" losuje się
+  // nowy i błąd musiałby się liczyć względem niego zamiast względem właściwego.
   const celProby = useRef(10000);
 
   useEffect(() => setRekord(odczytajRekord()), []);
@@ -76,22 +80,39 @@ export default function TreningStoperaPage() {
   const ustawCel = useCallback((ms: number) => {
     const dociety = Math.min(CEL_MAX_MS, Math.max(CEL_MIN_MS, ms));
     setCelMs(dociety);
+    setLimitMs(dociety);
     setWpis((dociety / 1000).toString().replace(".", ","));
     setLosowy(false);
     wyczyscWynik();
   }, [wyczyscWynik]);
 
+  /** Losuje cel z zakresu do `limitMs`. Dolna granica jako ułamek, żeby zakres
+      nigdy nie schodził do zera przy małych limitach. */
+  const losujCel = useCallback((limit: number) => {
+    const dol = Math.max(CEL_MIN_MS, Math.round(limit * LOSOWY_UDZIAL_MIN));
+    return Math.round(dol + Math.random() * (limit - dol));
+  }, []);
+
+  /**
+   * Powrót do gotowości po wyniku. Świadomie NIE startuje pomiaru: start ma być
+   * osobnym, świadomym kliknięciem, inaczej „Jeszcze raz" zabiera moment na
+   * przygotowanie się — a w grze o wyczucie czasu to właśnie ten moment się liczy.
+   */
+  const nowaProba = useCallback(() => {
+    if (losowy) setCelMs(losujCel(limitMs));
+    setBladMs(null);
+    setFaza("gotowy");
+  }, [losowy, limitMs, losujCel]);
+
   const start = useCallback(() => {
     unlockAudio();
-    const dol = Math.max(CEL_MIN_MS, Math.round(celMs * LOSOWY_UDZIAL_MIN));
-    const cel = losowy ? Math.round(dol + Math.random() * (celMs - dol)) : celMs;
-    celProby.current = cel;
+    celProby.current = celMs;
     t0.current = performance.now();
     setBladMs(null);
     setFaza("mierzy");
     sfx.start();
     vibrate(30);
-  }, [celMs, losowy]);
+  }, [celMs]);
 
   const stop = useCallback(() => {
     const zmierzone = performance.now() - t0.current;
@@ -141,11 +162,12 @@ export default function TreningStoperaPage() {
       if ((e.target as HTMLElement | null)?.tagName === "INPUT") return;
       e.preventDefault();
       if (faza === "mierzy") stop();
-      else start();
+      else if (faza === "gotowy") start();
+      else nowaProba(); // po wyniku spacja przygotowuje kolejną próbę, nie startuje jej
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [faza, start, stop]);
+  }, [faza, start, stop, nowaProba]);
 
   const stat = policz(proby);
   const diag = diagnoza(stat);
@@ -165,9 +187,10 @@ export default function TreningStoperaPage() {
         <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-ink-muted">
           {losowy ? t("trening.randomTarget") : t("stoper.target")}
         </span>
+        {/* Cel jest widoczny ZAWSZE, także w trybie losowym. Ukrywanie go zamieniało
+            grę o wyczucie czasu w zgadywankę bez zadania — nie ma w co celować. */}
         <span className="tabular text-5xl font-bold text-bursztyn">
-          {losowy && faza !== "wynik" ? "?" : fmt(faza === "wynik" ? celProby.current : celMs)}
-          {(!losowy || faza === "wynik") && " s"}
+          {fmt(faza === "wynik" ? celProby.current : celMs)} s
         </span>
 
         {/* Ustawienia widoczne także PO wyniku, nie tylko przed pierwszą próbą.
@@ -194,7 +217,13 @@ export default function TreningStoperaPage() {
               ))}
               <button
                 type="button"
-                onClick={() => { setLosowy((v) => !v); wyczyscWynik(); }}
+                onClick={() => {
+                  const wlaczam = !losowy;
+                  setLosowy(wlaczam);
+                  if (wlaczam) setCelMs(losujCel(limitMs));
+                  else setCelMs(limitMs);
+                  wyczyscWynik();
+                }}
                 aria-pressed={losowy}
                 className={`font-display inline-flex items-center gap-1.5 rounded-[14px] border-[3px] px-4 py-2 text-sm font-bold uppercase tracking-[0.04em] ${
                   losowy ? "border-mint bg-mint/20 text-ink" : "border-stroke bg-panel text-ink-muted"
@@ -218,7 +247,9 @@ export default function TreningStoperaPage() {
                   setWpis(v);
                   const liczba = Number(v.replace(",", "."));
                   if (Number.isFinite(liczba) && liczba > 0) {
-                    setCelMs(Math.min(CEL_MAX_MS, Math.max(CEL_MIN_MS, Math.round(liczba * 1000))));
+                    const ms = Math.min(CEL_MAX_MS, Math.max(CEL_MIN_MS, Math.round(liczba * 1000)));
+                    setLimitMs(ms);
+                    setCelMs(losowy ? losujCel(ms) : ms);
                     wyczyscWynik();
                   }
                 }}
@@ -227,6 +258,11 @@ export default function TreningStoperaPage() {
               />
               <span>s</span>
             </label>
+            {losowy && (
+              <p className="max-w-xs text-xs font-semibold leading-snug text-ink-muted">
+                {t("trening.randomHint")}
+              </p>
+            )}
           </>
         )}
       </div>
@@ -246,7 +282,7 @@ export default function TreningStoperaPage() {
       ) : faza === "uniewazniona" ? (
         <>
           <p className="relative max-w-xs text-base font-semibold text-czerwien">{t("stoper.busted")}</p>
-          <button type="button" onClick={start} className="btn relative">
+          <button type="button" onClick={nowaProba} className="btn relative">
             <RotateCcw size={18} strokeWidth={2.5} aria-hidden /> {t("trening.again")}
           </button>
         </>
@@ -258,7 +294,7 @@ export default function TreningStoperaPage() {
           <p className="font-display relative text-sm font-bold uppercase tracking-[0.06em] text-ink-muted">
             {idealne ? t("stoper.perfect") : bladMs >= 0 ? t("trening.late") : t("trening.early")}
           </p>
-          <button type="button" onClick={start} className="btn relative">
+          <button type="button" onClick={nowaProba} className="btn relative">
             <RotateCcw size={18} strokeWidth={2.5} aria-hidden /> {t("trening.again")}
           </button>
         </>

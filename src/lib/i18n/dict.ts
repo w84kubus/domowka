@@ -76,9 +76,10 @@ const pl = {
   // — Stoper —
   "trening.title": "Trening Stopera",
   "trening.random": "Losowy",
-  "trening.randomTarget": "Cel losowy — poznasz go po stopie",
+  "trening.randomTarget": "Cel losowy",
   "trening.ownTarget": "Własny cel",
   "trening.maxTarget": "Losuj do",
+  "trening.randomHint": "Nowy cel przed każdą próbą — żebyś nie wyuczył się jednej liczby.",
   "trening.session": "Ta seria · {n} prób",
   "trening.clear": "Wyczyść",
   "trening.stat.avg": "Śr. błąd",
@@ -605,9 +606,10 @@ const en: Record<Key, string> = {
   // — Stopwatch —
   "trening.title": "Stopwatch practice",
   "trening.random": "Random",
-  "trening.randomTarget": "Random target — revealed after you stop",
+  "trening.randomTarget": "Random target",
   "trening.ownTarget": "Own target",
   "trening.maxTarget": "Draw up to",
+  "trening.randomHint": "A fresh target before every attempt, so you do not drill a single number.",
   "trening.session": "This run · {n} attempts",
   "trening.clear": "Clear",
   "trening.stat.avg": "Avg error",
