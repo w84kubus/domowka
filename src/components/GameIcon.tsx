@@ -11,6 +11,7 @@ const ILLUSTRATED = new Set([
   "mafia",
   "odcien",
   "kasyno",
+  "kolko",
 ]);
 
 export function GameIcon({
