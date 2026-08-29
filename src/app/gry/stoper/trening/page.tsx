@@ -19,9 +19,12 @@ import { diagnoza, policz, progDobrej, type Proba } from "@/lib/trening-stats";
 // Losowanie celu przez Math.random jest tu w porządku: to nie silnik gry, nie ma
 // serwera ani powtarzalności do utrzymania (zasada 3 dotyczy engine.ts).
 
-const SZYBKIE_CELE = [3, 5, 10, 30] as const;
+// Bez 30 s: przy takim celu jedna próba trwa pół minuty patrzenia w zamaskowane
+// cyfry, a seria pięciu — ponad dwie minuty. Gra przestaje być ćwiczeniem,
+// a staje się czekaniem.
+const SZYBKIE_CELE = [2, 3, 5, 10] as const;
 const CEL_MIN_MS = 1000;
-const CEL_MAX_MS = 120000;
+const CEL_MAX_MS = 60000; // górna granica własnego celu
 /**
  * Dolna granica losowania jako UŁAMEK maksimum, nie stała. Przy stałej 3 s
  * i ustawieniu „losuj do 3 s" zakres schodził do zera i tryb losowy po cichu
