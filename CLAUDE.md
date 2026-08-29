@@ -29,7 +29,7 @@ Pełny spec: **`SPEC.md`** w rootcie repo. Nie jest ładowany automatycznie — 
 
 3. `engine.ts` każdej gry jest **czystą funkcją**. Zero `Date.now()`, zero `Math.random()`. Czas i losowość wchodzą przez `ctx.now` i `ctx.rng`.
 
-4. Dodanie nowej gry = nowy folder w `src/games/` + jedna linia w `registry.ts`. **Zero zmian w rdzeniu.** Jeśli uważasz, że rdzeń wymaga zmiany — zatrzymaj się i zapytaj. Nie zmieniaj po cichu.
+4. Dodanie nowej gry = nowy folder w `src/games/` + wpis w **rejestrach** (pełna lista w konwencjach niżej). **Zero zmian w logice rdzenia** — żadnych warunków w stylu „jeśli gra == X" w `GameShell`, `game-runner` czy na stronie pokoju. Jeśli uważasz, że rdzeń wymaga zmiany — zatrzymaj się i zapytaj. Nie zmieniaj po cichu.
 
 5. **Kod i komentarze po polsku. Interfejs dwujęzyczny** — każdy tekst widoczny dla gracza przez `t("klucz")` z `dict.ts`, zero napisów na sztywno. Fonty muszą mieć `latin-ext` (Ą Ć Ę Ł Ń Ó Ś Ź Ż). **Press Start 2P, Orbitron i VT323 nie mają polskich znaków — nie używaj.**
 
@@ -60,13 +60,13 @@ firebase deploy --only firestore:rules
 
 - [x] Faza 0 — setup, Firebase, auth, deploy hello-world na Vercel
 - [x] Faza 1 — pokoje, lobby, presence, reconnect, QR, ekran hosta
-- [x] Faza 2 — silnik gier + registry (walidacja na Stoperze; kółko i krzyżyk pominięte na życzenie Jakuba)
+- [x] Faza 2 — silnik gier + registry (walidacja na Stoperze; kółko i krzyżyk pominięte wtedy na życzenie Jakuba, dorobione później)
 - [x] Faza 3 — Stoper: oba tryby gotowe — A „CEL" i B „ZGADNIJ CZAS" (rotacja Biegacza, beep/klik do wszystkich, typowanie stepperem; czas i typy tajne do odsłonięcia)
 - [x] Faza 4 — Państwa-miasta (zweryfikowane na produkcji: tajność pisania, kwestionowanie, dedup, punktacja)
 - [x] Faza 5 — Wisielec: 3 tryby (wyścig/kooperacja/zadający) w silniku + UI (klawiatura PL, SVG szubienicy); kooperacja zweryfikowana na produkcji (tajność hasła)
 - [x] Faza 6 — Impostor: role/hasło tajne, 5 wariantów podpowiedzi (+ „nie wie, że jest impostorem"), głosowanie, zgadywanie po wylocie; zweryfikowane na produkcji (brak wycieku w publicState)
 - [~] Faza 7 — Mafia: RDZEŃ gotowy i zweryfikowany na produkcji (mafia/mieszkańcy/detektyw/lekarz + auto-narrator, rozliczenie nocy, warunki wygranej, role tajne). Do zrobienia: role dodatkowe (§5.6) + tryb z prowadzącym
-- [~] Faza 8 — polish: PWA (instalowalna, manifest+SW+ikona), Wake Lock (ekran nie gaśnie), konfetti+fanfara na wygranych — zweryfikowane na produkcji. Zostało: role dodatkowe Mafii (§5.6), tryb treningowy Stopera solo, dopieszczenie dźwięków
+- [~] Faza 8 — polish: PWA (instalowalna, manifest+SW+ikona), Wake Lock (ekran nie gaśnie), konfetti+fanfara na wygranych — zweryfikowane na produkcji. Zostało: role dodatkowe Mafii (§5.6)
 
 ## Upgrade v2 — aktualny stan
 
@@ -75,10 +75,10 @@ firebase deploy --only firestore:rules
 - [x] Faza C — realtime: resync zegara po tła, powrót do pokoju (localStorage), migracja hosta na rozłączeniu (>30s via ping), actionId idempotencja, reset w transakcji, pasek połączenia, wykładniczy backoff
 - [x] Faza D — wygląd: skeleton lobby, neon click-to-copy + ambient glow, slideIn/fadeIn animacje, timer-urgent pulsacja, nowe SFX (join/phaseChange/neonBuzz/defeat), ekran hosta TV (8rem kod, duże awatary), prefers-reduced-motion
 - [x] Faza E — wydajność: dynamic imports gier (next/dynamic), manifests.ts (klient bez engines), selektywne private writes (JSON diff), debounce pingów 10s, /pokoj 339→314kB, / 110kB OK
-- [x] Faza F — jakość: ErrorBoundary per trasa gry, strukturalny logger (room/game/phase), tsconfig strict OK, zero any w prod, testy pokrywają pełne partie + bezpieczeństwo (dziś **206 testów w 14 plikach**)
+- [x] Faza F — jakość: ErrorBoundary per trasa gry, strukturalny logger (room/game/phase), tsconfig strict OK, zero any w prod, testy pokrywają pełne partie + bezpieczeństwo (dziś **255 testów w 15 plikach**)
 - [x] Faza G — dopracowanie: ShareButton (navigator.share + fallback clipboard), deep link /?kod=XYZW, GameRulesCard (modal z krokami per gra), rules.ts (wszystkie 7 gier), rekordy pokoju. Zostało: unikalne awatary, dołączanie jako widz
 - [x] Faza H — dwujęzyczność PL/EN: cały interfejs, widoki wszystkich gier, ekran TV,
-      karty zasad i polityka prywatności. 425 kluczy na język w `dict.ts`
+      karty zasad i polityka prywatności. 479 kluczy na język w `dict.ts`
 - [x] Faza I — rebranding Domówka → **Doplay** i własna domena `doplay.pl`
       (apex 308 → `www`, `domowka.vercel.app` 308 → `www`; repo: `w84kubus/doplay`)
 - [x] Faza J — porządki w warstwach Tailwinda (`@layer components`), przebudowa
@@ -90,7 +90,6 @@ firebase deploy --only firestore:rules
      eskalacja wpisowego co 5 rund, bankructwo i eliminacja. Sloty i jackpot działały wcześniej. -->
 
 - Mafia: role dodatkowe (SPEC §5.6) + tryb z prowadzącym
-- Dopieszczenie dźwięków
 
 ## Konwencje, które łatwo przeoczyć
 
@@ -108,6 +107,25 @@ po prostu działa, tylko bez danej funkcji.
   implementacja dla wszystkich gier — a poza tą fazą awaryjne „Przerwij i wróć do lobby".
   Różnica jest istotna: zakończenie daje podium i zapisuje rekordy, przerwanie nie.
   Kontrakt pilnuje `src/games/finish.test.ts`, iterując po całym rejestrze.
+
+### Rejestry, w które wpina się nowa gra
+
+Zasada 4 mówi „wpis w rejestrach" — to jest ich pełna lista. Pominięcie któregokolwiek
+**nie wywoła błędu typów**: gra po prostu przestaje działać w jednym miejscu, co jest
+znacznie trudniejsze do zauważenia niż czerwony build.
+
+| Plik | Po co | Skutek pominięcia |
+|---|---|---|
+| `games/registry.ts` | manifest + silnik (serwer) | gry nie da się wystartować |
+| `games/manifests.ts` | manifest bez silnika (klient) | nie pojawia się w lobby ani na landingu |
+| `games/components.tsx` | `Settings`, `PlayerView`, `HostView` | pusty ekran po starcie |
+| `games/icons.tsx` | ikona na karcie i w lobby | brak ikony |
+| `games/rules.ts` | karta „Jak grać?" — PL i EN osobno | przycisk zasad nic nie pokazuje |
+| `lib/i18n/dict.ts` | `game.{id}.name` i `game.{id}.tagline` | zamiast nazwy widać surowy klucz |
+
+To są tablice rejestracyjne, nie logika — rdzeń nadal nie zna żadnej konkretnej gry.
+Sprawdzone przy dodawaniu Kółka i krzyżyka: sześć testów kontraktu z `finish.test.ts`
+przeszło od razu, bez dotykania `GameShell` ani `game-runner`.
 
 ### Dwujęzyczność (PL/EN)
 
