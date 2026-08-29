@@ -77,7 +77,7 @@ firebase deploy --only firestore:rules
 - [x] Faza D — wygląd: skeleton lobby, neon click-to-copy + ambient glow, slideIn/fadeIn animacje, timer-urgent pulsacja, nowe SFX (join/phaseChange/neonBuzz/defeat), ekran hosta TV (8rem kod, duże awatary), prefers-reduced-motion
 - [x] Faza E — wydajność: dynamic imports gier (next/dynamic), manifests.ts (klient bez engines), selektywne private writes (JSON diff), debounce pingów 10s, /pokoj 339→314kB, / 110kB OK
 - [x] Faza F — jakość: ErrorBoundary per trasa gry, strukturalny logger (room/game/phase), tsconfig strict OK, zero any w prod, testy pokrywają pełne partie + bezpieczeństwo (dziś **206 testów w 14 plikach**)
-- [x] Faza G — dopracowanie: ShareButton (navigator.share + fallback clipboard), deep link /?kod=XYZW, GameRulesCard (modal z krokami per gra), rules.ts (5 gier), rekordy pokoju. Zostało: unikalne awatary, tryb obserwatora
+- [x] Faza G — dopracowanie: ShareButton (navigator.share + fallback clipboard), deep link /?kod=XYZW, GameRulesCard (modal z krokami per gra), rules.ts (wszystkie 7 gier), rekordy pokoju. Zostało: unikalne awatary, dołączanie jako widz
 - [x] Faza H — dwujęzyczność PL/EN: cały interfejs, widoki wszystkich gier, ekran TV,
       karty zasad i polityka prywatności. 425 kluczy na język w `dict.ts`
 - [x] Faza I — rebranding Domówka → **Doplay** i własna domena `doplay.pl`
@@ -91,7 +91,16 @@ firebase deploy --only firestore:rules
 - Stoper: tryb treningowy solo
 - Kasyno: tryby `double` i `wheel` **nigdy nie sprawdzone w żywej rozgrywce**
   (silnik i UI są, ale nikt nimi nie zagrał)
-- Unikalne awatary, tryb obserwatora, dopieszczenie dźwięków
+- Unikalne awatary — `dedupeNick` pilnuje nicków, awatarów nic nie odróżnia,
+  więc dwie osoby mogą siedzieć w lobby z tym samym kotem
+- Dołączanie do pokoju **jako widz**. Uwaga na mylącą nazwę: „tryb obserwatora"
+  brzmi jak brakujący ekran TV, a ten **działa** — `/pokoj/{kod}/ekran` rejestruje
+  się przez `/api/rooms/{kod}/observe` i ma `HostView` we wszystkich 7 grach.
+  Brakuje wejścia do pokoju bez zajmowania miejsca w rozgrywce.
+- Dopieszczenie dźwięków
+- Kółko i krzyżyk **nadal figuruje w SPEC §5.x**, choć zostało pominięte w fazie 2.
+  Albo je zrobić, albo wykreślić ze SPEC-u — dziś przy każdym czytaniu specyfikacji
+  wygląda jak zaległość, którą nie jest.
 
 ## Konwencje, które łatwo przeoczyć
 
