@@ -13,6 +13,16 @@ export interface GameRules {
 }
 
 const pl: Record<string, GameRules> = {
+  kolko: {
+    howTo: "Klasyk na planszy 3×3. Ustaw trzy swoje znaki w rzędzie — w poziomie, pionie albo na skos. Gracie we dwoje, reszta pokoju czeka w kolejce i ogląda.",
+    steps: [
+      "Gracie we dwoje: jeden krzyżykami, drugi kółkami",
+      "Na zmianę stawiacie znak na wolnym polu",
+      "Trzy w rzędzie kończą rundę",
+      "Wygrany zostaje przy stole, przegrany idzie na koniec kolejki",
+    ],
+    tip: "Środek planszy jest wart więcej niż róg — zaczyna się od niego.",
+  },
   kasyno: {
     howTo: "Cztery tryby losowe na wirtualne żetony. Obstawiasz, losowanie rozstrzyga, kto zejdzie do zera — odpada.",
     steps: [
@@ -90,6 +100,16 @@ const pl: Record<string, GameRules> = {
 };
 
 const en: Record<string, GameRules> = {
+  kolko: {
+    howTo: "The 3×3 classic. Get three of your marks in a row — across, down or diagonally. Two of you play; the rest of the room queues up and watches.",
+    steps: [
+      "Two of you play: one takes crosses, the other noughts",
+      "You take turns placing a mark on a free square",
+      "Three in a row ends the round",
+      "The winner keeps the table, the loser goes to the back of the queue",
+    ],
+    tip: "The centre square is worth more than a corner — start there.",
+  },
   kasyno: {
     howTo: "Four games of chance played with virtual chips. You bet, the draw decides, and whoever hits zero is out.",
     steps: [

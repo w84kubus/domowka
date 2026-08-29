@@ -9,9 +9,8 @@ Do sierpnia 2026 aplikacja nazywała się Domówka. Stąd klucze `domowka-locale
 `domowka-session` i projekt Firebase `domowka-39gd0` — **tych nazw nie zmieniamy**:
 identyfikują dane już zapisane w przeglądarkach graczy i w backendzie.
 
-Gry (7, wszystkie w `registry.ts`): Stoper, Państwa-miasta, Wisielec, Impostor,
-Mafia, Odcień, Kasyno. Kółko i krzyżyk NIE powstało — pominięte na życzenie Jakuba
-w fazie 2, mimo że wciąż figuruje w SPEC.
+Gry (8, wszystkie w `registry.ts`): Stoper, Państwa-miasta, Wisielec, Impostor,
+Mafia, Odcień, Kasyno, Kółko i krzyżyk.
 
 Stack: Next.js 15 (App Router) + TypeScript strict + Tailwind v4 + Firebase (Firestore + Anonymous Auth) + Vercel.
 
@@ -92,9 +91,6 @@ firebase deploy --only firestore:rules
 
 - Mafia: role dodatkowe (SPEC §5.6) + tryb z prowadzącym
 - Dopieszczenie dźwięków
-- Kółko i krzyżyk **nadal figuruje w SPEC §5.x**, choć zostało pominięte w fazie 2.
-  Albo je zrobić, albo wykreślić ze SPEC-u — dziś przy każdym czytaniu specyfikacji
-  wygląda jak zaległość, którą nie jest.
 
 ## Konwencje, które łatwo przeoczyć
 
