@@ -276,3 +276,70 @@ ostrzeżenie, faza dnia/nocy w Mafii) zostają na **Lucide SVG**. Powód: wyświ
 w 12–20 px, muszą być ostre na każdym ekranie, zmieniać kolor przy najechaniu i stanach,
 a jako SVG ważą ułamek tego co PNG. Wygenerowana grafika rastrowa byłaby tam gorsza,
 nie lepsza.
+
+---
+
+## ETAP 10 — ikona ósmej gry: Kółko i krzyżyk
+
+> **Załącz do rozmowy którąś z gotowych ikon gier** (np. `kasyno.png` albo `odcien.png`).
+> Bez wzorca pojedyncza nowa ikona wyjdzie w innym stylu i będzie odstawać od reszty.
+
+> **Uwaga projektowa:** kusi, żeby narysować pełną planszę 3×3 z kratką. Nie rób tego —
+> linie siatki to dokładnie te „cieniutkie kreski", które pakiet wyklucza, i przy 40 px
+> zlewają się w szarą plamę. Dwa grube znaki czytają się z każdej odległości.
+
+> **Kolory:** X w cyjanie `#22D3EE` (akcent tej gry), O w magencie `#FF2D95`.
+> W samej grze O jest białe, ale ikona leży na JASNYM tle karty — białe kółko by zniknęło.
+
+```
+I am attaching one icon from my existing game-icon set as a style reference.
+
+Generate ONE new icon in exactly the same style: chunky cartoon 3D, bubbly volumes,
+thick solid dark purple #2A1758 outline, soft highlight from the upper left, saturated
+colours, flat readable silhouette.
+
+SUBJECT: the two marks of tic-tac-toe, side by side and slightly overlapping, tilted
+a few degrees so the pair feels playful rather than diagrammatic.
+- The X is cyan #22D3EE: two fat rounded bars crossing, like two soft plastic sticks.
+- The O is magenta #FF2D95: a thick chunky ring, clearly hollow in the middle.
+Both marks are equally bold and equally large. The O sits slightly behind the X where
+they overlap. NO grid, NO board, NO lines between them.
+
+Both shapes must be thick and pillowy — the stroke width of each mark should be roughly
+a quarter of the icon's height, so nothing turns thin. The icon must stay recognisable
+when scaled down to 40 px.
+
+Solid flat #00FF00 background for later cutout. Aspect ratio 1:1, the object centred
+with roughly 10% margin on every side so the outline is never cropped. Minimum 512×512.
+
+avoid: photorealism, photographic textures, cast shadows on the background, watermarks,
+text, captions, frames, thin lines, a 3x3 grid, a drawn game board, paper or notebook
+texture, pencil or chalk look.
+
+File name: kolko.png
+```
+
+### Wariant alternatywny (jeśli para znaków wyjdzie płasko)
+
+```
+Same style and same technical requirements as above.
+
+Instead of two separate marks: ONE chunky rounded square tile in cyan #22D3EE, like
+a single soft plastic button, with a magenta #FF2D95 O embossed into it and a white X
+sitting on top of the tile's corner, half hanging off the edge. This should read as
+„one square of the board with the pieces on it", not as a whole board.
+
+File name: kolko.png
+```
+
+### Co po wygenerowaniu
+
+1. Plik do `assets/zrodla/kolko.png` (albo `.jpg` — pipeline przyjmie oba).
+2. Dopisać do `MANIFEST` w `scripts/process-assets.py`:
+   `Asset("kolko", "cutout", "ikony", 384, 384, halo=True)` — `halo=True` jak przy
+   `wkrotce`, bo ciemny kontur zamyka sylwetkę i pozwala doczyścić zieloną obwódkę.
+3. `python3 scripts/process-assets.py` — wytnie tło i zapisze WebP.
+4. Gotową ikonę przenieść do `public/games/kolko.webp` w **192×192** (tyle mają
+   pozostałe siedem) i dopisać `"kolko"` do zbioru `ILLUSTRATED` w
+   `src/components/GameIcon.tsx`. Do tego czasu gra pokazuje zapasową ikonę Lucide
+   (`Grid3x3`) i nic się nie psuje.
