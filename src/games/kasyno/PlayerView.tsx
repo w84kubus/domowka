@@ -6,6 +6,7 @@ import { AvatarIcon } from "@/components/AvatarIcon";
 import { Podium } from "@/components/game/Podium";
 import type { GameViewProps } from "@/games/view";
 import { SpinStrip, type StripItem } from "./SpinStrip";
+import { Historia } from "./Historia";
 import { SlotMachine } from "./SlotMachine";
 import { doubleColourOf, DOUBLE_SLOTS, SLOT_SYMBOLS, SPIN_MS, WHEEL_SEGMENTS } from "./tables";
 
@@ -74,6 +75,13 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
     setBusy(false);
     // Nowa runda — czyścimy wybór, żeby nikt nie postawił przypadkiem tego samego co poprzednio.
   }, [pub.round]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // `busy` znaczy „czekam na potwierdzenie zakładu z serwera" i wygasa, gdy zakładu
+  // już nie ma. Bez tego po wycofaniu zakładu przycisk zostawał wyłączony do końca
+  // rundy — interfejs wracał do obstawiania, ale nie dało się obstawić ponownie.
+  useEffect(() => {
+    if (!mojZaklad) setBusy(false);
+  }, [mojZaklad]);
 
   const nickOf = (uid: string) => pub.players.find((p) => p.uid === uid)?.nick ?? "?";
 
@@ -211,6 +219,7 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
           </span>
           {[...pub.players].sort((a, b) => b.chips - a.chips).map((p) => {
             const obrot = pub.lastSpin?.[p.uid];
+            const pokazWynik = p.uid !== meUid || !kreci;
             return (
               <div
                 key={p.uid}
@@ -223,14 +232,18 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
                   {p.nick}
                   {p.uid === meUid && <span className="font-semibold text-ink-muted"> {t("common.you")}</span>}
                 </span>
-                {obrot && (
+                {/* Własny wynik pokazujemy dopiero, gdy bębny staną. Bez tego lista
+                    na dole zdradzała symbole i wygraną, zanim animacja się skończyła —
+                    czyli cała maszyna kręciła się już po ogłoszonym wyniku.
+                    Cudze obroty pokazujemy od razu: ich animacji i tak nie oglądam. */}
+                {obrot && pokazWynik && (
                   <span className="flex gap-0.5 text-base" aria-hidden>
                     {obrot.reels.map((r, i) => (
                       <span key={i}>{SYMBOL_LABEL[r] ?? r}</span>
                     ))}
                   </span>
                 )}
-                {obrot && (
+                {obrot && pokazWynik && (
                   <span className={`tabular w-12 text-right text-xs font-bold ${obrot.win > 0 ? "text-mint" : "text-czerwien"}`}>
                     {obrot.win > 0 ? `+${obrot.win}` : `−${obrot.bet}`}
                   </span>
@@ -381,6 +394,8 @@ export function KasynoPlayerView({ room, publicState, privateState, meUid, isHos
           {t("kasyno.out")}
         </p>
       )}
+
+      <Historia history={pub.history} mode={pub.mode} players={pub.players} />
 
       {/* Zakłady wszystkich — jawne od razu, to połowa zabawy */}
       <section className="flex w-full max-w-md flex-col gap-2">
