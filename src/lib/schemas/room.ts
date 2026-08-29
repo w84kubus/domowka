@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isValidAvatar } from "@/lib/avatars";
+import { AVATARS, isValidAvatar } from "@/lib/avatars";
 import { isValidRoomCode } from "@/lib/room-code";
 
 export const MAX_NICK_LENGTH = 16;
@@ -41,6 +41,23 @@ export const codeParamSchema = z
 
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
 export type JoinRoomInput = z.infer<typeof joinRoomSchema>;
+
+/**
+ * Zapewnia unikalność awatara w pokoju. Zajęty → pierwszy wolny z listy.
+ *
+ * Nicki deduplikujemy od zawsze, awatarów nie — a to właśnie po ikonie rozpoznaje
+ * się ludzi na liście graczy. Dwie identyczne w Mafii czy Impostorze realnie mylą,
+ * bo tam całą grą jest kojarzenie, kto jest kim.
+ *
+ * Awatarów jest 30, graczy najwyżej 16, więc wolny zawsze istnieje. Gdyby jednak
+ * lista kiedyś się skurczyła, oddajemy wybór gracza zamiast rzucać błędem —
+ * powtórzona ikona jest gorsza niż brak wejścia do pokoju, ale tylko trochę.
+ */
+export function dedupeAvatar(avatar: string, existing: string[]): string {
+  const taken = new Set(existing);
+  if (!taken.has(avatar)) return avatar;
+  return AVATARS.find((a) => !taken.has(a)) ?? avatar;
+}
 
 /** Zapewnia unikalność nicku w pokoju: przy duplikacie dopisuje (2), (3)... (SPEC §4). */
 export function dedupeNick(nick: string, existing: string[]): string {

@@ -3,7 +3,7 @@ import { getAdminDb } from "@/lib/firebase/admin";
 import { ApiError, requireUid } from "@/lib/server/auth";
 import { handleApiError } from "@/lib/server/http";
 import { newPlayer } from "@/lib/server/rooms";
-import { codeParamSchema, dedupeNick, joinRoomSchema } from "@/lib/schemas/room";
+import { codeParamSchema, dedupeAvatar, dedupeNick, joinRoomSchema } from "@/lib/schemas/room";
 import type { Player, Room } from "@/lib/types/room";
 
 export const runtime = "nodejs";
@@ -34,7 +34,7 @@ export async function POST(
         const updated: Player = {
           ...existing,
           nick: dedupeNick(nick, nicksExcept(room, uid)),
-          avatar,
+          avatar: dedupeAvatar(avatar, avatarsExcept(room, uid)),
           connected: true,
           lastSeenAt: now,
         };
@@ -50,7 +50,8 @@ export async function POST(
       }
 
       const finalNick = dedupeNick(nick, nicksExcept(room, uid));
-      const player = newPlayer(uid, finalNick, avatar, now, false);
+      const finalAvatar = dedupeAvatar(avatar, avatarsExcept(room, uid));
+      const player = newPlayer(uid, finalNick, finalAvatar, now, false);
       t.update(ref, {
         [`players.${uid}`]: player,
         version: room.version + 1,
@@ -61,6 +62,12 @@ export async function POST(
   } catch (err) {
     return handleApiError(err);
   }
+}
+
+function avatarsExcept(room: Room, uid: string): string[] {
+  return Object.values(room.players)
+    .filter((p) => p.uid !== uid)
+    .map((p) => p.avatar);
 }
 
 function nicksExcept(room: Room, uid: string): string[] {

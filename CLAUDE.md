@@ -87,12 +87,11 @@ firebase deploy --only firestore:rules
 
 ### Co realnie zostało
 
+<!-- Kasyno: double i wheel zweryfikowane w rozgrywce 2026-08-29 — wypłaty ×2,
+     eskalacja wpisowego co 5 rund, bankructwo i eliminacja. Sloty i jackpot działały wcześniej. -->
+
 - Mafia: role dodatkowe (SPEC §5.6) + tryb z prowadzącym
 - Stoper: tryb treningowy solo
-- Kasyno: tryby `double` i `wheel` **nigdy nie sprawdzone w żywej rozgrywce**
-  (silnik i UI są, ale nikt nimi nie zagrał)
-- Unikalne awatary — `dedupeNick` pilnuje nicków, awatarów nic nie odróżnia,
-  więc dwie osoby mogą siedzieć w lobby z tym samym kotem
 - Dołączanie do pokoju **jako widz**. Uwaga na mylącą nazwę: „tryb obserwatora"
   brzmi jak brakujący ekran TV, a ten **działa** — `/pokoj/{kod}/ekran` rejestruje
   się przez `/api/rooms/{kod}/observe` i ma `HostView` we wszystkich 7 grach.
