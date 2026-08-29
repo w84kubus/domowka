@@ -284,12 +284,21 @@ nie lepsza.
 > **Załącz do rozmowy którąś z gotowych ikon gier** (np. `kasyno.png` albo `odcien.png`).
 > Bez wzorca pojedyncza nowa ikona wyjdzie w innym stylu i będzie odstawać od reszty.
 
-> **Uwaga projektowa:** kusi, żeby narysować pełną planszę 3×3 z kratką. Nie rób tego —
-> linie siatki to dokładnie te „cieniutkie kreski", które pakiet wyklucza, i przy 40 px
-> zlewają się w szarą plamę. Dwa grube znaki czytają się z każdej odległości.
+> **Czego uczy pierwsze podejście:** wersja bez kratki (sam gruby X obok grubego O)
+> wyszła ładnie, ale czyta się jako **logotyp XO** — całuski, nie gra. Sama para znaków
+> nie niesie znaczenia „kółko i krzyżyk". Potrzebna jest kratka.
+>
+> Kratka MUSI być z czterech grubych, bąbelkowych belek w kształcie `#` — nie z cienkich
+> linii i nie jako pełna plansza 3×3 z ramką. Cienka kratka przy 40 px zlewa się w szarą
+> plamę i to był powód pierwotnego zakazu; grube belki tego problemu nie mają.
 
-> **Kolory:** X w cyjanie `#22D3EE` (akcent tej gry), O w magencie `#FF2D95`.
-> W samej grze O jest białe, ale ikona leży na JASNYM tle karty — białe kółko by zniknęło.
+> **Kolory:** X w cyjanie `#22D3EE` (akcent tej gry), O w magencie `#FF2D95`, belki
+> kratki w ciemnym fiolecie — mają być tłem dla znaków, nie konkurencją. W samej grze
+> O jest białe, ale ikona leży na JASNYM tle karty i białe kółko by zniknęło.
+
+> **Bez białej obwódki.** Pozostałe siedem ikon ma wyłącznie ciemnofioletowy kontur.
+> Generator lubi dokleić białą ramkę naklejki — trzeba jej zabronić wprost, inaczej
+> ikona odstaje w siatce.
 
 ```
 I am attaching one icon from my existing game-icon set as a style reference.
@@ -298,36 +307,45 @@ Generate ONE new icon in exactly the same style: chunky cartoon 3D, bubbly volum
 thick solid dark purple #2A1758 outline, soft highlight from the upper left, saturated
 colours, flat readable silhouette.
 
-SUBJECT: the two marks of tic-tac-toe, side by side and slightly overlapping, tilted
-a few degrees so the pair feels playful rather than diagrammatic.
-- The X is cyan #22D3EE: two fat rounded bars crossing, like two soft plastic sticks.
-- The O is magenta #FF2D95: a thick chunky ring, clearly hollow in the middle.
-Both marks are equally bold and equally large. The O sits slightly behind the X where
-they overlap. NO grid, NO board, NO lines between them.
+SUBJECT: a tic-tac-toe grid with two pieces on it, tilted a few degrees so it feels
+playful rather than diagrammatic.
 
-Both shapes must be thick and pillowy — the stroke width of each mark should be roughly
-a quarter of the icon's height, so nothing turns thin. The icon must stay recognisable
-when scaled down to 40 px.
+- The grid is a hash / pound shape "#": exactly four fat rounded bars, two vertical
+  and two horizontal, crossing each other. The bars are dark violet #3B2470 with the
+  same soft 3D shading as everything else. They are a backdrop, not the hero.
+- The bars must be THICK and pillowy, each roughly one eighth of the icon's height.
+  No thin lines. No outer frame or box around the grid.
+- On the grid sit exactly TWO pieces, placed diagonally from each other, each clearly
+  inside a different cell:
+  a cyan #22D3EE X made of two fat rounded crossing bars,
+  a magenta #FF2D95 O, a thick chunky ring, clearly hollow in the middle.
+- The X and the O are the brightest, most saturated things in the icon and read first.
+  The remaining cells stay empty.
+
+The icon must stay recognisable when scaled down to 40 px, so keep it to these three
+elements and nothing else.
 
 Solid flat #00FF00 background for later cutout. Aspect ratio 1:1, the object centred
-with roughly 10% margin on every side so the outline is never cropped. Minimum 512×512.
+with roughly 10% margin on every side so the outline is never cropped. Minimum 512x512.
 
 avoid: photorealism, photographic textures, cast shadows on the background, watermarks,
-text, captions, frames, thin lines, a 3x3 grid, a drawn game board, paper or notebook
-texture, pencil or chalk look.
+text, captions, a white sticker border or any white outline around the object, thin
+lines, a square frame around the grid, more than two pieces, paper or notebook texture,
+pencil or chalk look.
 
 File name: kolko.png
 ```
 
-### Wariant alternatywny (jeśli para znaków wyjdzie płasko)
+### Wariant alternatywny (jeśli kratka zdominuje znaki)
 
 ```
 Same style and same technical requirements as above.
 
-Instead of two separate marks: ONE chunky rounded square tile in cyan #22D3EE, like
-a single soft plastic button, with a magenta #FF2D95 O embossed into it and a white X
-sitting on top of the tile's corner, half hanging off the edge. This should read as
-„one square of the board with the pieces on it", not as a whole board.
+Simplify: keep the hash "#" grid but make the bars thinner in proportion, about one
+tenth of the icon height, and push them further back by darkening them to #2A1758,
+almost the same value as the outline. Enlarge the cyan X and the magenta O so each
+piece slightly overflows its cell and overlaps the bars. The pieces should look like
+chunky plastic tokens dropped onto a board.
 
 File name: kolko.png
 ```
@@ -338,6 +356,8 @@ File name: kolko.png
 2. Dopisać do `MANIFEST` w `scripts/process-assets.py`:
    `Asset("kolko", "cutout", "ikony", 384, 384, halo=True)` — `halo=True` jak przy
    `wkrotce`, bo ciemny kontur zamyka sylwetkę i pozwala doczyścić zieloną obwódkę.
+   **Jeśli mimo zakazu wyjdzie z białą obwódką**, `halo=True` jej NIE zdejmie — biel
+   nie jest zielenią. Trzeba wtedy poprosić o regenerację, a nie łatać skryptem.
 3. `python3 scripts/process-assets.py` — wytnie tło i zapisze WebP.
 4. Gotową ikonę przenieść do `public/games/kolko.webp` w **192×192** (tyle mają
    pozostałe siedem) i dopisać `"kolko"` do zbioru `ILLUSTRATED` w
