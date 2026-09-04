@@ -21,6 +21,9 @@ const pl = {
   "common.total": "Wyniki ogółem",
   "common.next": "Dalej →",
 
+  // — metadane dla wyszukiwarek; osobne od tekstów na stronie —
+  "meta.title": "Gry na domówkę online | Doplay",
+  "meta.description": "Osiem darmowych gier imprezowych w przeglądarce: Mafia, Impostor, Wisielec, Państwa-miasta i inne. Bez kont i bez pobierania, każdy gra na swoim telefonie.",
   // — landing —
   "landing.tagline": "Imprezowe gry na jeden wieczór. Każdy na swoim telefonie.",
   "landing.create": "Zakładam pokój",
@@ -540,6 +543,9 @@ const pl = {
 export type Key = keyof typeof pl;
 
 const en: Record<Key, string> = {
+  // — metadata for search engines; separate from on-page copy —
+  "meta.title": "Party games online | Doplay",
+  "meta.description": "Eight free party games in the browser: Mafia, Impostor, Hangman, Categories and more. No accounts, no downloads, everyone plays on their own phone.",
   "common.back": "← back",
   "common.cancel": "Cancel",
   "common.close": "Close",
